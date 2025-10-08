@@ -5,15 +5,17 @@ apply plugin: "com.facebook.react"
 android {
     ndkVersion rootProject.ext.ndkVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
-
     namespace "com.leadzen"
+    
     defaultConfig {
         applicationId "com.leadzen"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [usesCleartextTraffic:"true"]
     }
+    
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -22,6 +24,7 @@ android {
             keyPassword 'android'
         }
     }
+    
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -36,7 +39,7 @@ android {
 
 dependencies {
     implementation("com.facebook.react:react-android")
-
+    
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

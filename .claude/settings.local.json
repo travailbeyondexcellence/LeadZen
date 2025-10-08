@@ -8,7 +8,8 @@
       "Bash(rm:*)",
       "Bash(bun install:*)",
       "Bash(npx @react-native-community/cli:*)",
-      "Bash(./node_modules/.bin/react-native:*)"
+      "Bash(./node_modules/.bin/react-native:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

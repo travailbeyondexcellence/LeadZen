@@ -65,3 +65,14 @@ Thumbs.db
 
 # Kotlin
 .kotlin/
+
+# Android build artifacts
+android/app/.cxx/
+android/app/build/
+android/.gradle/
+android/build/
+**/build/
+**/.cxx/
+*.iml
+.gradle
+local.properties

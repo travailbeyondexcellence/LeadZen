@@ -1,0 +1,34 @@
+# Claude Code Instructions
+
+## Build Commands
+
+- **Do not run** `npm run dev` commands - user will run these manually
+- **Do not run** `npm install` commands - user will run these manually
+- **Do not run** `bun install` commands - user will run these manually
+
+## Android Build - RESOLVED ✅
+
+The React Native Android build is now working successfully after fixing:
+
+1. **C++ Compilation Issue**: Disabled new architecture in `android/gradle.properties`:
+   ```
+   newArchEnabled=false
+   ```
+   (The new architecture requires C++ compilation and was causing `rncli.h` errors)
+
+2. **Missing Debug Keystore**: Generated `android/app/debug.keystore`:
+   ```bash
+   cd Frontend/Web/Mobile/android/app
+   keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+   ```
+
+## Project Structure
+
+- Frontend/Web/Mobile - React Native mobile application (✅ Working)
+- Main development happens in the mobile app directory
+
+## Current Status
+- ✅ React Native 0.73.6 configured correctly
+- ✅ Android build working
+- ✅ App installs and runs on emulator
+- ✅ Metro bundler running on port 8081
