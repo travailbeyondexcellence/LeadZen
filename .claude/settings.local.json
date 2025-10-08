@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(npx create-expo-app:*)",
+      "Bash(npx react-native:*)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
