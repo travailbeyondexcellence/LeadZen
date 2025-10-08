@@ -1,0 +1,14 @@
+{
+  "name": "leadzen",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install": "cd frontend/web/mobile && bun install",
+    "android": "cd frontend/web/mobile && bun run android",
+    "ios": "cd frontend/web/mobile && bun run ios",
+    "start": "cd frontend/web/mobile && bun run start"
+  },
+  "workspaces": [
+    "frontend/web/mobile"
+  ]
+}
