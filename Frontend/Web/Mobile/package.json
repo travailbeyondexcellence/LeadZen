@@ -10,11 +10,14 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-community/cli-platform-android": "12.3.6",
+    "@react-native-community/cli-platform-ios": "12.3.6",
+    "@react-native-community/cli-plugin-metro": "12.3.6",
     "react": "18.2.0",
     "react-native": "0.73.6",
-    "react-native-sqlite-storage": "^6.0.1",
+    "react-native-permissions": "^4.1.5",
     "react-native-phone-call": "^1.0.9",
-    "react-native-permissions": "^4.1.5"
+    "react-native-sqlite-storage": "^6.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

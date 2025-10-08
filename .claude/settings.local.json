@@ -4,7 +4,11 @@
       "Bash(mkdir:*)",
       "Bash(npx create-expo-app:*)",
       "Bash(npx react-native:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(rm:*)",
+      "Bash(bun install:*)",
+      "Bash(npx @react-native-community/cli:*)",
+      "Bash(./node_modules/.bin/react-native:*)"
     ],
     "deny": [],
     "ask": []
