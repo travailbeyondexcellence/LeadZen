@@ -6,49 +6,92 @@ import {
   ViewStyle,
 } from 'react-native';
 import MaterialPressable from './Pressable';
-import { Colors, Typography, Spacing, Shadows } from '../theme';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 
 interface ButtonProps {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'gradient';
+  size?: 'small' | 'medium' | 'large';
   loading?: boolean;
   fullWidth?: boolean;
   disabled?: boolean;
   onPress?: () => void;
   style?: ViewStyle;
+  gradient?: 'primary' | 'sunset' | 'ocean' | 'fresh' | 'aurora' | 'fire';
 }
 
 const Button: React.FC<ButtonProps> = ({
   title,
   variant = 'primary',
+  size = 'medium',
   loading = false,
   fullWidth = false,
   style,
   disabled,
   onPress,
+  gradient = 'primary',
 }) => {
   const isDisabled = disabled || loading;
+
+  const getSizeStyle = () => {
+    switch (size) {
+      case 'small':
+        return {
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          minHeight: 36,
+          fontSize: Typography.fontSize.sm,
+        };
+      case 'large':
+        return {
+          paddingHorizontal: 32,
+          paddingVertical: 14,
+          minHeight: 48,
+          fontSize: Typography.fontSize.lg,
+        };
+      default: // medium
+        return {
+          paddingHorizontal: Spacing['2xl'],
+          paddingVertical: Spacing.md,
+          minHeight: 44,
+          fontSize: Typography.fontSize.md,
+        };
+    }
+  };
+
+  const sizeStyle = getSizeStyle();
 
   return (
     <MaterialPressable
       style={[
         styles.button,
         styles[variant],
+        {
+          paddingHorizontal: sizeStyle.paddingHorizontal,
+          paddingVertical: sizeStyle.paddingVertical,
+          minHeight: sizeStyle.minHeight,
+        },
         fullWidth && styles.fullWidth,
         isDisabled && styles.disabled,
         style,
       ]}
       disabled={isDisabled}
       onPress={onPress}
-      rippleColor={variant === 'primary' ? Colors.stateLayer.pressed : Colors.stateLayer.hover}
+      rippleColor={Colors.stateLayer.pressed}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'outline' ? Colors.primary : Colors.onPrimary}
+          color={variant === 'outline' ? Colors.primary.base : Colors.text.inverse}
           size="small"
         />
       ) : (
-        <Text style={[styles.text, styles[`${variant}Text`]]}>{title}</Text>
+        <Text style={[
+          styles.text,
+          styles[`${variant}Text`],
+          { fontSize: sizeStyle.fontSize }
+        ]}>
+          {title}
+        </Text>
       )}
     </MaterialPressable>
   );
@@ -56,48 +99,53 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: 20,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
-    ...Shadows.level1,
+    ...Shadows.subtle,
   },
   fullWidth: {
     width: '100%',
   },
   primary: {
-    backgroundColor: Colors.primary,
-    ...Shadows.level2,
+    backgroundColor: Colors.primary.base,
+    ...Shadows.primary,
   },
   secondary: {
-    backgroundColor: Colors.secondaryContainer,
-    ...Shadows.level1,
+    backgroundColor: Colors.background.secondary,
+    ...Shadows.light,
   },
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: Colors.outline,
-    ...Shadows.level0,
+    borderColor: Colors.border.base,
+    ...Shadows.none,
+  },
+  gradient: {
+    // Note: For gradients, we'd need react-native-linear-gradient
+    // For now, using primary color as fallback
+    backgroundColor: Colors.primary.base,
+    ...Shadows.primary,
   },
   disabled: {
     opacity: 0.38,
-    ...Shadows.level0,
+    ...Shadows.none,
   },
   text: {
-    fontSize: Typography.fontSize.base,
-    fontWeight: Typography.fontWeight.medium,
-    letterSpacing: 0.1,
+    fontWeight: Typography.fontWeight.semibold,
+    letterSpacing: 0,
   },
   primaryText: {
-    color: Colors.onPrimary,
+    color: Colors.text.inverse,
   },
   secondaryText: {
-    color: Colors.onSecondaryContainer,
+    color: Colors.text.primary,
   },
   outlineText: {
-    color: Colors.primary,
+    color: Colors.primary.base,
+  },
+  gradientText: {
+    color: Colors.text.inverse,
   },
 });
 

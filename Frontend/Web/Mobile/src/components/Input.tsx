@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,36 +6,55 @@ import {
   StyleSheet,
   TextInputProps,
 } from 'react-native';
-import { Colors, Typography, Spacing, Shadows } from '../theme';
+import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 
 interface InputProps extends TextInputProps {
   label: string;
   error?: string;
   required?: boolean;
+  icon?: React.ReactNode;
 }
 
 const Input: React.FC<InputProps> = ({ 
   label, 
   error, 
   required = false,
+  icon,
   style,
   ...props 
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>
         {label}
         {required && <Text style={styles.required}> *</Text>}
       </Text>
-      <TextInput
-        style={[
-          styles.input,
-          error && styles.inputError,
-          style,
-        ]}
-        placeholderTextColor={Colors.gray400}
-        {...props}
-      />
+      <View style={[
+        styles.inputContainer,
+        isFocused && styles.inputContainerFocused,
+        error && styles.inputContainerError,
+      ]}>
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <TextInput
+          style={[
+            styles.input,
+            icon && styles.inputWithIcon,
+            style,
+          ]}
+          placeholderTextColor={Colors.text.tertiary}
+          onFocus={(e) => {
+            setIsFocused(true);
+            props.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            props.onBlur?.(e);
+          }}
+          {...props}
+        />
+      </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
@@ -43,39 +62,56 @@ const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: Spacing.base,
+    marginBottom: Spacing.lg,
   },
   label: {
     fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.medium,
-    color: Colors.onSurfaceVariant,
-    marginBottom: Spacing.xs,
-    letterSpacing: 0.1,
+    color: Colors.text.secondary,
+    marginBottom: Spacing.sm,
   },
   required: {
-    color: Colors.error,
+    color: Colors.semantic.error,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background.card,
+    borderWidth: 1,
+    borderColor: Colors.border.base,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    minHeight: 44,
+    gap: Spacing.md,
+  },
+  inputContainerFocused: {
+    borderColor: Colors.primary.base,
+    borderWidth: 2,
+  },
+  inputContainerError: {
+    borderColor: Colors.semantic.error,
+    borderWidth: 2,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   input: {
-    borderWidth: 1,
-    borderColor: Colors.outline,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    fontSize: Typography.fontSize.base,
-    color: Colors.onSurface,
-    backgroundColor: Colors.surface,
-    minHeight: 48,
-    textAlignVertical: 'center',
+    flex: 1,
+    fontSize: Typography.fontSize.md,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.text.primary,
+    padding: 0, // Remove default padding
   },
-  inputError: {
-    borderColor: Colors.error,
-    borderWidth: 2,
+  inputWithIcon: {
+    marginLeft: 0,
   },
   errorText: {
     fontSize: Typography.fontSize.xs,
-    color: Colors.error,
+    color: Colors.semantic.error,
     marginTop: Spacing.xs,
-    letterSpacing: 0.1,
+    fontWeight: Typography.fontWeight.medium,
   },
 });
 

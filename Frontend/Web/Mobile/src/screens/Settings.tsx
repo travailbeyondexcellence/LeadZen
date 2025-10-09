@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { Colors, Typography, Spacing, Shadows } from '../theme';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
@@ -126,39 +126,38 @@ const Settings: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.background.primary,
   },
   header: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
+    backgroundColor: Colors.primary.base,
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing.lg,
     alignItems: 'center',
+    ...Shadows.primary,
   },
   headerTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.white,
+    ...Typography.h3,
+    color: Colors.text.inverse,
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.base,
+    paddingHorizontal: Spacing.screen,
   },
   form: {
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    marginVertical: Spacing.base,
-    paddingHorizontal: Spacing.base,
-    ...Shadows.level1,
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius['2xl'],
+    marginVertical: Spacing['2xl'],
+    paddingHorizontal: Spacing.card,
+    paddingVertical: Spacing.card,
+    ...Shadows.medium,
   },
   sectionTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.onSurface,
-    marginBottom: Spacing.base,
+    ...Typography.h4,
+    color: Colors.text.primary,
+    marginBottom: Spacing.lg,
   },
   buttonContainer: {
-    marginTop: Spacing.lg,
+    marginTop: Spacing['2xl'],
   },
 });
 

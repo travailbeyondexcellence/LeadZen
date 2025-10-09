@@ -9,7 +9,7 @@ import {
   FlatList,
 } from 'react-native';
 import MaterialPressable from '../components/Pressable';
-import { Colors, Typography, Spacing, Shadows } from '../theme';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
@@ -149,26 +149,26 @@ const Dialer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.background.primary,
   },
   header: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
+    backgroundColor: Colors.primary.base,
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing.lg,
     alignItems: 'center',
+    ...Shadows.primary,
   },
   headerTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.white,
+    ...Typography.h3,
+    color: Colors.text.inverse,
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.base,
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing['2xl'],
   },
   phoneInputContainer: {
-    marginBottom: Spacing.base,
+    marginBottom: Spacing['2xl'],
   },
   dialpad: {
     marginBottom: Spacing.base,
@@ -181,16 +181,15 @@ const styles = StyleSheet.create({
   dialpadButton: {
     width: 70,
     height: 70,
-    borderRadius: 35,
-    backgroundColor: Colors.surfaceVariant,
+    borderRadius: BorderRadius['2xl'],
+    backgroundColor: Colors.background.card,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.level1,
+    ...Shadows.light,
   },
   dialpadText: {
-    fontSize: Typography.fontSize.xl,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.onSurface,
+    ...Typography.h4,
+    color: Colors.text.primary,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -207,10 +206,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.onSurface,
-    marginBottom: Spacing.sm,
+    ...Typography.h4,
+    color: Colors.text.primary,
+    marginBottom: Spacing.lg,
   },
   callLogsList: {
     flex: 1,
@@ -219,32 +217,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
-    padding: Spacing.base,
-    marginBottom: Spacing.xs,
-    borderRadius: 8,
+    backgroundColor: Colors.background.card,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    borderRadius: BorderRadius.xl,
+    ...Shadows.subtle,
   },
   callLogInfo: {
     flex: 1,
   },
   callLogNumber: {
-    fontSize: Typography.fontSize.base,
-    fontWeight: Typography.fontWeight.medium,
-    color: Colors.onSurface,
+    ...Typography.bodyLarge,
+    color: Colors.text.primary,
   },
   callLogTime: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.gray600,
+    ...Typography.caption,
+    color: Colors.text.secondary,
   },
   callLogDuration: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.gray600,
+    ...Typography.caption,
+    color: Colors.text.secondary,
   },
   emptyText: {
     textAlign: 'center',
-    color: Colors.gray600,
-    fontSize: Typography.fontSize.base,
-    marginTop: Spacing.lg,
+    ...Typography.body,
+    color: Colors.text.secondary,
+    marginTop: Spacing['2xl'],
   },
 });
 

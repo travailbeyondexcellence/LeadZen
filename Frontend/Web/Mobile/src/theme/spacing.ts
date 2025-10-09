@@ -1,41 +1,50 @@
 export const Spacing = {
-  // Base spacing unit (4px)
+  // Base spacing unit (4px) - all spacing should be multiples of 4px
   unit: 4,
   
-  // Spacing scale
-  xs: 4,    // 4px
-  sm: 8,    // 8px  
-  md: 12,   // 12px
-  base: 16, // 16px - default spacing
-  lg: 20,   // 20px
-  xl: 24,   // 24px
-  '2xl': 32, // 32px
-  '3xl': 40, // 40px
-  '4xl': 48, // 48px
-  '5xl': 64, // 64px
+  // Modern spacing scale
+  xs: 4,      // tight spacing within components
+  sm: 8,      // minimal gaps
+  md: 12,     // default gap between related items
+  lg: 16,     // standard padding
+  xl: 20,     // section padding
+  '2xl': 24,  // card padding, major sections
+  '3xl': 32,  // large section breaks
+  '4xl': 40,  // hero sections
+  '5xl': 48,  // extra large spacing
+  '6xl': 64,  // massive spacing
   
   // Common use cases
-  screen: 16,      // Default screen padding
-  card: 16,        // Card inner padding  
+  screen: 20,      // Screen content padding (increased for modern feel)
+  card: 24,        // Card inner padding (generous padding)
   section: 24,     // Section spacing
   component: 12,   // Component spacing
+  safeArea: {
+    top: 20,
+    bottom: 120,   // Space for bottom nav + safe area
+    sides: 20,
+  },
 };
 
 export const BorderRadius = {
-  none: 0,
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  '2xl': 20,
-  full: 9999,
+  // Modern border radius values (min 8px for personality)
+  xs: 8,      // small buttons, badges
+  sm: 10,     // icon containers, small cards
+  md: 12,     // input fields, buttons (standard)
+  lg: 14,     // icon badges (44-48px containers)
+  xl: 16,     // standard cards, buttons
+  '2xl': 20,  // large cards
+  '3xl': 24,  // modals, bottom sheets (top corners)
+  '4xl': 28,  // avatar alternatives
+  '5xl': 32,  // large modals, screen corners
+  full: 9999, // fully rounded
 };
 
 export const Elevation = {
   none: 0,
-  sm: 2,
-  md: 4,
-  lg: 8,
-  xl: 12,
-  '2xl': 16,
+  subtle: 1,   // Default cards, list items
+  light: 2,    // Hovered cards, input focus
+  medium: 3,   // Important cards, overlays
+  high: 4,     // Modals, dropdowns, floating buttons
+  intense: 5,  // Maximum elevation
 };

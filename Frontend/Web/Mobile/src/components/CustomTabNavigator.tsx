@@ -6,7 +6,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import MaterialPressable from './Pressable';
-import { Colors, Typography, Spacing, Shadows } from '../theme';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 
 import Dashboard from '../screens/Dashboard';
 import Dialer from '../screens/Dialer';
@@ -49,7 +49,10 @@ const CustomTabNavigator: React.FC = () => {
         {tabs.map((tab) => (
           <MaterialPressable
             key={tab.name}
-            style={styles.tabItem}
+            style={[
+              styles.tabItem,
+              activeTab === tab.name && styles.tabItemActive,
+            ]}
             onPress={() => setActiveTab(tab.name)}
             rippleColor={Colors.stateLayer.hover}
           >
@@ -81,45 +84,52 @@ const CustomTabNavigator: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.background.primary,
   },
   screenContainer: {
     flex: 1,
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.outlineVariant,
-    height: 60,
+    backgroundColor: Colors.background.card,
+    borderTopLeftRadius: BorderRadius['3xl'],
+    borderTopRightRadius: BorderRadius['3xl'],
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
+    height: 80,
     justifyContent: 'space-around',
     alignItems: 'center',
-    ...Shadows.level2,
+    ...Shadows.high,
   },
   tabItem: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    gap: 6,
+  },
+  tabItemActive: {
+    backgroundColor: Colors.background.secondary,
   },
   tabIcon: {
-    fontSize: 20,
-    marginBottom: 2,
+    fontSize: 22,
     opacity: 0.6,
   },
   tabIconActive: {
-    fontSize: 24,
+    fontSize: 22,
     opacity: 1,
   },
   tabLabel: {
     fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.medium,
-    color: Colors.onSurfaceVariant,
-    letterSpacing: 0.1,
+    color: Colors.text.tertiary,
     textAlign: 'center',
   },
   tabLabelActive: {
-    color: Colors.primary,
+    color: Colors.primary.base,
     fontWeight: Typography.fontWeight.semibold,
   },
 });
