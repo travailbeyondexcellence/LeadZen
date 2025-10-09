@@ -1,33 +1,125 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import { Colors, Typography, Spacing } from '../theme';
+import Input from '../components/Input';
+import Button from '../components/Button';
+
+interface Lead {
+  name: string;
+  phone: string;
+  email: string;
+  company: string;
+}
 
 const Contacts: React.FC = () => {
+  const [lead, setLead] = useState<Lead>({
+    name: '',
+    phone: '',
+    email: '',
+    company: '',
+  });
+  const [errors, setErrors] = useState<Partial<Lead>>({});
+  const [loading, setLoading] = useState(false);
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Lead> = {};
+    
+    if (!lead.name.trim()) newErrors.name = 'Name is required';
+    if (!lead.phone.trim()) newErrors.phone = 'Phone is required';
+    if (lead.email && !/\S+@\S+\.\S+/.test(lead.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    
+    setTimeout(() => {
+      Alert.alert('Success', 'Lead saved successfully!');
+      setLead({ name: '', phone: '', email: '', company: '' });
+      setErrors({});
+      setLoading(false);
+    }, 1000);
+  };
+
+  const updateLead = (field: keyof Lead, value: string) => {
+    setLead(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Contacts</Text>
+        <Text style={styles.headerTitle}>Add New Lead</Text>
       </View>
 
       {/* Content */}
-      <View style={styles.content}>
-        <View style={styles.comingSoonCard}>
-          <Text style={styles.comingSoonIcon}>👥</Text>
-          <Text style={styles.comingSoonTitle}>Contacts Coming Soon</Text>
-          <Text style={styles.comingSoonSubtitle}>
-            Lead management and contact database will be available here
-          </Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.form}>
+          <Input
+            label="Full Name"
+            value={lead.name}
+            onChangeText={(value) => updateLead('name', value)}
+            placeholder="Enter full name"
+            error={errors.name}
+            required
+          />
+          
+          <Input
+            label="Phone Number"
+            value={lead.phone}
+            onChangeText={(value) => updateLead('phone', value)}
+            placeholder="Enter phone number"
+            keyboardType="phone-pad"
+            error={errors.phone}
+            required
+          />
+          
+          <Input
+            label="Email Address"
+            value={lead.email}
+            onChangeText={(value) => updateLead('email', value)}
+            placeholder="Enter email address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
+          />
+          
+          <Input
+            label="Company"
+            value={lead.company}
+            onChangeText={(value) => updateLead('company', value)}
+            placeholder="Enter company name"
+          />
+          
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Save Lead"
+              onPress={handleSave}
+              loading={loading}
+              fullWidth
+            />
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -50,40 +142,13 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: Spacing.base,
   },
-  comingSoonCard: {
-    backgroundColor: Colors.surface,
-    padding: Spacing['2xl'],
-    borderRadius: 16,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: Colors.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  form: {
+    paddingVertical: Spacing.lg,
   },
-  comingSoonIcon: {
-    fontSize: 48,
-    marginBottom: Spacing.base,
-  },
-  comingSoonTitle: {
-    fontSize: Typography.fontSize['2xl'],
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.onSurface,
-    marginBottom: Spacing.sm,
-    textAlign: 'center',
-  },
-  comingSoonSubtitle: {
-    fontSize: Typography.fontSize.base,
-    color: Colors.gray600,
-    textAlign: 'center',
-    lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.base,
+  buttonContainer: {
+    marginTop: Spacing.lg,
   },
 });
 

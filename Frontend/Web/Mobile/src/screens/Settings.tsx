@@ -1,14 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import { Colors, Typography, Spacing } from '../theme';
+import Input from '../components/Input';
+import Button from '../components/Button';
+
+interface UserSettings {
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  autoSave: boolean;
+}
 
 const Settings: React.FC = () => {
+  const [settings, setSettings] = useState<UserSettings>({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    autoSave: true,
+  });
+  const [errors, setErrors] = useState<Partial<UserSettings>>({});
+  const [loading, setLoading] = useState(false);
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<UserSettings> = {};
+    
+    if (!settings.name.trim()) newErrors.name = 'Name is required';
+    if (settings.email && !/\S+@\S+\.\S+/.test(settings.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    
+    setTimeout(() => {
+      Alert.alert('Success', 'Settings saved successfully!');
+      setLoading(false);
+    }, 1000);
+  };
+
+  const updateSetting = (field: keyof UserSettings, value: string | boolean) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+    if (errors[field as keyof Partial<UserSettings>]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
@@ -19,15 +71,54 @@ const Settings: React.FC = () => {
       </View>
 
       {/* Content */}
-      <View style={styles.content}>
-        <View style={styles.comingSoonCard}>
-          <Text style={styles.comingSoonIcon}>⚙️</Text>
-          <Text style={styles.comingSoonTitle}>Settings Coming Soon</Text>
-          <Text style={styles.comingSoonSubtitle}>
-            App preferences and configuration options will be available here
-          </Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.form}>
+          <Text style={styles.sectionTitle}>User Information</Text>
+          
+          <Input
+            label="Full Name"
+            value={settings.name}
+            onChangeText={(value) => updateSetting('name', value)}
+            placeholder="Enter your full name"
+            error={errors.name}
+            required
+          />
+          
+          <Input
+            label="Company"
+            value={settings.company}
+            onChangeText={(value) => updateSetting('company', value)}
+            placeholder="Enter your company name"
+          />
+          
+          <Input
+            label="Email Address"
+            value={settings.email}
+            onChangeText={(value) => updateSetting('email', value)}
+            placeholder="Enter your email address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
+          />
+          
+          <Input
+            label="Phone Number"
+            value={settings.phone}
+            onChangeText={(value) => updateSetting('phone', value)}
+            placeholder="Enter your phone number"
+            keyboardType="phone-pad"
+          />
+          
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Save Settings"
+              onPress={handleSave}
+              loading={loading}
+              fullWidth
+            />
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -50,40 +141,19 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: Spacing.base,
   },
-  comingSoonCard: {
-    backgroundColor: Colors.surface,
-    padding: Spacing['2xl'],
-    borderRadius: 16,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: Colors.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  form: {
+    paddingVertical: Spacing.lg,
   },
-  comingSoonIcon: {
-    fontSize: 48,
-    marginBottom: Spacing.base,
-  },
-  comingSoonTitle: {
-    fontSize: Typography.fontSize['2xl'],
+  sectionTitle: {
+    fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.onSurface,
-    marginBottom: Spacing.sm,
-    textAlign: 'center',
+    marginBottom: Spacing.base,
   },
-  comingSoonSubtitle: {
-    fontSize: Typography.fontSize.base,
-    color: Colors.gray600,
-    textAlign: 'center',
-    lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.base,
+  buttonContainer: {
+    marginTop: Spacing.lg,
   },
 });
 
