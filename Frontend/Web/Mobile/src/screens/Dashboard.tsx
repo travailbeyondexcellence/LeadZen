@@ -12,15 +12,18 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Sidebar from '../components/Sidebar';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import AsyncStorageService from '../services/AsyncStorageService';
 import { Lead, LeadStatus } from '../types/Lead';
+import { PIPELINE_STAGES, statusToPipelineStage } from '../utils/pipelineConfig';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
 
 const Dashboard: React.FC = () => {
+  const navigation = useNavigation();
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -174,23 +177,33 @@ const Dashboard: React.FC = () => {
               </View>
             </View>
 
-            <View style={styles.pipelineOverview}>
-              <Text style={styles.sectionTitle}>Pipeline Overview</Text>
-              <View style={styles.pipelineBar}>
-                <View style={[styles.pipelineSegment, styles.newSegment, { flex: stats.newLeads }]}>
-                  {stats.newLeads > 0 && <Text style={styles.segmentText}>{stats.newLeads}</Text>}
-                </View>
-                <View style={[styles.pipelineSegment, styles.contactedSegment, { flex: stats.contactedLeads }]}>
-                  {stats.contactedLeads > 0 && <Text style={styles.segmentText}>{stats.contactedLeads}</Text>}
-                </View>
-                <View style={[styles.pipelineSegment, styles.qualifiedSegment, { flex: stats.qualifiedLeads }]}>
-                  {stats.qualifiedLeads > 0 && <Text style={styles.segmentText}>{stats.qualifiedLeads}</Text>}
-                </View>
-                <View style={[styles.pipelineSegment, styles.proposalSegment, { flex: stats.proposalLeads }]}>
-                  {stats.proposalLeads > 0 && <Text style={styles.segmentText}>{stats.proposalLeads}</Text>}
-                </View>
+            <TouchableOpacity 
+              style={styles.pipelineOverview}
+              onPress={() => navigation.navigate('Pipeline' as never)}
+            >
+              <View style={styles.pipelineHeader}>
+                <Text style={styles.sectionTitle}>Pipeline Overview</Text>
+                <Text style={styles.viewAllText}>View Board →</Text>
               </View>
-            </View>
+              
+              <View style={styles.pipelineStages}>
+                {PIPELINE_STAGES.map((stage) => {
+                  const count = leads.filter(lead => 
+                    statusToPipelineStage(lead.status) === stage.id
+                  ).length;
+                  
+                  return (
+                    <View key={stage.id} style={styles.stageCard}>
+                      <View style={[styles.stageIndicator, { backgroundColor: stage.color }]} />
+                      <Text style={styles.stageCount}>{count}</Text>
+                      <Text style={styles.stageTitle} numberOfLines={1}>
+                        {stage.title}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </TouchableOpacity>
 
             <View style={styles.quickActions}>
               <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -205,7 +218,10 @@ const Dashboard: React.FC = () => {
                 <Text style={styles.actionText}>Make Call</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={() => navigation.navigate('Pipeline' as never)}
+              >
                 <Text style={styles.actionIcon}>📊</Text>
                 <Text style={styles.actionText}>View Pipeline</Text>
               </TouchableOpacity>
@@ -370,35 +386,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 24,
   },
-  pipelineBar: {
+  pipelineHeader: {
     flexDirection: 'row',
-    height: 40,
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: Colors.background.card,
-    elevation: 1,
-  },
-  pipelineSegment: {
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    minWidth: 30,
+    marginBottom: 12,
   },
-  newSegment: {
-    backgroundColor: '#06B6D4',
+  viewAllText: {
+    fontSize: 14,
+    color: Colors.primary.base,
+    fontWeight: '500',
   },
-  contactedSegment: {
-    backgroundColor: '#F59E0B',
+  pipelineStages: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  qualifiedSegment: {
-    backgroundColor: '#10B981',
+  stageCard: {
+    flex: 1,
+    backgroundColor: Colors.background.card,
+    marginHorizontal: 4,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  proposalSegment: {
-    backgroundColor: '#8B5CF6',
+  stageIndicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 8,
   },
-  segmentText: {
-    color: '#FFFFFF',
+  stageCount: {
+    fontSize: 20,
     fontWeight: 'bold',
-    fontSize: 12,
+    color: Colors.text.primary,
+    marginBottom: 4,
+  },
+  stageTitle: {
+    fontSize: 10,
+    color: Colors.text.secondary,
+    textAlign: 'center',
   },
   quickActions: {
     paddingHorizontal: 16,

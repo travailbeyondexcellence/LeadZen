@@ -5,6 +5,7 @@ import { Colors, Typography, Spacing } from '../theme';
 
 // Import screens
 import Dashboard from '../screens/Dashboard';
+import { Pipeline } from '../screens/Pipeline';
 import Dialer from '../screens/Dialer';
 import Contacts from '../screens/Contacts';
 import Settings from '../screens/Settings';
@@ -36,6 +37,15 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon icon="📊" focused={focused} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Pipeline"
+        component={Pipeline}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon icon="📈" focused={focused} color={color} />
           ),
         }}
       />
