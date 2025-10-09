@@ -23,12 +23,14 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
   onLongPress,
 }) => {
   const getInitials = (name: string): string => {
+    if (!name || name.trim() === '') return '??';
     return name
       .split(' ')
+      .filter(word => word.length > 0)
       .map(word => word[0])
       .join('')
       .toUpperCase()
-      .slice(0, 2);
+      .slice(0, 2) || '??';
   };
 
   const formatLastContact = (date?: Date): string => {
@@ -57,13 +59,13 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
   const getPriorityColor = (priority?: string): string => {
     switch (priority?.toLowerCase()) {
       case 'high':
-        return Colors.error;
+        return Colors.semantic.error;
       case 'medium':
-        return Colors.warning;
+        return Colors.semantic.warning;
       case 'low':
-        return Colors.success;
+        return Colors.semantic.success;
       default:
-        return Colors.textSecondary;
+        return Colors.text.secondary;
     }
   };
 
@@ -79,7 +81,7 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
     >
       <View style={styles.header}>
         <View style={[styles.avatar, { backgroundColor: Colors.primary.base + '20' }]}>
-          <Text style={styles.avatarText}>{getInitials(lead.name)}</Text>
+          <Text style={styles.avatarText}>{getInitials(lead.name || '')}</Text>
         </View>
         <View style={styles.priorityIndicator}>
           <View
@@ -92,28 +94,28 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
       </View>
       <View style={styles.content}>
         <Text style={styles.name} numberOfLines={1}>
-          {lead.name}
+          {lead.name || 'Unknown'}
         </Text>
-        {lead.company && (
+        {lead.company ? (
           <Text style={styles.company} numberOfLines={1}>
             {lead.company}
           </Text>
-        )}
+        ) : null}
         <View style={styles.footer}>
-          <Text style={styles.phone}>📞 {lead.phone}</Text>
-          {lead.lastContactedAt && (
+          <Text style={styles.phone}>📞 {lead.phone || ''}</Text>
+          {lead.lastContactedAt ? (
             <Text style={styles.lastContact}>
               {formatLastContact(lead.lastContactedAt)}
             </Text>
-          )}
+          ) : null}
         </View>
-        {lead.value && lead.value > 0 && (
+        {lead.value && lead.value > 0 ? (
           <View style={styles.valueContainer}>
             <Text style={styles.value}>
               ${lead.value.toLocaleString()}
             </Text>
           </View>
-        )}
+        ) : null}
       </View>
     </TouchableOpacity>
   );
