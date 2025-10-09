@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme';
+import { Colors, Typography, Spacing, Shadows } from '../theme';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
@@ -146,6 +146,11 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingVertical: Spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    marginVertical: Spacing.base,
+    paddingHorizontal: Spacing.base,
+    ...Shadows.level1,
   },
   buttonContainer: {
     marginTop: Spacing.lg,

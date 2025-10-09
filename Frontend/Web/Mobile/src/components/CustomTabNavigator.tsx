@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme';
+import MaterialPressable from './Pressable';
+import { Colors, Typography, Spacing, Shadows } from '../theme';
 
 import Dashboard from '../screens/Dashboard';
 import Dialer from '../screens/Dialer';
@@ -47,11 +47,11 @@ const CustomTabNavigator: React.FC = () => {
       
       <View style={styles.tabBar}>
         {tabs.map((tab) => (
-          <TouchableOpacity
+          <MaterialPressable
             key={tab.name}
             style={styles.tabItem}
             onPress={() => setActiveTab(tab.name)}
-            activeOpacity={0.7}
+            rippleColor={Colors.stateLayer.hover}
           >
             <Text
               style={[
@@ -66,10 +66,12 @@ const CustomTabNavigator: React.FC = () => {
                 styles.tabLabel,
                 activeTab === tab.name && styles.tabLabelActive,
               ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
             >
               {tab.name}
             </Text>
-          </TouchableOpacity>
+          </MaterialPressable>
         ))}
       </View>
     </SafeAreaView>
@@ -88,27 +90,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: Colors.surface,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray200,
+    borderTopColor: Colors.outlineVariant,
     height: 60,
-    elevation: 8,
-    shadowColor: Colors.shadow,
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    ...Shadows.level2,
   },
   tabItem: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: Spacing.xs,
+    paddingHorizontal: 4,
   },
   tabIcon: {
     fontSize: 20,
     marginBottom: 2,
-    opacity: 0.7,
+    opacity: 0.6,
   },
   tabIconActive: {
     fontSize: 24,
@@ -117,7 +113,9 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.medium,
-    color: Colors.gray600,
+    color: Colors.onSurfaceVariant,
+    letterSpacing: 0.1,
+    textAlign: 'center',
   },
   tabLabelActive: {
     color: Colors.primary,

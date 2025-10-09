@@ -5,11 +5,11 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  TouchableOpacity,
   Alert,
   FlatList,
 } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme';
+import MaterialPressable from '../components/Pressable';
+import { Colors, Typography, Spacing, Shadows } from '../theme';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
@@ -98,14 +98,14 @@ const Dialer: React.FC = () => {
           {dialpadNumbers.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.dialpadRow}>
               {row.map((number) => (
-                <TouchableOpacity
+                <MaterialPressable
                   key={number}
                   style={styles.dialpadButton}
                   onPress={() => handleNumberPress(number)}
-                  activeOpacity={0.7}
+                  rippleColor={Colors.stateLayer.pressed}
                 >
                   <Text style={styles.dialpadText}>{number}</Text>
-                </TouchableOpacity>
+                </MaterialPressable>
               ))}
             </View>
           ))}
@@ -182,14 +182,10 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceVariant,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    ...Shadows.level1,
   },
   dialpadText: {
     fontSize: Typography.fontSize.xl,

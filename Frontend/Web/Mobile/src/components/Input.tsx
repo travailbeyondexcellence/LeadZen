@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TextInputProps,
 } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme';
+import { Colors, Typography, Spacing, Shadows } from '../theme';
 
 interface InputProps extends TextInputProps {
   label: string;
@@ -48,29 +48,34 @@ const styles = StyleSheet.create({
   label: {
     fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.medium,
-    color: Colors.onSurface,
+    color: Colors.onSurfaceVariant,
     marginBottom: Spacing.xs,
+    letterSpacing: 0.1,
   },
   required: {
     color: Colors.error,
   },
   input: {
     borderWidth: 1,
-    borderColor: Colors.gray300,
-    borderRadius: 8,
+    borderColor: Colors.outline,
+    borderRadius: 12,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
     fontSize: Typography.fontSize.base,
     color: Colors.onSurface,
     backgroundColor: Colors.surface,
+    minHeight: 48,
+    textAlignVertical: 'center',
   },
   inputError: {
     borderColor: Colors.error,
+    borderWidth: 2,
   },
   errorText: {
     fontSize: Typography.fontSize.xs,
     color: Colors.error,
     marginTop: Spacing.xs,
+    letterSpacing: 0.1,
   },
 });
 

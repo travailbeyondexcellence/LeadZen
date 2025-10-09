@@ -1,18 +1,21 @@
 import React from 'react';
 import {
-  TouchableOpacity,
   Text,
   StyleSheet,
-  TouchableOpacityProps,
   ActivityIndicator,
+  ViewStyle,
 } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme';
+import MaterialPressable from './Pressable';
+import { Colors, Typography, Spacing, Shadows } from '../theme';
 
-interface ButtonProps extends TouchableOpacityProps {
+interface ButtonProps {
   title: string;
   variant?: 'primary' | 'secondary' | 'outline';
   loading?: boolean;
   fullWidth?: boolean;
+  disabled?: boolean;
+  onPress?: () => void;
+  style?: ViewStyle;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -22,12 +25,12 @@ const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   style,
   disabled,
-  ...props
+  onPress,
 }) => {
   const isDisabled = disabled || loading;
 
   return (
-    <TouchableOpacity
+    <MaterialPressable
       style={[
         styles.button,
         styles[variant],
@@ -36,18 +39,18 @@ const Button: React.FC<ButtonProps> = ({
         style,
       ]}
       disabled={isDisabled}
-      activeOpacity={0.8}
-      {...props}
+      onPress={onPress}
+      rippleColor={variant === 'primary' ? Colors.stateLayer.pressed : Colors.stateLayer.hover}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'outline' ? Colors.primary : Colors.white}
+          color={variant === 'outline' ? Colors.primary : Colors.onPrimary}
           size="small"
         />
       ) : (
         <Text style={[styles.text, styles[`${variant}Text`]]}>{title}</Text>
       )}
-    </TouchableOpacity>
+    </MaterialPressable>
   );
 };
 
@@ -55,37 +58,43 @@ const styles = StyleSheet.create({
   button: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    borderRadius: 8,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+    ...Shadows.level1,
   },
   fullWidth: {
     width: '100%',
   },
   primary: {
     backgroundColor: Colors.primary,
+    ...Shadows.level2,
   },
   secondary: {
-    backgroundColor: Colors.gray200,
+    backgroundColor: Colors.secondaryContainer,
+    ...Shadows.level1,
   },
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: Colors.primary,
+    borderColor: Colors.outline,
+    ...Shadows.level0,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.38,
+    ...Shadows.level0,
   },
   text: {
     fontSize: Typography.fontSize.base,
     fontWeight: Typography.fontWeight.medium,
+    letterSpacing: 0.1,
   },
   primaryText: {
-    color: Colors.white,
+    color: Colors.onPrimary,
   },
   secondaryText: {
-    color: Colors.onSurface,
+    color: Colors.onSecondaryContainer,
   },
   outlineText: {
     color: Colors.primary,
