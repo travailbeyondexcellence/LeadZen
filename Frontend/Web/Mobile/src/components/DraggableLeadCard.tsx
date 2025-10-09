@@ -7,7 +7,7 @@ import {
   Animated,
 } from 'react-native';
 import { Lead } from '../types/Lead';
-import { Colors, Spacing, Typography } from '../theme';
+import { Colors, Spacing, BorderRadius } from '../theme';
 
 interface DraggableLeadCardProps {
   lead: Lead;
@@ -78,7 +78,7 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
       ]}
     >
       <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: Colors.primary + '20' }]}>
+        <View style={[styles.avatar, { backgroundColor: Colors.primary.base + '20' }]}>
           <Text style={styles.avatarText}>{getInitials(lead.name)}</Text>
         </View>
         <View style={styles.priorityIndicator}>
@@ -125,9 +125,9 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.card,
-    borderRadius: Spacing.borderRadius.medium,
-    padding: Spacing.small,
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
     marginHorizontal: Spacing.xs,
     marginVertical: Spacing.xs,
     shadowColor: '#000',
@@ -158,9 +158,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    ...Typography.caption,
+    fontSize: 12,
     fontWeight: '600',
-    color: Colors.primary,
+    color: Colors.primary.base,
   },
   priorityIndicator: {
     padding: Spacing.xs,
@@ -174,38 +174,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    ...Typography.body,
+    fontSize: 14,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.text.primary,
     marginBottom: 2,
   },
   company: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
+    fontSize: 12,
+    color: Colors.text.secondary,
     marginBottom: Spacing.xs,
   },
   footer: {
     marginTop: Spacing.xs,
   },
   phone: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
+    fontSize: 12,
+    color: Colors.text.secondary,
     marginBottom: 2,
   },
   lastContact: {
-    ...Typography.caption,
-    color: Colors.primary,
+    fontSize: 12,
+    color: Colors.primary.base,
     marginTop: 2,
   },
   valueContainer: {
     marginTop: Spacing.xs,
     paddingTop: Spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.border,
+    borderTopColor: Colors.border.base,
   },
   value: {
-    ...Typography.caption,
+    fontSize: 12,
     fontWeight: '600',
-    color: Colors.success,
+    color: Colors.semantic.success,
   },
 });

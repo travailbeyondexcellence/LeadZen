@@ -19,7 +19,7 @@ import {
   statusToPipelineStage, 
   pipelineStageToStatus 
 } from '../utils/pipelineConfig';
-import { Colors, Spacing, Typography } from '../theme';
+import { Colors, Spacing } from '../theme';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -156,7 +156,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={() => loadLeads(true)}
-            colors={[Colors.primary]}
+            colors={[Colors.primary.base]}
           />
         }
       >
@@ -204,18 +204,18 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.background.primary,
   },
   statsBar: {
-    backgroundColor: Colors.card,
-    padding: Spacing.medium,
+    backgroundColor: Colors.background.card,
+    padding: Spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.border.base,
   },
   statsTitle: {
-    ...Typography.subtitle,
+    fontSize: 16,
     fontWeight: '600',
-    color: Colors.text,
+    color: Colors.text.primary,
     marginBottom: Spacing.xs,
   },
   statsRow: {
@@ -223,16 +223,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   statItem: {
-    ...Typography.body,
-    color: Colors.textSecondary,
+    fontSize: 14,
+    color: Colors.text.secondary,
   },
   statValue: {
     fontWeight: '700',
-    color: Colors.primary,
+    color: Colors.primary.base,
   },
   boardContainer: {
-    paddingVertical: Spacing.medium,
-    paddingHorizontal: Spacing.small,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
   },
   loadingContainer: {
     width: SCREEN_WIDTH,
@@ -241,23 +241,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    ...Typography.body,
-    color: Colors.textSecondary,
-    marginTop: Spacing.medium,
+    fontSize: 14,
+    color: Colors.text.secondary,
+    marginTop: Spacing.md,
   },
   instructionBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: Colors.primary + '10',
-    padding: Spacing.small,
+    backgroundColor: Colors.primary.base + '10',
+    padding: Spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.border,
+    borderTopColor: Colors.border.base,
   },
   instructionText: {
-    ...Typography.caption,
-    color: Colors.primary,
+    fontSize: 12,
+    color: Colors.primary.base,
     textAlign: 'center',
   },
 });

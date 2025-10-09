@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { DraggableLeadCard } from './DraggableLeadCard';
-import { Colors, Spacing, Typography, BorderRadius } from '../theme';
+import { Colors, Spacing, BorderRadius } from '../theme';
 import { PipelineStage } from '../utils/pipelineConfig';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    ...Typography.subtitle,
+    fontSize: 16,
     fontWeight: '700',
     color: Colors.text.primary,
   },
@@ -141,16 +141,16 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
   },
   badgeText: {
-    ...Typography.caption,
+    fontSize: 12,
     fontWeight: '700',
   },
   description: {
-    ...Typography.caption,
+    fontSize: 12,
     color: Colors.text.secondary,
     marginBottom: Spacing.xs,
   },
   totalValue: {
-    ...Typography.caption,
+    fontSize: 12,
     color: Colors.semantic.success,
     fontWeight: '600',
     marginTop: Spacing.xs,
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    ...Typography.body,
+    fontSize: 14,
     color: Colors.text.secondary,
     textAlign: 'center',
   },
   emptySubtext: {
-    ...Typography.caption,
+    fontSize: 12,
     color: Colors.text.secondary,
     textAlign: 'center',
     marginTop: Spacing.xs,
