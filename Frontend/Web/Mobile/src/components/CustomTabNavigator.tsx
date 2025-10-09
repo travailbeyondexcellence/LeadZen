@@ -92,6 +92,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: Colors.outlineVariant,
     height: 60,
+    justifyContent: 'space-around',
+    alignItems: 'center',
     ...Shadows.level2,
   },
   tabItem: {
@@ -99,7 +101,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: Spacing.xs,
-    paddingHorizontal: 4,
   },
   tabIcon: {
     fontSize: 20,
