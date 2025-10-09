@@ -15,7 +15,7 @@ interface SidebarProps {
   translateX: Animated.Value;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
 
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, translateX }) => {
@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    right: 0,
-    bottom: 0,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
     zIndex: 9999, // Very high z-index to appear above tab bar
   },
   backdrop: {
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    bottom: 0,
+    height: SCREEN_HEIGHT,
     width: SIDEBAR_WIDTH,
     backgroundColor: Colors.background.card,
     // Rounded top-right and bottom-right corners

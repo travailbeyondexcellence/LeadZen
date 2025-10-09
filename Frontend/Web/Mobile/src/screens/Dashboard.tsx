@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Sidebar from '../components/Sidebar';
-import { Colors } from '../theme';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
@@ -118,13 +118,13 @@ const Dashboard: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: Colors.background.primary,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#6366F1',
+    backgroundColor: Colors.primary.base,
     paddingHorizontal: 16,
     paddingVertical: 12,
     elevation: 4,
@@ -141,27 +141,27 @@ const styles = StyleSheet.create({
   },
   menuIcon: {
     fontSize: 20,
-    color: '#ffffff',
+    color: Colors.text.inverse,
     fontWeight: 'bold',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.text.inverse,
   },
   headerAction: {
     padding: 8,
   },
   headerActionIcon: {
     fontSize: 18,
-    color: '#ffffff',
+    color: Colors.text.inverse,
   },
   content: {
     flex: 1,
     padding: 16,
   },
   welcomeCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background.card,
     padding: 24,
     borderRadius: 16,
     elevation: 3,
@@ -177,12 +177,12 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: Colors.text.primary,
     marginBottom: 8,
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: Colors.text.secondary,
     lineHeight: 24,
   },
   statsContainer: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background.card,
     padding: 20,
     borderRadius: 12,
     alignItems: 'center',
@@ -208,12 +208,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#6366F1',
+    color: Colors.primary.base,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: Colors.text.secondary,
     textAlign: 'center',
   },
   quickActions: {
@@ -222,13 +222,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: Colors.text.primary,
     marginBottom: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background.card,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: Colors.text.primary,
     fontWeight: '500',
   },
 });
