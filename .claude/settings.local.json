@@ -12,7 +12,10 @@
       "Bash(find:*)",
       "Bash(npx tsc:*)",
       "Bash(node:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git config user.name \"Zen\")"
     ],
     "deny": [],
     "ask": []
