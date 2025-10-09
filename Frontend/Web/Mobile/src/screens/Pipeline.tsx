@@ -33,8 +33,11 @@ export const Pipeline = () => {
     
     switch (action) {
       case 'details':
-        // Navigate to lead details (to be implemented in Task 4)
-        Alert.alert('Lead Details', 'Lead detail screen will be implemented in Task 4');
+        if (selectedLead) {
+          navigation.navigate('LeadDetail' as never, { 
+            leadId: selectedLead.id 
+          } as never);
+        }
         break;
       case 'call':
         // Navigate to dialer with lead's phone
@@ -43,8 +46,11 @@ export const Pipeline = () => {
         } as never);
         break;
       case 'edit':
-        // Navigate to edit screen (to be implemented in Task 4)
-        Alert.alert('Edit Lead', 'Edit functionality will be implemented in Task 4');
+        if (selectedLead) {
+          navigation.navigate('LeadForm' as never, { 
+            leadId: selectedLead.id 
+          } as never);
+        }
         break;
       default:
         break;

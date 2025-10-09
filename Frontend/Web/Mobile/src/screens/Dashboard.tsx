@@ -208,12 +208,18 @@ const Dashboard: React.FC = () => {
             <View style={styles.quickActions}>
               <Text style={styles.sectionTitle}>Quick Actions</Text>
               
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={() => navigation.navigate('LeadForm' as never, {} as never)}
+              >
                 <Text style={styles.actionIcon}>➕</Text>
                 <Text style={styles.actionText}>Add Lead</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={() => navigation.navigate('Dialer' as never)}
+              >
                 <Text style={styles.actionIcon}>📞</Text>
                 <Text style={styles.actionText}>Make Call</Text>
               </TouchableOpacity>

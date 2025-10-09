@@ -1,0 +1,55 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import BottomTabNavigator from './BottomTabNavigator';
+import LeadDetail from '../screens/LeadDetail';
+import LeadForm from '../screens/LeadForm';
+import { Colors } from '../theme';
+
+export type RootStackParamList = {
+  Main: undefined;
+  LeadDetail: { leadId: string };
+  LeadForm: { leadId?: string };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const AppNavigator: React.FC = () => {
+  return (
+    <Stack.Navigator
+      initialRouteName="Main"
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Colors.primary.base,
+        },
+        headerTintColor: Colors.white,
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
+      }}
+    >
+      <Stack.Screen
+        name="Main"
+        component={BottomTabNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LeadDetail"
+        component={LeadDetail}
+        options={{ 
+          title: 'Lead Details',
+          headerBackTitle: 'Back'
+        }}
+      />
+      <Stack.Screen
+        name="LeadForm"
+        component={LeadForm}
+        options={({ route }) => ({
+          title: route.params?.leadId ? 'Edit Lead' : 'New Lead',
+          headerBackTitle: 'Cancel'
+        })}
+      />
+    </Stack.Navigator>
+  );
+};
+
+export default AppNavigator;

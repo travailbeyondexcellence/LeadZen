@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,27 +8,55 @@ import {
   StatusBar,
   Alert,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import MaterialPressable from '../components/Pressable';
 import LeadCard from '../components/LeadCard';
+import SearchBar from '../components/SearchBar';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
-import AsyncStorageService from '../services/AsyncStorageService';
+import DatabaseService from '../services/DatabaseService';
+import { Colors, Spacing, BorderRadius } from '../theme';
 
 const LeadList: React.FC = () => {
+  const navigation = useNavigation<any>();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Reload leads when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadLeads();
+    }, [])
+  );
+
   useEffect(() => {
-    loadLeads();
-  }, []);
+    // Filter leads based on search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const filtered = leads.filter(
+        lead =>
+          lead.name.toLowerCase().includes(query) ||
+          lead.company?.toLowerCase().includes(query) ||
+          lead.phone?.includes(query) ||
+          lead.email?.toLowerCase().includes(query)
+      );
+      setFilteredLeads(filtered);
+    } else {
+      setFilteredLeads(leads);
+    }
+  }, [searchQuery, leads]);
 
   const loadLeads = async () => {
     setLoading(true);
     try {
       // Load leads from database
-      const dbLeads = await AsyncStorageService.getLeads(100, 0);
+      const dbLeads = await DatabaseService.getLeads(100, 0);
       setLeads(dbLeads);
+      setFilteredLeads(dbLeads);
     } catch (error) {
       console.error('Failed to load leads:', error);
       Alert.alert('Error', 'Failed to load leads from database');
@@ -44,8 +72,7 @@ const LeadList: React.FC = () => {
   };
 
   const handleLeadPress = (lead: Lead) => {
-    Alert.alert('Lead Details', `Opening details for ${lead.name}`);
-    // Navigate to lead detail screen
+    navigation.navigate('LeadDetail', { leadId: lead.id });
   };
 
   const handleCall = (lead: Lead) => {
@@ -63,8 +90,7 @@ const LeadList: React.FC = () => {
   };
 
   const handleAddLead = () => {
-    Alert.alert('Add Lead', 'Opening lead creation form');
-    // Navigate to lead form screen
+    navigation.navigate('LeadForm', {});
   };
 
   const renderHeader = () => (
@@ -83,18 +109,18 @@ const LeadList: React.FC = () => {
   const renderStats = () => (
     <View style={styles.statsContainer}>
       <View style={styles.statCard}>
-        <Text style={styles.statNumber}>{leads.length}</Text>
+        <Text style={styles.statNumber}>{filteredLeads.length}</Text>
         <Text style={styles.statLabel}>Total Leads</Text>
       </View>
       <View style={styles.statCard}>
         <Text style={styles.statNumber}>
-          {leads.filter(lead => lead.status === LeadStatus.NEW).length}
+          {filteredLeads.filter(lead => lead.status === LeadStatus.NEW).length}
         </Text>
         <Text style={styles.statLabel}>New Leads</Text>
       </View>
       <View style={styles.statCard}>
         <Text style={styles.statNumber}>
-          {leads.filter(lead => lead.priority === LeadPriority.HIGH || lead.priority === LeadPriority.URGENT).length}
+          {filteredLeads.filter(lead => lead.priority === LeadPriority.HIGH || lead.priority === LeadPriority.URGENT).length}
         </Text>
         <Text style={styles.statLabel}>High Priority</Text>
       </View>
@@ -142,13 +168,20 @@ const LeadList: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor="#14B8A6" />
       {renderHeader()}
       
-      {leads.length > 0 && renderStats()}
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Search leads..."
+        onClear={() => setSearchQuery('')}
+      />
+      
+      {filteredLeads.length > 0 && renderStats()}
       
       <FlatList
-        data={leads}
+        data={filteredLeads}
         renderItem={renderLead}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={leads.length === 0 ? styles.emptyListContainer : styles.listContainer}
+        contentContainerStyle={filteredLeads.length === 0 ? styles.emptyListContainer : styles.listContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import BottomTabNavigator from './src/navigation/BottomTabNavigator';
+import AppNavigator from './src/navigation/AppNavigator';
 import { initializeDatabase } from './src/utils/dbInit';
 
 function App(): React.JSX.Element {
@@ -46,7 +46,7 @@ function App(): React.JSX.Element {
 
   return (
     <NavigationContainer>
-      <BottomTabNavigator />
+      <AppNavigator />
     </NavigationContainer>
   );
 }
