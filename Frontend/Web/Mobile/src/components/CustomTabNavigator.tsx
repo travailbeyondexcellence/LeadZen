@@ -10,10 +10,11 @@ import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 
 import Dashboard from '../screens/Dashboard';
 import Dialer from '../screens/Dialer';
+import LeadList from '../screens/LeadList';
 import Contacts from '../screens/Contacts';
 import Settings from '../screens/Settings';
 
-type TabName = 'Dashboard' | 'Dialer' | 'Contacts' | 'Settings';
+type TabName = 'Dashboard' | 'Leads' | 'Dialer' | 'Contacts' | 'Settings';
 
 interface TabConfig {
   name: TabName;
@@ -23,6 +24,7 @@ interface TabConfig {
 
 const tabs: TabConfig[] = [
   { name: 'Dashboard', icon: '📊', component: Dashboard },
+  { name: 'Leads', icon: '📋', component: LeadList },
   { name: 'Dialer', icon: '☎️', component: Dialer },
   { name: 'Contacts', icon: '👥', component: Contacts },
   { name: 'Settings', icon: '⚙️', component: Settings },
