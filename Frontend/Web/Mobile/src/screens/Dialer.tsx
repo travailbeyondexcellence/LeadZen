@@ -25,10 +25,10 @@ const Dialer: React.FC = () => {
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
 
   const dialpadNumbers = [
-    ['1', '2', '3'],
-    ['4', '5', '6'],
-    ['7', '8', '9'],
-    ['*', '0', '#'],
+    [{ number: '1', letters: '' }, { number: '2', letters: 'ABC' }, { number: '3', letters: 'DEF' }],
+    [{ number: '4', letters: 'GHI' }, { number: '5', letters: 'JKL' }, { number: '6', letters: 'MNO' }],
+    [{ number: '7', letters: 'PQRS' }, { number: '8', letters: 'TUV' }, { number: '9', letters: 'WXYZ' }],
+    [{ number: '*', letters: '' }, { number: '0', letters: '+' }, { number: '#', letters: '' }],
   ];
 
   const handleNumberPress = (number: string) => {
@@ -97,14 +97,15 @@ const Dialer: React.FC = () => {
         <View style={styles.dialpad}>
           {dialpadNumbers.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.dialpadRow}>
-              {row.map((number) => (
+              {row.map((item) => (
                 <MaterialPressable
-                  key={number}
+                  key={item.number}
                   style={styles.dialpadButton}
-                  onPress={() => handleNumberPress(number)}
+                  onPress={() => handleNumberPress(item.number)}
                   rippleColor={Colors.stateLayer.pressed}
                 >
-                  <Text style={styles.dialpadText}>{number}</Text>
+                  <Text style={styles.dialpadNumber}>{item.number}</Text>
+                  {item.letters && <Text style={styles.dialpadLetters}>{item.letters}</Text>}
                 </MaterialPressable>
               ))}
             </View>
@@ -113,17 +114,24 @@ const Dialer: React.FC = () => {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <Button
-            title="⌫"
-            variant="outline"
-            onPress={handleBackspace}
+          <MaterialPressable
             style={styles.backspaceButton}
-          />
-          <Button
-            title="📞 Call"
-            onPress={handleCall}
+            onPress={handleBackspace}
+            rippleColor={Colors.stateLayer.hover}
+          >
+            <Text style={styles.backspaceIcon}>⌫</Text>
+          </MaterialPressable>
+          
+          <MaterialPressable
             style={styles.callButton}
-          />
+            onPress={handleCall}
+            rippleColor="rgba(255, 255, 255, 0.2)"
+          >
+            <Text style={styles.callIcon}>📞</Text>
+            <Text style={styles.callText}>Call</Text>
+          </MaterialPressable>
+          
+          <View style={styles.spacer} />
         </View>
 
         {/* Call Logs */}
@@ -131,14 +139,19 @@ const Dialer: React.FC = () => {
           <Text style={styles.sectionTitle}>Recent Calls</Text>
           {callLogs.length > 0 ? (
             <FlatList
-              data={callLogs}
+              data={callLogs.slice(0, 4)}
               renderItem={renderCallLog}
               keyExtractor={(item) => item.id}
               style={styles.callLogsList}
               showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
             />
           ) : (
-            <Text style={styles.emptyText}>No recent calls</Text>
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>📞</Text>
+              <Text style={styles.emptyText}>No recent calls</Text>
+              <Text style={styles.emptySubtext}>Your call history will appear here</Text>
+            </View>
           )}
         </View>
       </View>
@@ -164,85 +177,171 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.screen,
-    paddingVertical: Spacing['2xl'],
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   phoneInputContainer: {
-    marginBottom: Spacing['2xl'],
+    marginBottom: 32,
+    alignItems: 'center',
   },
   dialpad: {
-    marginBottom: Spacing.base,
+    marginBottom: 24,
+    paddingHorizontal: 12,
   },
   dialpadRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
+    justifyContent: 'space-evenly',
+    marginBottom: 16,
   },
   dialpadButton: {
-    width: 70,
-    height: 70,
-    borderRadius: BorderRadius['2xl'],
-    backgroundColor: Colors.background.card,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    ...Shadows.light,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  dialpadText: {
-    ...Typography.h4,
-    color: Colors.text.primary,
+  dialpadNumber: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#1E293B',
+    lineHeight: 32,
+  },
+  dialpadLetters: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748B',
+    marginTop: -2,
+    letterSpacing: 1,
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.lg,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    marginBottom: 32,
+    paddingHorizontal: 12,
   },
   backspaceButton: {
-    flex: 0.3,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  backspaceIcon: {
+    fontSize: 24,
+    color: '#64748B',
   },
   callButton: {
-    flex: 0.65,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#14B8A6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#14B8A6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  callIcon: {
+    fontSize: 28,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  callText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  spacer: {
+    width: 64,
   },
   callLogsSection: {
     flex: 1,
+    minHeight: 200,
   },
   sectionTitle: {
-    ...Typography.h4,
-    color: Colors.text.primary,
-    marginBottom: Spacing.lg,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   callLogsList: {
-    flex: 1,
+    flexGrow: 0,
   },
   callLogItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Colors.background.card,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    ...Shadows.subtle,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    marginBottom: 8,
+    borderRadius: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   callLogInfo: {
     flex: 1,
   },
   callLogNumber: {
-    ...Typography.bodyLarge,
-    color: Colors.text.primary,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E293B',
   },
   callLogTime: {
-    ...Typography.caption,
-    color: Colors.text.secondary,
+    fontSize: 14,
+    color: '#64748B',
+    marginTop: 2,
   },
   callLogDuration: {
-    ...Typography.caption,
-    color: Colors.text.secondary,
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    opacity: 0.3,
+    marginBottom: 16,
   },
   emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#64748B',
     textAlign: 'center',
-    ...Typography.body,
-    color: Colors.text.secondary,
-    marginTop: Spacing['2xl'],
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
   },
 });
 
