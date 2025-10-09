@@ -12,78 +12,12 @@ import {
 import MaterialPressable from '../components/Pressable';
 import LeadCard from '../components/LeadCard';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
+import DatabaseService from '../services/DatabaseService';
 
 const LeadList: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Mock data for demonstration
-  const mockLeads: Lead[] = [
-    {
-      id: '1',
-      name: 'John Smith',
-      email: 'john.smith@example.com',
-      phone: '+1 (555) 123-4567',
-      company: 'Tech Solutions Inc',
-      position: 'CTO',
-      source: 'Website',
-      status: LeadStatus.NEW,
-      priority: LeadPriority.HIGH,
-      value: 25000,
-      notes: 'Interested in our enterprise package',
-      createdAt: new Date('2024-10-01'),
-      updatedAt: new Date('2024-10-08'),
-      nextFollowUpAt: new Date('2024-10-10'),
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah.j@marketing.com',
-      phone: '+1 (555) 987-6543',
-      company: 'Marketing Pro',
-      position: 'Marketing Director',
-      source: 'Referral',
-      status: LeadStatus.CONTACTED,
-      priority: LeadPriority.MEDIUM,
-      value: 15000,
-      notes: 'Looking for marketing automation tools',
-      createdAt: new Date('2024-09-28'),
-      updatedAt: new Date('2024-10-07'),
-      lastContactedAt: new Date('2024-10-07'),
-    },
-    {
-      id: '3',
-      name: 'Michael Chen',
-      email: 'mchen@startup.io',
-      phone: '+1 (555) 456-7890',
-      company: 'Startup Ventures',
-      position: 'Founder',
-      source: 'Social Media',
-      status: LeadStatus.QUALIFIED,
-      priority: LeadPriority.URGENT,
-      value: 50000,
-      notes: 'Fast-growing startup, needs scalable solution',
-      createdAt: new Date('2024-09-25'),
-      updatedAt: new Date('2024-10-06'),
-      nextFollowUpAt: new Date('2024-10-09'),
-    },
-    {
-      id: '4',
-      name: 'Emily Davis',
-      email: 'emily.davis@corp.com',
-      company: 'Corporate Solutions',
-      position: 'VP Sales',
-      source: 'Trade Show',
-      status: LeadStatus.PROPOSAL,
-      priority: LeadPriority.HIGH,
-      value: 75000,
-      notes: 'Proposal sent, awaiting decision',
-      createdAt: new Date('2024-09-20'),
-      updatedAt: new Date('2024-10-05'),
-      lastContactedAt: new Date('2024-10-05'),
-    },
-  ];
 
   useEffect(() => {
     loadLeads();
@@ -92,11 +26,12 @@ const LeadList: React.FC = () => {
   const loadLeads = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setLeads(mockLeads);
+      // Load leads from database
+      const dbLeads = await DatabaseService.getLeads(100, 0);
+      setLeads(dbLeads);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load leads');
+      console.error('Failed to load leads:', error);
+      Alert.alert('Error', 'Failed to load leads from database');
     } finally {
       setLoading(false);
     }
