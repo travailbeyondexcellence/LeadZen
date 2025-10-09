@@ -1,8 +1,13 @@
 import React from 'react';
-import Dashboard from './src/screens/Dashboard';
+import { NavigationContainer } from '@react-navigation/native';
+import BottomTabNavigator from './src/navigation/BottomTabNavigator';
 
 function App(): React.JSX.Element {
-  return <Dashboard />;
+  return (
+    <NavigationContainer>
+      <BottomTabNavigator />
+    </NavigationContainer>
+  );
 }
 
 export default App;

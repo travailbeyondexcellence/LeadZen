@@ -1,10 +1,13 @@
 # Claude Code Instructions
 
-## Build Commands
+## Build Commands - STRICT RULES
 
-- **Do not run** `npm run dev` commands - user will run these manually
-- **Do not run** `npm install` commands - user will run these manually
-- **Do not run** `bun install` commands - user will run these manually
+- **NEVER run** `npm install` or `npm i` commands - user will run these manually
+- **NEVER run** `npm run dev` commands - user will run these manually  
+- **NEVER run** `bun install` commands - user will run these manually
+- **NEVER run** any package installation commands - user will run these manually
+- **ALWAYS provide** the folder location and exact command for user to run
+- **ONLY provide instructions**, never execute installation commands
 
 ## Android Build - RESOLVED ✅
 
@@ -32,3 +35,19 @@ The React Native Android build is now working successfully after fixing:
 - ✅ Android build working
 - ✅ App installs and runs on emulator
 - ✅ Metro bundler running on port 8081
+
+## Quick Commands
+
+**Clean Rebuild (use after installing native dependencies):**
+```bash
+cd android && ./gradlew clean && cd .. && npm run android
+```
+
+**Metro Server Commands:**
+```bash
+npm start                    # Normal start
+npm start --reset-cache      # Start with cache reset
+```
+
+**Regular Reload (for JS-only changes):**
+- Press Ctrl+M in emulator → Select "Reload"
