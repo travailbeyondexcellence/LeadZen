@@ -1,5 +1,5 @@
 import SQLite, { SQLiteDatabase, ResultSet, Transaction } from 'react-native-sqlite-storage';
-import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
+import { Lead, LeadStatus, LeadPriority, LeadSource } from '../types/Lead';
 
 // Configure SQLite
 SQLite.DEBUG(false); // Disable verbose logging to avoid console warnings
@@ -227,7 +227,7 @@ class DatabaseService {
       null, // phone_secondary
       lead.email || null,
       lead.position || null,
-      lead.source || 'manual',
+      lead.source || LeadSource.MANUAL,
       lead.status || LeadStatus.NEW,
       lead.priority || LeadPriority.MEDIUM,
       lead.value || 0,
@@ -505,11 +505,12 @@ class DatabaseService {
       phone: row.phone_primary,
       email: row.email,
       position: row.position,
-      source: row.source,
+      source: row.source as LeadSource,
       status: row.pipeline_stage as LeadStatus,
       priority: row.priority as LeadPriority,
       value: row.value,
       notes: row.notes,
+      tags: [], // Tags will be loaded separately from lead_labels table
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
       lastContactedAt: row.last_contact_at ? new Date(row.last_contact_at) : undefined,

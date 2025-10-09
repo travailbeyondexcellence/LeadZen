@@ -5,11 +5,12 @@ export interface Lead {
   phone?: string;
   company?: string;
   position?: string;
-  source: string;
+  source: LeadSource;
   status: LeadStatus;
   priority: LeadPriority;
   value?: number;
   notes?: string;
+  tags?: string[];
   createdAt: Date;
   updatedAt: Date;
   lastContactedAt?: Date;
@@ -32,13 +33,25 @@ export enum LeadPriority {
   URGENT = 'urgent'
 }
 
-export interface LeadSource {
+export enum LeadSource {
+  WEBSITE = 'website',
+  SOCIAL_MEDIA = 'social_media',
+  REFERRAL = 'referral',
+  COLD_CALL = 'cold_call',
+  EMAIL_CAMPAIGN = 'email_campaign',
+  TRADE_SHOW = 'trade_show',
+  ADVERTISING = 'advertising',
+  MANUAL = 'manual',
+  OTHER = 'other'
+}
+
+export interface LeadSourceInfo {
   id: string;
   name: string;
   description?: string;
 }
 
-export const defaultLeadSources: LeadSource[] = [
+export const defaultLeadSources: LeadSourceInfo[] = [
   { id: 'website', name: 'Website' },
   { id: 'social_media', name: 'Social Media' },
   { id: 'referral', name: 'Referral' },
@@ -46,6 +59,7 @@ export const defaultLeadSources: LeadSource[] = [
   { id: 'email_campaign', name: 'Email Campaign' },
   { id: 'trade_show', name: 'Trade Show' },
   { id: 'advertising', name: 'Advertising' },
+  { id: 'manual', name: 'Manual Entry' },
   { id: 'other', name: 'Other' },
 ];
 
@@ -112,6 +126,31 @@ export const getPriorityDisplayName = (priority: LeadPriority): string => {
       return 'High';
     case LeadPriority.URGENT:
       return 'Urgent';
+    default:
+      return 'Unknown';
+  }
+};
+
+export const getSourceDisplayName = (source: LeadSource): string => {
+  switch (source) {
+    case LeadSource.WEBSITE:
+      return 'Website';
+    case LeadSource.SOCIAL_MEDIA:
+      return 'Social Media';
+    case LeadSource.REFERRAL:
+      return 'Referral';
+    case LeadSource.COLD_CALL:
+      return 'Cold Call';
+    case LeadSource.EMAIL_CAMPAIGN:
+      return 'Email Campaign';
+    case LeadSource.TRADE_SHOW:
+      return 'Trade Show';
+    case LeadSource.ADVERTISING:
+      return 'Advertising';
+    case LeadSource.MANUAL:
+      return 'Manual Entry';
+    case LeadSource.OTHER:
+      return 'Other';
     default:
       return 'Unknown';
   }

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
-import { Lead, LeadStatus, LeadPriority, LeadSource } from '../types/Lead';
+import { Lead, LeadStatus, LeadPriority, LeadSource, getSourceDisplayName } from '../types/Lead';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import DatabaseService from '../services/DatabaseService';
@@ -323,7 +323,7 @@ const LeadForm: React.FC = () => {
                           formData.source === source && styles.selectedChipText,
                         ]}
                       >
-                        {source}
+                        {getSourceDisplayName(source)}
                       </Text>
                     </TouchableOpacity>
                   ))}
