@@ -101,6 +101,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     ...Shadows.high,
+    zIndex: 10, // Lower than sidebar (9999)
+    position: 'relative',
   },
   tabItem: {
     flex: 1,

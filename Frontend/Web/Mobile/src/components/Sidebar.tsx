@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 
 interface SidebarProps {
   isVisible: boolean;
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 1000,
+    zIndex: 9999, // Very high z-index to appear above tab bar
   },
   backdrop: {
     flex: 1,
@@ -92,69 +93,76 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     width: SIDEBAR_WIDTH,
-    backgroundColor: '#ffffff',
-    elevation: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 2,
-      height: 0,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    backgroundColor: Colors.background.card,
+    // Rounded top-right and bottom-right corners
+    borderTopRightRadius: BorderRadius['3xl'],
+    borderBottomRightRadius: BorderRadius['3xl'],
+    ...Shadows.high,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 50,
-    backgroundColor: '#6366F1',
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing.lg,
+    paddingTop: 50, // Account for status bar
+    backgroundColor: Colors.primary.base,
+    // Match the rounded corner
+    borderTopRightRadius: BorderRadius['3xl'],
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    ...Typography.h3,
+    color: Colors.text.inverse,
   },
   closeButton: {
-    padding: 8,
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   closeIcon: {
-    fontSize: 18,
-    color: '#ffffff',
-    fontWeight: 'bold',
+    ...Typography.h5,
+    color: Colors.text.inverse,
   },
   content: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: Spacing['2xl'],
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing.lg,
+    marginHorizontal: Spacing.md,
+    marginVertical: Spacing.xs,
+    borderRadius: BorderRadius.xl,
+    backgroundColor: 'transparent',
+  },
+  menuItemActive: {
+    backgroundColor: Colors.background.secondary,
   },
   menuIcon: {
-    fontSize: 20,
-    marginRight: 16,
-    width: 24,
+    fontSize: 22,
+    marginRight: Spacing.lg,
+    width: 28,
     textAlign: 'center',
   },
   menuText: {
-    fontSize: 16,
-    color: '#1f2937',
-    fontWeight: '500',
+    ...Typography.bodyLarge,
+    color: Colors.text.primary,
   },
   footer: {
-    padding: 20,
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: Colors.border.light,
     alignItems: 'center',
+    backgroundColor: Colors.background.secondary,
+    // Match the rounded corner
+    borderBottomRightRadius: BorderRadius['3xl'],
   },
   version: {
-    fontSize: 12,
-    color: '#6b7280',
+    ...Typography.caption,
+    color: Colors.text.secondary,
   },
 });
 

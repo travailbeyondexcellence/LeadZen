@@ -51,7 +51,7 @@ export const Shadows = {
   },
   // Colored shadows for special elements
   primary: {
-    shadowColor: '#4F46E5',
+    shadowColor: '#14B8A6',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
