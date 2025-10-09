@@ -64,7 +64,7 @@ const Contacts: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
       
       {/* Header */}
       <View style={styles.header}>

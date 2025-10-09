@@ -10,6 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import Sidebar from '../components/Sidebar';
+import { Colors } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
@@ -51,7 +52,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#6366F1" />
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
       
       {/* Header */}
       <View style={styles.header}>
