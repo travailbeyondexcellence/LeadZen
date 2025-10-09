@@ -8,7 +8,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import { PipelineBoard } from '../components/PipelineBoard';
+import { PipelineBoardV2 } from '../components/PipelineBoardV2';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
@@ -65,7 +65,7 @@ export const Pipeline = () => {
       </View>
 
       {/* Pipeline Board */}
-      <PipelineBoard
+      <PipelineBoardV2
         onLeadPress={handleLeadPress}
         refreshTrigger={refreshTrigger}
       />

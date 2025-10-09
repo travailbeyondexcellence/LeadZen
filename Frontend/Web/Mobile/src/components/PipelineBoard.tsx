@@ -7,8 +7,8 @@ import {
   RefreshControl,
   ActivityIndicator,
   Alert,
-  PanResponder,
-  Animated,
+  Modal,
+  TouchableOpacity,
   Dimensions,
 } from 'react-native';
 import { Lead } from '../types/Lead';
@@ -36,6 +36,8 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
+  const [showStageModal, setShowStageModal] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [dropTargetStage, setDropTargetStage] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -92,26 +94,19 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
     }
   };
 
-  // Simple drag and drop simulation using long press
+  // Handle lead long press to show stage selector
   const handleLeadLongPress = (lead: Lead) => {
-    setDraggedLead(lead);
-    Alert.alert(
-      'Move Lead',
-      `Select new stage for ${lead.name}`,
-      PIPELINE_STAGES.map(stage => ({
-        text: stage.title,
-        onPress: () => {
-          if (stage.id !== statusToPipelineStage(lead.status)) {
-            handleDropLead(lead.id, stage.id);
-          }
-          setDraggedLead(null);
-        }
-      })),
-      {
-        cancelable: true,
-        onDismiss: () => setDraggedLead(null),
-      }
-    );
+    setSelectedLead(lead);
+    setShowStageModal(true);
+  };
+
+  // Handle stage selection from modal
+  const handleStageSelect = async (stageId: string) => {
+    if (selectedLead && stageId !== statusToPipelineStage(selectedLead.status)) {
+      await handleDropLead(selectedLead.id, stageId);
+    }
+    setShowStageModal(false);
+    setSelectedLead(null);
   };
 
   useEffect(() => {
@@ -193,10 +188,71 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
       {!isLoading && leads.length > 0 && (
         <View style={styles.instructionBar}>
           <Text style={styles.instructionText}>
-            💡 Long press a lead card to move it between stages
+            💡 Tap and hold a lead card to move it between stages
           </Text>
         </View>
       )}
+
+      {/* Stage Selection Modal */}
+      <Modal
+        visible={showStageModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowStageModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowStageModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Move Lead</Text>
+            {selectedLead && (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  {selectedLead.name}
+                </Text>
+                <Text style={styles.modalDescription}>
+                  Select new stage:
+                </Text>
+                <View style={styles.stageButtons}>
+                  {PIPELINE_STAGES.map(stage => {
+                    const isCurrentStage = stage.id === statusToPipelineStage(selectedLead.status);
+                    return (
+                      <TouchableOpacity
+                        key={stage.id}
+                        style={[
+                          styles.stageButton,
+                          isCurrentStage && styles.currentStageButton,
+                          { borderLeftColor: stage.color }
+                        ]}
+                        onPress={() => handleStageSelect(stage.id)}
+                        disabled={isCurrentStage}
+                      >
+                        <Text style={[
+                          styles.stageButtonText,
+                          isCurrentStage && styles.currentStageButtonText
+                        ]}>
+                          {stage.title}
+                        </Text>
+                        {isCurrentStage && (
+                          <Text style={styles.currentBadge}>Current</Text>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowStageModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -259,5 +315,79 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.primary.base,
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.background.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: Spacing.xs,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  stageButtons: {
+    marginVertical: Spacing.md,
+  },
+  stageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.background.secondary,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+  },
+  currentStageButton: {
+    opacity: 0.6,
+    backgroundColor: Colors.background.primary,
+  },
+  stageButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: Colors.text.primary,
+  },
+  currentStageButtonText: {
+    color: Colors.text.secondary,
+  },
+  currentBadge: {
+    fontSize: 12,
+    color: Colors.primary.base,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    color: Colors.text.secondary,
+    fontWeight: '500',
   },
 });
