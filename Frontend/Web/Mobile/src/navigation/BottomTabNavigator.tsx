@@ -1,13 +1,13 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Colors, Typography, Spacing } from '../theme';
+import { Colors } from '../theme';
 
 // Import screens
 import Dashboard from '../screens/Dashboard';
+import LeadList from '../screens/LeadList';
 import { Pipeline } from '../screens/Pipeline';
 import Dialer from '../screens/Dialer';
-import Contacts from '../screens/Contacts';
 import Settings from '../screens/Settings';
 
 const Tab = createBottomTabNavigator();
@@ -17,17 +17,17 @@ const BottomTabNavigator: React.FC = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.tabBarActive,
-        tabBarInactiveTintColor: Colors.tabBarInactive,
+        tabBarActiveTintColor: Colors.primary.base,
+        tabBarInactiveTintColor: Colors.text.tertiary,
         tabBarStyle: {
-          backgroundColor: Colors.tabBarBackground,
+          backgroundColor: Colors.background.card,
           borderTopWidth: 1,
-          borderTopColor: Colors.gray200,
+          borderTopColor: Colors.border.base,
           height: 60,
         },
         tabBarLabelStyle: {
-          fontSize: Typography.fontSize.xs,
-          fontWeight: Typography.fontWeight.medium,
+          fontSize: 12,
+          fontWeight: '500' as any,
         },
       }}
     >
@@ -37,6 +37,15 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon icon="📊" focused={focused} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Leads"
+        component={LeadList}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon icon="📋" focused={focused} color={color} />
           ),
         }}
       />
@@ -55,15 +64,6 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon icon="☎️" focused={focused} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Contacts"
-        component={Contacts}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="👥" focused={focused} color={color} />
           ),
         }}
       />

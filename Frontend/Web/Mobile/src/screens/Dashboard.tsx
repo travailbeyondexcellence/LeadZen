@@ -12,7 +12,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import Sidebar from '../components/Sidebar';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import AsyncStorageService from '../services/AsyncStorageService';
@@ -23,7 +23,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
 
 const Dashboard: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<any>>();
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
 
             <TouchableOpacity 
               style={styles.pipelineOverview}
-              onPress={() => navigation.navigate('Pipeline' as never)}
+              onPress={() => navigation?.navigate('Pipeline' as never)}
             >
               <View style={styles.pipelineHeader}>
                 <Text style={styles.sectionTitle}>Pipeline Overview</Text>
@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
               
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={() => navigation.navigate('Pipeline' as never)}
+                onPress={() => navigation?.navigate('Pipeline' as never)}
               >
                 <Text style={styles.actionIcon}>📊</Text>
                 <Text style={styles.actionText}>View Pipeline</Text>

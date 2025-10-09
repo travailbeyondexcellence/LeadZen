@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { DraggableLeadCard } from './DraggableLeadCard';
-import { Colors, Spacing, Typography } from '../theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../theme';
 import { PipelineStage } from '../utils/pipelineConfig';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -101,28 +101,28 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: COLUMN_WIDTH,
-    backgroundColor: Colors.background,
-    borderRadius: Spacing.borderRadius.large,
-    marginHorizontal: Spacing.small,
+    backgroundColor: Colors.background.primary,
+    borderRadius: BorderRadius.lg,
+    marginHorizontal: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.border.base,
     overflow: 'hidden',
     maxHeight: '90%',
   },
   dropTarget: {
-    borderColor: Colors.primary,
+    borderColor: Colors.primary.base,
     borderWidth: 2,
     borderStyle: 'dashed',
   },
   dragOver: {
-    backgroundColor: Colors.primary + '10',
-    borderColor: Colors.primary,
+    backgroundColor: Colors.primary.base + '10',
+    borderColor: Colors.primary.base,
     borderWidth: 2,
   },
   header: {
-    padding: Spacing.medium,
+    padding: Spacing.md,
     borderBottomWidth: 3,
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.background.card,
   },
   headerTop: {
     flexDirection: 'row',
@@ -133,12 +133,12 @@ const styles = StyleSheet.create({
   title: {
     ...Typography.subtitle,
     fontWeight: '700',
-    color: Colors.text,
+    color: Colors.text.primary,
   },
   badge: {
-    paddingHorizontal: Spacing.small,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
-    borderRadius: Spacing.borderRadius.small,
+    borderRadius: BorderRadius.sm,
   },
   badgeText: {
     ...Typography.caption,
@@ -146,12 +146,12 @@ const styles = StyleSheet.create({
   },
   description: {
     ...Typography.caption,
-    color: Colors.textSecondary,
+    color: Colors.text.secondary,
     marginBottom: Spacing.xs,
   },
   totalValue: {
     ...Typography.caption,
-    color: Colors.success,
+    color: Colors.semantic.success,
     fontWeight: '600',
     marginTop: Spacing.xs,
   },
@@ -159,8 +159,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: Spacing.small,
-    paddingBottom: Spacing.medium,
+    padding: Spacing.sm,
+    paddingBottom: Spacing.md,
   },
   loadingContainer: {
     padding: Spacing.xl,
@@ -174,12 +174,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     ...Typography.body,
-    color: Colors.textSecondary,
+    color: Colors.text.secondary,
     textAlign: 'center',
   },
   emptySubtext: {
     ...Typography.caption,
-    color: Colors.textSecondary,
+    color: Colors.text.secondary,
     textAlign: 'center',
     marginTop: Spacing.xs,
   },

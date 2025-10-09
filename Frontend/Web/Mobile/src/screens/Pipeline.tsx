@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { PipelineBoard } from '../components/PipelineBoard';
 import { Lead } from '../types/Lead';
-import { Colors, Spacing, Typography } from '../theme';
+import { Colors, Spacing, BorderRadius, Typography } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 
 export const Pipeline = () => {
@@ -133,31 +133,31 @@ export const Pipeline = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.background.primary,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.medium,
-    paddingVertical: Spacing.small,
-    backgroundColor: Colors.card,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background.card,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.border.base,
   },
   headerTitle: {
     ...Typography.h2,
-    color: Colors.text,
+    color: Colors.text.primary,
   },
   refreshButton: {
-    paddingHorizontal: Spacing.medium,
-    paddingVertical: Spacing.small,
-    borderRadius: Spacing.borderRadius.medium,
-    backgroundColor: Colors.primary + '10',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.primary.base + '10',
   },
   refreshButtonText: {
     ...Typography.body,
-    color: Colors.primary,
+    color: Colors.primary.base,
     fontWeight: '600',
   },
   modalOverlay: {
@@ -166,53 +166,53 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: Colors.card,
-    borderTopLeftRadius: Spacing.borderRadius.large,
-    borderTopRightRadius: Spacing.borderRadius.large,
-    padding: Spacing.large,
+    backgroundColor: Colors.background.card,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     paddingBottom: Spacing.xl,
   },
   modalTitle: {
     ...Typography.h3,
-    color: Colors.text,
+    color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
   },
   modalSubtitle: {
     ...Typography.body,
-    color: Colors.textSecondary,
+    color: Colors.text.secondary,
     textAlign: 'center',
-    marginBottom: Spacing.large,
+    marginBottom: Spacing.lg,
   },
   modalActions: {
-    marginTop: Spacing.medium,
+    marginTop: Spacing.md,
   },
   modalButton: {
-    paddingVertical: Spacing.medium,
-    paddingHorizontal: Spacing.large,
-    borderRadius: Spacing.borderRadius.medium,
-    backgroundColor: Colors.background,
-    marginBottom: Spacing.small,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.background.primary,
+    marginBottom: Spacing.sm,
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primary.base,
   },
   modalButtonText: {
     ...Typography.body,
-    color: Colors.text,
+    color: Colors.text.primary,
     fontWeight: '500',
   },
   primaryButtonText: {
-    color: Colors.card,
+    color: Colors.background.card,
   },
   cancelButton: {
-    paddingVertical: Spacing.medium,
-    marginTop: Spacing.small,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
     alignItems: 'center',
   },
   cancelButtonText: {
     ...Typography.body,
-    color: Colors.textSecondary,
+    color: Colors.text.secondary,
   },
 });

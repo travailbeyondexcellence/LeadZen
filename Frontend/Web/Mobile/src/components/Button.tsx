@@ -6,7 +6,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import MaterialPressable from './Pressable';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
+import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 
 interface ButtonProps {
   title: string;
@@ -40,21 +40,21 @@ const Button: React.FC<ButtonProps> = ({
           paddingHorizontal: 20,
           paddingVertical: 10,
           minHeight: 36,
-          fontSize: Typography.fontSize.sm,
+          fontSize: 13,
         };
       case 'large':
         return {
           paddingHorizontal: 32,
           paddingVertical: 14,
           minHeight: 48,
-          fontSize: Typography.fontSize.lg,
+          fontSize: 16,
         };
       default: // medium
         return {
           paddingHorizontal: Spacing['2xl'],
           paddingVertical: Spacing.md,
           minHeight: 44,
-          fontSize: Typography.fontSize.md,
+          fontSize: 15,
         };
     }
   };
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     ...Shadows.none,
   },
   text: {
-    fontWeight: Typography.fontWeight.semibold,
+    fontWeight: '600' as any,
     letterSpacing: 0,
   },
   primaryText: {

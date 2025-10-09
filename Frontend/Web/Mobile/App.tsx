@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import CustomTabNavigator from './src/components/CustomTabNavigator';
+import { NavigationContainer } from '@react-navigation/native';
+import BottomTabNavigator from './src/navigation/BottomTabNavigator';
 import { initializeDatabase } from './src/utils/dbInit';
 
 function App(): React.JSX.Element {
@@ -43,7 +44,11 @@ function App(): React.JSX.Element {
     );
   }
 
-  return <CustomTabNavigator />;
+  return (
+    <NavigationContainer>
+      <BottomTabNavigator />
+    </NavigationContainer>
+  );
 }
 
 const styles = StyleSheet.create({

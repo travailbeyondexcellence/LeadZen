@@ -4,6 +4,9 @@
 
 - **NEVER run** `npm install` or `npm i` commands - user will run these manually
 - **NEVER run** `npm run dev` commands - user will run these manually  
+- **NEVER run** `npm run android` commands - user will run these manually
+- **NEVER run** `npx react-native start` or any Metro bundler commands - user will run these manually
+- **NEVER run** `npm start` or `npm start --reset-cache` commands - user will run these manually
 - **NEVER run** `bun install` commands - user will run these manually
 - **NEVER run** any package installation commands - user will run these manually
 - **ALWAYS provide** the folder location and exact command for user to run
