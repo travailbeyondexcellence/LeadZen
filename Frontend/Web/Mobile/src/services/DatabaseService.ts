@@ -1,14 +1,15 @@
 import SQLite, { SQLiteDatabase, ResultSet, Transaction } from 'react-native-sqlite-storage';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
 
-// Enable debugging
-SQLite.DEBUG(false);
+// Configure SQLite
+SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
 const DATABASE_NAME = 'leadzen.db';
 const DATABASE_VERSION = '1.0.0';
 const DATABASE_DISPLAY_NAME = 'LeadZen Database';
 const DATABASE_SIZE = 200000; // 200KB
+const DATABASE_LOCATION = 'default';
 
 export interface CallLog {
   id?: number;
@@ -53,18 +54,29 @@ class DatabaseService {
   // Initialize and open database
   public async initDatabase(): Promise<void> {
     try {
-      this.database = await SQLite.openDatabase({
-        name: DATABASE_NAME,
-        version: DATABASE_VERSION,
-        displayName: DATABASE_DISPLAY_NAME,
-        size: DATABASE_SIZE,
-      });
+      console.log('Opening database...');
+      this.database = await SQLite.openDatabase(
+        DATABASE_NAME,
+        DATABASE_VERSION,
+        DATABASE_DISPLAY_NAME,
+        DATABASE_SIZE,
+        () => {
+          console.log('Database opened successfully');
+        },
+        (error: any) => {
+          console.error('Error opening database:', error);
+        }
+      );
       
-      console.log('Database opened successfully');
+      if (!this.database) {
+        throw new Error('Failed to open database');
+      }
+      
+      console.log('Database instance created, creating tables...');
       await this.createTables();
       await this.seedInitialData();
     } catch (error) {
-      console.error('Failed to open database:', error);
+      console.error('Failed to initialize database:', error);
       throw error;
     }
   }

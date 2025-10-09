@@ -1,9 +1,10 @@
-import DatabaseService from '../services/DatabaseService';
+// Using MockDatabaseService temporarily until SQLite native issue is resolved
+import MockDatabaseService from '../services/MockDatabaseService';
 
 export const initializeDatabase = async (): Promise<boolean> => {
   try {
     console.log('Initializing database...');
-    await DatabaseService.initDatabase();
+    await MockDatabaseService.initDatabase();
     console.log('Database initialized successfully');
     return true;
   } catch (error) {
@@ -14,7 +15,7 @@ export const initializeDatabase = async (): Promise<boolean> => {
 
 export const cleanupDatabase = async (): Promise<void> => {
   try {
-    await DatabaseService.closeDatabase();
+    await MockDatabaseService.closeDatabase();
     console.log('Database connection closed');
   } catch (error) {
     console.error('Failed to close database:', error);

@@ -12,7 +12,7 @@ import {
 import MaterialPressable from '../components/Pressable';
 import LeadCard from '../components/LeadCard';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
-import DatabaseService from '../services/DatabaseService';
+import MockDatabaseService from '../services/MockDatabaseService';
 
 const LeadList: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -27,7 +27,7 @@ const LeadList: React.FC = () => {
     setLoading(true);
     try {
       // Load leads from database
-      const dbLeads = await DatabaseService.getLeads(100, 0);
+      const dbLeads = await MockDatabaseService.getLeads(100, 0);
       setLeads(dbLeads);
     } catch (error) {
       console.error('Failed to load leads:', error);
