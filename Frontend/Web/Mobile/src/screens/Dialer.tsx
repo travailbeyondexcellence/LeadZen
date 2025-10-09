@@ -90,6 +90,7 @@ const Dialer: React.FC = () => {
             onChangeText={setPhoneNumber}
             placeholder="Enter phone number"
             keyboardType="phone-pad"
+            style={styles.phoneInput}
           />
         </View>
 
@@ -182,7 +183,11 @@ const styles = StyleSheet.create({
   },
   phoneInputContainer: {
     marginBottom: 32,
-    alignItems: 'center',
+    width: '84%',
+    alignSelf: 'center',
+  },
+  phoneInput: {
+    width: '100%',
   },
   dialpad: {
     marginBottom: 24,
