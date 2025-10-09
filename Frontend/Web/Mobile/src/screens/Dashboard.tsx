@@ -103,7 +103,11 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
-          <Text style={styles.menuIcon}>☰</Text>
+          <View style={styles.hamburgerMenu}>
+            <View style={styles.hamburgerLineTop} />
+            <View style={styles.hamburgerLineMiddle} />
+            <View style={styles.hamburgerLineBottom} />
+          </View>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>LeadZen Dashboard</Text>
         <TouchableOpacity style={styles.headerAction}>
@@ -244,10 +248,28 @@ const styles = StyleSheet.create({
   menuButton: {
     padding: 8,
   },
-  menuIcon: {
-    fontSize: 20,
-    color: Colors.text.inverse,
-    fontWeight: 'bold',
+  hamburgerMenu: {
+    width: 24,
+    height: 20,
+    justifyContent: 'space-between',
+  },
+  hamburgerLineTop: {
+    width: 18,  // Medium width
+    height: 3,
+    backgroundColor: Colors.text.inverse,
+    borderRadius: 1.5,
+  },
+  hamburgerLineMiddle: {
+    width: 24,  // Longest width
+    height: 3,
+    backgroundColor: Colors.text.inverse,
+    borderRadius: 1.5,
+  },
+  hamburgerLineBottom: {
+    width: 12,  // Shortest width
+    height: 3,
+    backgroundColor: Colors.text.inverse,
+    borderRadius: 1.5,
   },
   headerTitle: {
     fontSize: 18,
