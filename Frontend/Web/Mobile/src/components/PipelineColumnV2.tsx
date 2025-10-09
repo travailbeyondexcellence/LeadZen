@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     borderWidth: 2,
     borderLeftWidth: 4,
-    overflow: 'hidden',
+    overflow: 'visible', // Changed from 'hidden' to 'visible' to allow dragging outside
     maxHeight: '90%',
   },
   header: {
@@ -217,9 +217,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    overflow: 'visible', // Allow dragging outside
   },
   scrollContent: {
     padding: Spacing.sm,
+    overflow: 'visible', // Allow dragging outside
   },
   emptyContainer: {
     padding: Spacing.xl,

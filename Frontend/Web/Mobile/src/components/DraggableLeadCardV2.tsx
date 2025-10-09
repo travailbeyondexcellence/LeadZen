@@ -6,6 +6,7 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
@@ -36,20 +37,16 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   const panResponder = useRef(
     PanResponder.create({
       // Ask to be the responder
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false, // Don't capture on tap
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         // Activate drag when moved more than 5 pixels
         return Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
       },
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponderCapture: () => true, // Capture moves
       
       // Start of drag gesture
       onPanResponderGrant: (evt, gestureState) => {
-        // Check if this is a tap (no movement)
-        if (Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
-          onPress?.();
-          return;
-        }
-        
         setIsDragging(true);
         onDragStart?.();
         
@@ -63,12 +60,12 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         // Animate visual feedback for drag start
         Animated.parallel([
           Animated.spring(scale, {
-            toValue: 1.05,
+            toValue: 1.1, // Increased scale for better visibility
             useNativeDriver: true,
             friction: 5,
           }),
           Animated.timing(opacity, {
-            toValue: 0.9,
+            toValue: 0.95, // Slightly less transparent
             duration: 100,
             useNativeDriver: true,
           }),
@@ -112,9 +109,6 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
             useNativeDriver: true,
             friction: 5,
           }).start();
-        } else if (Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
-          // This was a tap
-          onPress?.();
         }
       },
       
@@ -177,8 +171,9 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       { scale: scale },
     ],
     opacity: opacity,
-    zIndex: isDragging ? 1000 : 1,
-    elevation: isDragging ? 999 : 2,
+    zIndex: isDragging ? 9999 : 1,
+    elevation: isDragging ? 9999 : 2,
+    position: isDragging ? 'absolute' : 'relative',
   };
   
   return (
@@ -186,8 +181,13 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       style={[styles.container, animatedStyle]}
       {...panResponder.panHandlers}
     >
-      {/* Drag Handle Indicator */}
-      <View style={styles.dragHandle}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={isDragging ? undefined : onPress}
+        disabled={isDragging}
+      >
+        {/* Drag Handle Indicator */}
+        <View style={styles.dragHandle}>
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
@@ -234,6 +234,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           ) : null}
         </View>
       </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    overflow: 'hidden',
+    // Don't use overflow hidden to allow card to appear above container
   },
   dragHandle: {
     height: 20,
