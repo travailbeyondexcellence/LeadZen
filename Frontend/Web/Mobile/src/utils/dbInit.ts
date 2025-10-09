@@ -1,4 +1,5 @@
-// Using MockDatabaseService temporarily until SQLite native issue is resolved
+// Temporarily using MockDatabaseService to avoid native linking issues
+// Switch to AsyncStorageService after running: cd android && ./gradlew clean && cd .. && npm run android
 import MockDatabaseService from '../services/MockDatabaseService';
 
 export const initializeDatabase = async (): Promise<boolean> => {

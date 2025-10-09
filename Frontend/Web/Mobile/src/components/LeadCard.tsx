@@ -63,7 +63,9 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail }) =
         </View>
         <View style={styles.badges}>
           <StatusBadge status={lead.status} size="small" />
-          <PriorityBadge priority={lead.priority} size="small" />
+          <View style={{ marginTop: 4 }}>
+            <PriorityBadge priority={lead.priority} size="small" />
+          </View>
         </View>
       </View>
 
@@ -192,7 +194,6 @@ const styles = StyleSheet.create({
   },
   badges: {
     alignItems: 'flex-end',
-    gap: 4,
   },
   content: {
     marginBottom: 12,
@@ -204,16 +205,17 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   contactInfo: {
-    gap: 4,
+    marginVertical: 4,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 4,
   },
   contactIcon: {
     fontSize: 14,
     width: 20,
+    marginRight: 8,
   },
   contactText: {
     fontSize: 14,
@@ -242,7 +244,6 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    gap: 8,
   },
   actionButton: {
     width: 36,
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 8,
   },
   actionIcon: {
     fontSize: 16,
@@ -262,10 +264,10 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    gap: 8,
   },
   followUpIcon: {
     fontSize: 14,
+    marginRight: 8,
   },
   followUpText: {
     fontSize: 12,
