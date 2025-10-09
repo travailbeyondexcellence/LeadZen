@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { PipelineBoard } from '../components/PipelineBoard';
 import { Lead } from '../types/Lead';
-import { Colors, Spacing, BorderRadius, Typography } from '../theme';
+import { Colors, Spacing, BorderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 
 export const Pipeline = () => {
@@ -146,7 +146,8 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border.base,
   },
   headerTitle: {
-    ...Typography.h2,
+    fontSize: 24,
+    fontWeight: '700' as any,
     color: Colors.text.primary,
   },
   refreshButton: {
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.base + '10',
   },
   refreshButtonText: {
-    ...Typography.body,
+    fontSize: 14,
     color: Colors.primary.base,
     fontWeight: '600',
   },
@@ -173,13 +174,14 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xl,
   },
   modalTitle: {
-    ...Typography.h3,
+    fontSize: 20,
+    fontWeight: '700' as any,
     color: Colors.text.primary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
   },
   modalSubtitle: {
-    ...Typography.body,
+    fontSize: 14,
     color: Colors.text.secondary,
     textAlign: 'center',
     marginBottom: Spacing.lg,
@@ -199,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.base,
   },
   modalButtonText: {
-    ...Typography.body,
+    fontSize: 14,
     color: Colors.text.primary,
     fontWeight: '500',
   },
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
-    ...Typography.body,
+    fontSize: 14,
     color: Colors.text.secondary,
   },
 });

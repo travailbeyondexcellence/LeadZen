@@ -90,18 +90,15 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
           />
         </View>
       </View>
-      
       <View style={styles.content}>
         <Text style={styles.name} numberOfLines={1}>
           {lead.name}
         </Text>
-        
         {lead.company && (
           <Text style={styles.company} numberOfLines={1}>
             {lead.company}
           </Text>
         )}
-        
         <View style={styles.footer}>
           <Text style={styles.phone}>📞 {lead.phone}</Text>
           {lead.lastContactedAt && (
@@ -110,7 +107,6 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
             </Text>
           )}
         </View>
-
         {lead.value && lead.value > 0 && (
           <View style={styles.valueContainer}>
             <Text style={styles.value}>

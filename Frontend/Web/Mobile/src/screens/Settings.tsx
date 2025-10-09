@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
+import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
@@ -136,7 +136,8 @@ const styles = StyleSheet.create({
     ...Shadows.primary,
   },
   headerTitle: {
-    ...Typography.h3,
+    fontSize: 20,
+    fontWeight: '700' as any,
     color: Colors.text.inverse,
   },
   content: {
@@ -152,7 +153,8 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
   },
   sectionTitle: {
-    ...Typography.h4,
+    fontSize: 18,
+    fontWeight: '600' as any,
     color: Colors.text.primary,
     marginBottom: Spacing.lg,
   },

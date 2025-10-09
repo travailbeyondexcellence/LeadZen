@@ -6,7 +6,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import MaterialPressable from './Pressable';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
+import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 
 import Dashboard from '../screens/Dashboard';
 import Dialer from '../screens/Dialer';
@@ -127,14 +127,14 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   tabLabel: {
-    fontSize: Typography.fontSize.xs,
-    fontWeight: Typography.fontWeight.medium,
+    fontSize: 12,
+    fontWeight: '500' as any,
     color: Colors.text.tertiary,
     textAlign: 'center',
   },
   tabLabelActive: {
     color: Colors.primary.base,
-    fontWeight: Typography.fontWeight.semibold,
+    fontWeight: '600' as any,
   },
 });
 
