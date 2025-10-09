@@ -1,10 +1,10 @@
 // Using AsyncStorageService for persistent local storage
-import AsyncStorageService from '../services/AsyncStorageService';
+import DatabaseService from '../services/DatabaseService';
 
 export const initializeDatabase = async (): Promise<boolean> => {
   try {
     console.log('Initializing database...');
-    await AsyncStorageService.initDatabase();
+    await DatabaseService.initDatabase();
     console.log('Database initialized successfully');
     return true;
   } catch (error) {
@@ -15,7 +15,7 @@ export const initializeDatabase = async (): Promise<boolean> => {
 
 export const cleanupDatabase = async (): Promise<void> => {
   try {
-    await AsyncStorageService.closeDatabase();
+    await DatabaseService.closeDatabase();
     console.log('Database connection closed');
   } catch (error) {
     console.error('Failed to close database:', error);

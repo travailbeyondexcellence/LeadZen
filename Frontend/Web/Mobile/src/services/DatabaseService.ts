@@ -2,7 +2,7 @@ import SQLite, { SQLiteDatabase, ResultSet, Transaction } from 'react-native-sql
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
 
 // Configure SQLite
-SQLite.DEBUG(true);
+SQLite.DEBUG(false); // Disable verbose logging to avoid console warnings
 SQLite.enablePromise(true);
 
 const DATABASE_NAME = 'leadzen.db';
@@ -157,9 +157,17 @@ class DatabaseService {
     ];
 
     try {
-      await this.database.transaction(async (tx: Transaction) => {
+      await this.database.transaction((tx: Transaction) => {
         for (const statement of schemaStatements) {
-          await tx.executeSql(statement);
+          tx.executeSql(
+            statement,
+            [],
+            () => {},
+            (tx, error) => {
+              console.error('Error executing statement:', statement, error);
+              return false;
+            }
+          );
         }
       });
       console.log('Database tables created successfully');

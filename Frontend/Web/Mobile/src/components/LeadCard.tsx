@@ -98,7 +98,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail }) =
 
       <View style={styles.footer}>
         <View style={styles.metaInfo}>
-          {lead.value && (
+          {typeof lead.value === 'number' && (
             <Text style={styles.value}>{formatValue(lead.value)}</Text>
           )}
           <Text style={styles.source}>{lead.source}</Text>

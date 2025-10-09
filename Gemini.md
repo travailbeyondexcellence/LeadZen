@@ -1,0 +1,1 @@
+I will run the `npm run android` command myself. Do not run it unless I specifically ask you to. I will also run the metro command (`npm start`) myself. You should focus on implementing features as requested.

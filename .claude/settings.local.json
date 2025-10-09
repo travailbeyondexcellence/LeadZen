@@ -11,7 +11,8 @@
       "Bash(./node_modules/.bin/react-native:*)",
       "Bash(find:*)",
       "Bash(npx tsc:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
