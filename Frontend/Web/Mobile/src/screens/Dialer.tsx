@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,22 +7,137 @@ import {
   StatusBar,
   Alert,
   FlatList,
+  RefreshControl,
 } from 'react-native';
 import MaterialPressable from '../components/Pressable';
-import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
+import CallLogCard from '../components/CallLogCard';
+import ActiveCallScreen from '../components/ActiveCallScreen';
 import Input from '../components/Input';
-import Button from '../components/Button';
-
-interface CallLog {
-  id: string;
-  number: string;
-  timestamp: Date;
-  duration: string;
-}
+import { 
+  CallLog, 
+  ActiveCall, 
+  CallDirection, 
+  CallStatus, 
+  CallOutcome,
+  CallType 
+} from '../types/Call';
 
 const Dialer: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
+  const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Mock call logs data
+  const mockCallLogs: CallLog[] = [
+    {
+      id: '1',
+      contactId: '1',
+      phoneNumber: '+1 (555) 123-4567',
+      contactName: 'John Smith',
+      type: CallType.VOICE,
+      direction: CallDirection.OUTBOUND,
+      status: CallStatus.ENDED,
+      startTime: new Date('2024-10-08T14:30:00'),
+      endTime: new Date('2024-10-08T14:35:30'),
+      duration: 330,
+      notes: 'Discussed enterprise package pricing. Very interested.',
+      outcome: CallOutcome.SUCCESSFUL,
+      followUpRequired: true,
+      followUpDate: new Date('2024-10-10'),
+      createdAt: new Date('2024-10-08T14:30:00'),
+      updatedAt: new Date('2024-10-08T14:35:30'),
+    },
+    {
+      id: '2',
+      phoneNumber: '+1 (555) 987-6543',
+      contactName: 'Sarah Johnson',
+      type: CallType.VOICE,
+      direction: CallDirection.INBOUND,
+      status: CallStatus.ENDED,
+      startTime: new Date('2024-10-08T11:15:00'),
+      endTime: new Date('2024-10-08T11:22:45'),
+      duration: 465,
+      notes: 'Called back regarding proposal. Needs technical details.',
+      outcome: CallOutcome.CALLBACK_REQUESTED,
+      followUpRequired: true,
+      followUpDate: new Date('2024-10-09'),
+      createdAt: new Date('2024-10-08T11:15:00'),
+      updatedAt: new Date('2024-10-08T11:22:45'),
+    },
+    {
+      id: '3',
+      phoneNumber: '+1 (555) 456-7890',
+      contactName: 'Michael Chen',
+      type: CallType.VOICE,
+      direction: CallDirection.OUTBOUND,
+      status: CallStatus.ENDED,
+      startTime: new Date('2024-10-07T16:45:00'),
+      duration: 0,
+      outcome: CallOutcome.VOICEMAIL,
+      notes: 'Left voicemail about demo scheduling.',
+      createdAt: new Date('2024-10-07T16:45:00'),
+      updatedAt: new Date('2024-10-07T16:45:30'),
+    },
+    {
+      id: '4',
+      phoneNumber: '+1 (555) 321-9876',
+      type: CallType.VOICE,
+      direction: CallDirection.MISSED,
+      status: CallStatus.NO_ANSWER,
+      startTime: new Date('2024-10-07T09:30:00'),
+      duration: 0,
+      outcome: CallOutcome.NO_ANSWER,
+      createdAt: new Date('2024-10-07T09:30:00'),
+      updatedAt: new Date('2024-10-07T09:30:00'),
+    },
+    {
+      id: '5',
+      phoneNumber: '+1 (555) 654-3210',
+      contactName: 'Emily Davis',
+      type: CallType.VOICE,
+      direction: CallDirection.OUTBOUND,
+      status: CallStatus.ENDED,
+      startTime: new Date('2024-10-06T13:20:00'),
+      endTime: new Date('2024-10-06T14:05:30'),
+      duration: 2730,
+      notes: 'Detailed discussion about partnership opportunities. Very promising.',
+      outcome: CallOutcome.MEETING_SCHEDULED,
+      recordings: [{
+        id: 'rec1',
+        url: 'https://example.com/recording1.mp3',
+        duration: 2730,
+        size: 2048000,
+        createdAt: new Date('2024-10-06T13:20:00'),
+      }],
+      createdAt: new Date('2024-10-06T13:20:00'),
+      updatedAt: new Date('2024-10-06T14:05:30'),
+    },
+  ];
+
+  useEffect(() => {
+    loadCallLogs();
+  }, []);
+
+  const loadCallLogs = async () => {
+    setLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCallLogs(mockCallLogs);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load call logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadCallLogs();
+    setRefreshing(false);
+  };
 
   const dialpadNumbers = [
     [{ number: '1', letters: '' }, { number: '2', letters: 'ABC' }, { number: '3', letters: 'DEF' }],
@@ -45,35 +160,136 @@ const Dialer: React.FC = () => {
       return;
     }
 
-    const newLog: CallLog = {
+    // Create active call
+    const newActiveCall: ActiveCall = {
       id: Date.now().toString(),
-      number: phoneNumber,
-      timestamp: new Date(),
-      duration: '0:00',
+      phoneNumber: phoneNumber,
+      startTime: new Date(),
+      status: CallStatus.INITIATED,
+      duration: 0,
+      isMuted: false,
+      isSpeakerOn: false,
+      isRecording: false,
     };
 
-    setCallLogs(prev => [newLog, ...prev]);
-    Alert.alert('Call Initiated', `Calling ${phoneNumber}...`);
-    setPhoneNumber('');
+    setActiveCall(newActiveCall);
+    
+    // Simulate call progression
+    setTimeout(() => {
+      if (newActiveCall) {
+        setActiveCall(prev => prev ? { ...prev, status: CallStatus.RINGING } : null);
+      }
+    }, 1000);
+    
+    setTimeout(() => {
+      if (newActiveCall) {
+        setActiveCall(prev => prev ? { ...prev, status: CallStatus.CONNECTED } : null);
+      }
+    }, 3000);
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const handleEndCall = () => {
+    if (activeCall) {
+      const endTime = new Date();
+      const duration = Math.floor((endTime.getTime() - activeCall.startTime.getTime()) / 1000);
+      
+      // Create call log entry
+      const newCallLog: CallLog = {
+        id: activeCall.id,
+        phoneNumber: activeCall.phoneNumber,
+        contactName: activeCall.contactName,
+        type: CallType.VOICE,
+        direction: CallDirection.OUTBOUND,
+        status: CallStatus.ENDED,
+        startTime: activeCall.startTime,
+        endTime: endTime,
+        duration: duration,
+        outcome: duration > 10 ? CallOutcome.SUCCESSFUL : CallOutcome.NO_ANSWER,
+        createdAt: activeCall.startTime,
+        updatedAt: endTime,
+      };
+      
+      setCallLogs(prev => [newCallLog, ...prev]);
+      setActiveCall(null);
+      setPhoneNumber('');
+    }
+  };
+
+  const handleMute = () => {
+    setActiveCall(prev => prev ? { ...prev, isMuted: !prev.isMuted } : null);
+  };
+
+  const handleSpeaker = () => {
+    setActiveCall(prev => prev ? { ...prev, isSpeakerOn: !prev.isSpeakerOn } : null);
+  };
+
+  const handleKeypad = () => {
+    Alert.alert('Keypad', 'Keypad functionality would be implemented here');
+  };
+
+  const handleHold = () => {
+    Alert.alert('Hold', 'Call hold functionality would be implemented here');
+  };
+
+  const handleRecord = () => {
+    setActiveCall(prev => prev ? { ...prev, isRecording: !prev.isRecording } : null);
+  };
+
+  const handleCallLogPress = (callLog: CallLog) => {
+    Alert.alert(
+      'Call Details',
+      `View details for call with ${callLog.contactName || callLog.phoneNumber}`,
+      [
+        { text: 'Call Back', onPress: () => handleCallBack(callLog) },
+        { text: 'Add Notes', onPress: () => handleAddNotes(callLog) },
+        { text: 'Close', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleCallBack = (callLog: CallLog) => {
+    setPhoneNumber(callLog.phoneNumber);
+    handleCall();
+  };
+
+  const handleAddNotes = (callLog: CallLog) => {
+    Alert.alert('Add Notes', `Add notes for call with ${callLog.contactName || callLog.phoneNumber}`);
+    // Navigate to notes screen
   };
 
   const renderCallLog = ({ item }: { item: CallLog }) => (
-    <View style={styles.callLogItem}>
-      <View style={styles.callLogInfo}>
-        <Text style={styles.callLogNumber}>{item.number}</Text>
-        <Text style={styles.callLogTime}>{formatTime(item.timestamp)}</Text>
+    <CallLogCard
+      callLog={item}
+      onPress={handleCallLogPress}
+      onCallback={handleCallBack}
+      onAddNotes={handleAddNotes}
+    />
+  );
+
+  const renderStats = () => (
+    <View style={styles.statsContainer}>
+      <View style={styles.statCard}>
+        <Text style={styles.statNumber}>{callLogs.length}</Text>
+        <Text style={styles.statLabel}>Total Calls</Text>
       </View>
-      <Text style={styles.callLogDuration}>{item.duration}</Text>
+      <View style={styles.statCard}>
+        <Text style={styles.statNumber}>
+          {callLogs.filter(log => log.direction === CallDirection.OUTBOUND).length}
+        </Text>
+        <Text style={styles.statLabel}>Outbound</Text>
+      </View>
+      <View style={styles.statCard}>
+        <Text style={styles.statNumber}>
+          {callLogs.filter(log => log.outcome === CallOutcome.SUCCESSFUL).length}
+        </Text>
+        <Text style={styles.statLabel}>Successful</Text>
+      </View>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
+      <StatusBar barStyle="light-content" backgroundColor="#14B8A6" />
       
       {/* Header */}
       <View style={styles.header}>
@@ -103,7 +319,7 @@ const Dialer: React.FC = () => {
                   key={item.number}
                   style={styles.dialpadButton}
                   onPress={() => handleNumberPress(item.number)}
-                  rippleColor={Colors.stateLayer.pressed}
+                  rippleColor="rgba(20, 184, 166, 0.16)"
                 >
                   <Text style={styles.dialpadNumber}>{item.number}</Text>
                   {item.letters && <Text style={styles.dialpadLetters}>{item.letters}</Text>}
@@ -118,7 +334,7 @@ const Dialer: React.FC = () => {
           <MaterialPressable
             style={styles.backspaceButton}
             onPress={handleBackspace}
-            rippleColor={Colors.stateLayer.hover}
+            rippleColor="rgba(20, 184, 166, 0.08)"
           >
             <Text style={styles.backspaceIcon}>⌫</Text>
           </MaterialPressable>
@@ -139,14 +355,25 @@ const Dialer: React.FC = () => {
         <View style={styles.callLogsSection}>
           <Text style={styles.sectionTitle}>Recent Calls</Text>
           {callLogs.length > 0 ? (
-            <FlatList
-              data={callLogs.slice(0, 4)}
-              renderItem={renderCallLog}
-              keyExtractor={(item) => item.id}
-              style={styles.callLogsList}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false}
-            />
+            <>
+              {renderStats()}
+              <FlatList
+                data={callLogs.slice(0, 3)}
+                renderItem={renderCallLog}
+                keyExtractor={(item) => item.id}
+                style={styles.callLogsList}
+                showsVerticalScrollIndicator={false}
+                scrollEnabled={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                    tintColor="#14B8A6"
+                    colors={['#14B8A6']}
+                  />
+                }
+              />
+            </>
           ) : (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>📞</Text>
@@ -156,6 +383,17 @@ const Dialer: React.FC = () => {
           )}
         </View>
       </View>
+
+      {/* Active Call Screen */}
+      <ActiveCallScreen
+        activeCall={activeCall}
+        onEndCall={handleEndCall}
+        onMute={handleMute}
+        onSpeaker={handleSpeaker}
+        onKeypad={handleKeypad}
+        onHold={handleHold}
+        onRecord={handleRecord}
+      />
     </SafeAreaView>
   );
 };
@@ -163,18 +401,23 @@ const Dialer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background.primary,
+    backgroundColor: '#F8FAFC',
   },
   header: {
-    backgroundColor: Colors.primary.base,
-    paddingHorizontal: Spacing.screen,
-    paddingVertical: Spacing.lg,
+    backgroundColor: '#14B8A6',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     alignItems: 'center',
-    ...Shadows.primary,
+    shadowColor: '#14B8A6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 3,
   },
   headerTitle: {
-    ...Typography.h3,
-    color: Colors.text.inverse,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -288,17 +531,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 4,
   },
-  callLogsList: {
-    flexGrow: 0,
-  },
-  callLogItem: {
+  statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  statCard: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    marginBottom: 8,
-    borderRadius: 16,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -307,23 +550,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
-  callLogInfo: {
-    flex: 1,
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#14B8A6',
+    marginBottom: 4,
   },
-  callLogNumber: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
-  callLogTime: {
-    fontSize: 14,
+  statLabel: {
+    fontSize: 10,
     color: '#64748B',
-    marginTop: 2,
-  },
-  callLogDuration: {
-    fontSize: 14,
-    color: '#64748B',
+    textAlign: 'center',
     fontWeight: '500',
+  },
+  callLogsList: {
+    flexGrow: 0,
   },
   emptyContainer: {
     flex: 1,
