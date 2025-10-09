@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import BottomTabNavigator from './BottomTabNavigator';
 import LeadDetail from '../screens/LeadDetail';
 import LeadForm from '../screens/LeadForm';
@@ -11,7 +11,7 @@ export type RootStackParamList = {
   LeadForm: { leadId?: string };
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC = () => {
   return (
