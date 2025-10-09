@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Sidebar from '../components/Sidebar';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
-import MockDatabaseService from '../services/MockDatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import { Lead, LeadStatus } from '../types/Lead';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -33,7 +33,7 @@ const Dashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      const dbLeads = await MockDatabaseService.getLeads(100, 0);
+      const dbLeads = await AsyncStorageService.getLeads(100, 0);
       setLeads(dbLeads);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
