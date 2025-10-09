@@ -6,7 +6,6 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  TouchableOpacity,
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
@@ -27,6 +26,8 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   onPress,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isLongPress, setIsLongPress] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   
   // Animated values for position and visual feedback
   const pan = useRef(new Animated.ValueXY()).current;
@@ -37,18 +38,31 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   const panResponder = useRef(
     PanResponder.create({
       // Ask to be the responder
-      onStartShouldSetPanResponder: () => false, // Don't capture on tap
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Activate drag when moved more than 5 pixels
-        return Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
-      },
-      onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponderCapture: () => true, // Capture moves
+      onStartShouldSetPanResponder: () => true, // Always capture to handle long press
+      onMoveShouldSetPanResponder: () => true,
       
       // Start of drag gesture
       onPanResponderGrant: (evt, gestureState) => {
-        setIsDragging(true);
-        onDragStart?.();
+        // Start a timer for long press detection
+        longPressTimer.current = setTimeout(() => {
+          setIsLongPress(true);
+          setIsDragging(true);
+          onDragStart?.();
+          
+          // Animate visual feedback for drag start
+          Animated.parallel([
+            Animated.spring(scale, {
+              toValue: 1.1,
+              useNativeDriver: true,
+              friction: 5,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0.95,
+              duration: 100,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }, 200); // 200ms for long press
         
         // Set the initial value to the current position
         pan.setOffset({
@@ -56,34 +70,43 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           y: pan.y._value,
         });
         pan.setValue({ x: 0, y: 0 });
-        
-        // Animate visual feedback for drag start
-        Animated.parallel([
-          Animated.spring(scale, {
-            toValue: 1.1, // Increased scale for better visibility
-            useNativeDriver: true,
-            friction: 5,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0.95, // Slightly less transparent
-            duration: 100,
-            useNativeDriver: true,
-          }),
-        ]).start();
       },
       
       // During drag
-      onPanResponderMove: Animated.event(
-        [null, { dx: pan.x, dy: pan.y }],
-        { useNativeDriver: false }
-      ),
+      onPanResponderMove: (evt, gestureState) => {
+        // If moved more than 5 pixels and long press detected, start dragging
+        if ((Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5)) {
+          if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+          }
+          
+          if (!isDragging && !isLongPress) {
+            // Movement without long press - cancel
+            return;
+          }
+          
+          // If long press was detected, allow dragging
+          if (isLongPress) {
+            pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+          }
+        }
+      },
       
       // End of drag gesture
       onPanResponderRelease: (evt, gestureState) => {
+        // Clear the long press timer
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+        
         pan.flattenOffset();
         
-        if (isDragging) {
+        if (isDragging && isLongPress) {
+          // This was a drag operation
           setIsDragging(false);
+          setIsLongPress(false);
           
           // Reset visual feedback
           Animated.parallel([
@@ -103,18 +126,27 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           onDragEnd?.(lead, gestureState);
           
           // Animate back to original position
-          // Parent component will handle actual position update
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
             useNativeDriver: true,
             friction: 5,
           }).start();
+        } else if (!isLongPress && Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
+          // This was a tap (no long press, minimal movement)
+          onPress?.();
         }
+        
+        setIsLongPress(false);
       },
       
       onPanResponderTerminate: () => {
         // Another component has become the responder
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
         setIsDragging(false);
+        setIsLongPress(false);
         Animated.parallel([
           Animated.spring(scale, {
             toValue: 1,
@@ -181,13 +213,8 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       style={[styles.container, animatedStyle]}
       {...panResponder.panHandlers}
     >
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={isDragging ? undefined : onPress}
-        disabled={isDragging}
-      >
-        {/* Drag Handle Indicator */}
-        <View style={styles.dragHandle}>
+      {/* Drag Handle Indicator */}
+      <View style={styles.dragHandle}>
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
@@ -234,7 +261,6 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           ) : null}
         </View>
       </View>
-      </TouchableOpacity>
     </Animated.View>
   );
 };
