@@ -1,13 +1,8 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import BottomTabNavigator from './src/navigation/BottomTabNavigator';
+import CustomTabNavigator from './src/components/CustomTabNavigator';
 
 function App(): React.JSX.Element {
-  return (
-    <NavigationContainer>
-      <BottomTabNavigator />
-    </NavigationContainer>
-  );
+  return <CustomTabNavigator />;
 }
 
 export default App;
