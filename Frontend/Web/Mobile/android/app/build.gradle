@@ -68,7 +68,6 @@ android {
 }
 
 dependencies {
-    implementation project(':react-native-sqlite-storage')
     implementation("com.facebook.react:react-android")
     
     if (hermesEnabled.toBoolean()) {
