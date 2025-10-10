@@ -73,7 +73,7 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={Colors.primary} />
+            <ActivityIndicator size="small" color={Colors.primary.base} />
           </View>
         ) : leads.length === 0 ? (
           <View style={styles.emptyContainer}>

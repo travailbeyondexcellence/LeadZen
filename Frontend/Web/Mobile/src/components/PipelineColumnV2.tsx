@@ -12,7 +12,7 @@ import { DraggableLeadCardV2 } from './DraggableLeadCardV2';
 import { Colors, Spacing, BorderRadius } from '../theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const COLUMN_WIDTH = SCREEN_WIDTH * 0.8;
+const COLUMN_WIDTH = SCREEN_WIDTH * 0.75;
 
 interface PipelineColumnV2Props {
   title: string;
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     borderWidth: 2,
     borderLeftWidth: 4,
-    overflow: 'visible', // Changed from 'hidden' to 'visible' to allow dragging outside
+    overflow: 'hidden', // Keep hidden to prevent layout issues
     maxHeight: '90%',
   },
   header: {
@@ -217,11 +217,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    overflow: 'visible', // Allow dragging outside
   },
   scrollContent: {
     padding: Spacing.sm,
-    overflow: 'visible', // Allow dragging outside
   },
   emptyContainer: {
     padding: Spacing.xl,

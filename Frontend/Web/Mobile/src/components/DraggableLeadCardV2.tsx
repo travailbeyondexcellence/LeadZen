@@ -74,22 +74,18 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       
       // During drag
       onPanResponderMove: (evt, gestureState) => {
-        // If moved more than 5 pixels and long press detected, start dragging
-        if ((Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5)) {
-          if (longPressTimer.current) {
+        // If moved more than 10 pixels, cancel long press timer
+        if ((Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10)) {
+          if (longPressTimer.current && !isLongPress) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
-          }
-          
-          if (!isDragging && !isLongPress) {
-            // Movement without long press - cancel
             return;
           }
-          
-          // If long press was detected, allow dragging
-          if (isLongPress) {
-            pan.setValue({ x: gestureState.dx, y: gestureState.dy });
-          }
+        }
+        
+        // If long press was detected, allow dragging
+        if (isLongPress && isDragging) {
+          pan.setValue({ x: gestureState.dx, y: gestureState.dy });
         }
       },
       
@@ -131,7 +127,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
             useNativeDriver: true,
             friction: 5,
           }).start();
-        } else if (!isLongPress && Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
+        } else if (!isLongPress && Math.abs(gestureState.dx) < 10 && Math.abs(gestureState.dy) < 10) {
           // This was a tap (no long press, minimal movement)
           onPress?.();
         }
@@ -205,7 +201,6 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
     opacity: opacity,
     zIndex: isDragging ? 9999 : 1,
     elevation: isDragging ? 9999 : 2,
-    position: isDragging ? 'absolute' : 'relative',
   };
   
   return (

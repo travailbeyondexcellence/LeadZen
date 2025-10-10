@@ -229,7 +229,6 @@ const styles = StyleSheet.create({
   boardContainer: {
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.sm,
-    overflow: 'visible', // Allow dragged cards to appear above everything
   },
   loadingContainer: {
     width: SCREEN_WIDTH,

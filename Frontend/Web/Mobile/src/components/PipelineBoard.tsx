@@ -157,7 +157,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
+            <ActivityIndicator size="large" color={Colors.primary.base} />
             <Text style={styles.loadingText}>Loading pipeline...</Text>
           </View>
         ) : (
