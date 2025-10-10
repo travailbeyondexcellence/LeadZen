@@ -1,399 +1,248 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
   Alert,
-  FlatList,
-  RefreshControl,
+  TextInput,
 } from 'react-native';
-import MaterialPressable from '../components/Pressable';
-import CallLogCard from '../components/CallLogCard';
-import ActiveCallScreen from '../components/ActiveCallScreen';
-import Input from '../components/Input';
-import { 
-  CallLog, 
-  ActiveCall, 
-  CallDirection, 
-  CallStatus, 
-  CallOutcome,
-  CallType 
-} from '../types/Call';
+import DialerKeypad from '../components/DialerKeypad';
+import T9Search from '../components/T9Search';
+import RecentCalls from '../components/RecentCalls';
+import DialerService from '../services/DialerService';
+import { Colors, Typography } from '../theme';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+type TabType = 'dialer' | 'recent';
 
 const Dialer: React.FC = () => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
-  const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  // Mock call logs data
-  const mockCallLogs: CallLog[] = [
-    {
-      id: '1',
-      contactId: '1',
-      phoneNumber: '+1 (555) 123-4567',
-      contactName: 'John Smith',
-      type: CallType.VOICE,
-      direction: CallDirection.OUTBOUND,
-      status: CallStatus.ENDED,
-      startTime: new Date('2024-10-08T14:30:00'),
-      endTime: new Date('2024-10-08T14:35:30'),
-      duration: 330,
-      notes: 'Discussed enterprise package pricing. Very interested.',
-      outcome: CallOutcome.SUCCESSFUL,
-      followUpRequired: true,
-      followUpDate: new Date('2024-10-10'),
-      createdAt: new Date('2024-10-08T14:30:00'),
-      updatedAt: new Date('2024-10-08T14:35:30'),
-    },
-    {
-      id: '2',
-      phoneNumber: '+1 (555) 987-6543',
-      contactName: 'Sarah Johnson',
-      type: CallType.VOICE,
-      direction: CallDirection.INBOUND,
-      status: CallStatus.ENDED,
-      startTime: new Date('2024-10-08T11:15:00'),
-      endTime: new Date('2024-10-08T11:22:45'),
-      duration: 465,
-      notes: 'Called back regarding proposal. Needs technical details.',
-      outcome: CallOutcome.CALLBACK_REQUESTED,
-      followUpRequired: true,
-      followUpDate: new Date('2024-10-09'),
-      createdAt: new Date('2024-10-08T11:15:00'),
-      updatedAt: new Date('2024-10-08T11:22:45'),
-    },
-    {
-      id: '3',
-      phoneNumber: '+1 (555) 456-7890',
-      contactName: 'Michael Chen',
-      type: CallType.VOICE,
-      direction: CallDirection.OUTBOUND,
-      status: CallStatus.ENDED,
-      startTime: new Date('2024-10-07T16:45:00'),
-      duration: 0,
-      outcome: CallOutcome.VOICEMAIL,
-      notes: 'Left voicemail about demo scheduling.',
-      createdAt: new Date('2024-10-07T16:45:00'),
-      updatedAt: new Date('2024-10-07T16:45:30'),
-    },
-    {
-      id: '4',
-      phoneNumber: '+1 (555) 321-9876',
-      type: CallType.VOICE,
-      direction: CallDirection.MISSED,
-      status: CallStatus.NO_ANSWER,
-      startTime: new Date('2024-10-07T09:30:00'),
-      duration: 0,
-      outcome: CallOutcome.NO_ANSWER,
-      createdAt: new Date('2024-10-07T09:30:00'),
-      updatedAt: new Date('2024-10-07T09:30:00'),
-    },
-    {
-      id: '5',
-      phoneNumber: '+1 (555) 654-3210',
-      contactName: 'Emily Davis',
-      type: CallType.VOICE,
-      direction: CallDirection.OUTBOUND,
-      status: CallStatus.ENDED,
-      startTime: new Date('2024-10-06T13:20:00'),
-      endTime: new Date('2024-10-06T14:05:30'),
-      duration: 2730,
-      notes: 'Detailed discussion about partnership opportunities. Very promising.',
-      outcome: CallOutcome.MEETING_SCHEDULED,
-      recordings: [{
-        id: 'rec1',
-        url: 'https://example.com/recording1.mp3',
-        duration: 2730,
-        size: 2048000,
-        createdAt: new Date('2024-10-06T13:20:00'),
-      }],
-      createdAt: new Date('2024-10-06T13:20:00'),
-      updatedAt: new Date('2024-10-06T14:05:30'),
-    },
-  ];
+  const [activeTab, setActiveTab] = useState<TabType>('dialer');
+  const [phoneInput, setPhoneInput] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  const searchAnimation = useRef(new Animated.Value(0)).current;
+  const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
-    loadCallLogs();
-  }, []);
-
-  const loadCallLogs = async () => {
-    setLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCallLogs(mockCallLogs);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load call logs');
-    } finally {
-      setLoading(false);
+    // Show/hide search based on input
+    const shouldShow = phoneInput.length >= 2 && !DialerService.isPhoneNumber(phoneInput);
+    
+    if (shouldShow !== showSearch) {
+      setShowSearch(shouldShow);
+      
+      Animated.timing(searchAnimation, {
+        toValue: shouldShow ? 1 : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
     }
-  };
+  }, [phoneInput, showSearch, searchAnimation]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadCallLogs();
-    setRefreshing(false);
-  };
-
-  const dialpadNumbers = [
-    [{ number: '1', letters: '' }, { number: '2', letters: 'ABC' }, { number: '3', letters: 'DEF' }],
-    [{ number: '4', letters: 'GHI' }, { number: '5', letters: 'JKL' }, { number: '6', letters: 'MNO' }],
-    [{ number: '7', letters: 'PQRS' }, { number: '8', letters: 'TUV' }, { number: '9', letters: 'WXYZ' }],
-    [{ number: '*', letters: '' }, { number: '0', letters: '+' }, { number: '#', letters: '' }],
-  ];
-
-  const handleNumberPress = (number: string) => {
-    setPhoneNumber(prev => prev + number);
+  const handleKeyPress = (key: string) => {
+    setPhoneInput(prev => {
+      const newInput = prev + key;
+      return DialerService.formatInput(newInput);
+    });
   };
 
   const handleBackspace = () => {
-    setPhoneNumber(prev => prev.slice(0, -1));
+    setPhoneInput(prev => {
+      const newInput = prev.slice(0, -1);
+      return DialerService.formatInput(newInput);
+    });
   };
 
-  const handleCall = () => {
-    if (!phoneNumber.trim()) {
-      Alert.alert('Error', 'Please enter a phone number');
+  const handleClear = () => {
+    setPhoneInput('');
+  };
+
+  const handleCall = async () => {
+    if (!phoneInput.trim()) {
+      Alert.alert('No Number', 'Please enter a phone number to call');
       return;
     }
 
-    // Create active call
-    const newActiveCall: ActiveCall = {
-      id: Date.now().toString(),
-      phoneNumber: phoneNumber,
-      startTime: new Date(),
-      status: CallStatus.INITIATED,
-      duration: 0,
-      isMuted: false,
-      isSpeakerOn: false,
-      isRecording: false,
-    };
+    const validation = DialerService.validatePhoneNumber(phoneInput);
+    if (!validation.valid) {
+      Alert.alert('Invalid Number', validation.error);
+      return;
+    }
 
-    setActiveCall(newActiveCall);
+    const result = await DialerService.makeCall(phoneInput);
     
-    // Simulate call progression
-    setTimeout(() => {
-      if (newActiveCall) {
-        setActiveCall(prev => prev ? { ...prev, status: CallStatus.RINGING } : null);
-      }
-    }, 1000);
-    
-    setTimeout(() => {
-      if (newActiveCall) {
-        setActiveCall(prev => prev ? { ...prev, status: CallStatus.CONNECTED } : null);
-      }
-    }, 3000);
-  };
-
-  const handleEndCall = () => {
-    if (activeCall) {
-      const endTime = new Date();
-      const duration = Math.floor((endTime.getTime() - activeCall.startTime.getTime()) / 1000);
-      
-      // Create call log entry
-      const newCallLog: CallLog = {
-        id: activeCall.id,
-        phoneNumber: activeCall.phoneNumber,
-        contactName: activeCall.contactName,
-        type: CallType.VOICE,
-        direction: CallDirection.OUTBOUND,
-        status: CallStatus.ENDED,
-        startTime: activeCall.startTime,
-        endTime: endTime,
-        duration: duration,
-        outcome: duration > 10 ? CallOutcome.SUCCESSFUL : CallOutcome.NO_ANSWER,
-        createdAt: activeCall.startTime,
-        updatedAt: endTime,
-      };
-      
-      setCallLogs(prev => [newCallLog, ...prev]);
-      setActiveCall(null);
-      setPhoneNumber('');
+    if (result.success) {
+      // Clear input after successful call
+      setPhoneInput('');
+      // Trigger refresh of recent calls
+      setRefreshTrigger(prev => prev + 1);
     }
   };
 
-  const handleMute = () => {
-    setActiveCall(prev => prev ? { ...prev, isMuted: !prev.isMuted } : null);
+  const handleSelectLead = (lead: any) => {
+    setPhoneInput(DialerService.formatPhoneNumber(lead.phone));
   };
 
-  const handleSpeaker = () => {
-    setActiveCall(prev => prev ? { ...prev, isSpeakerOn: !prev.isSpeakerOn } : null);
+  const handleCallLead = async (lead: any) => {
+    const result = await DialerService.callLead(lead);
+    
+    if (result.success) {
+      setRefreshTrigger(prev => prev + 1);
+    }
   };
 
-  const handleKeypad = () => {
-    Alert.alert('Keypad', 'Keypad functionality would be implemented here');
+  const handleCallFromRecent = async (phoneNumber: string) => {
+    const result = await DialerService.makeCall(phoneNumber);
+    
+    if (result.success) {
+      setRefreshTrigger(prev => prev + 1);
+    }
   };
 
-  const handleHold = () => {
-    Alert.alert('Hold', 'Call hold functionality would be implemented here');
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    if (tab === 'recent') {
+      setPhoneInput('');
+    }
   };
 
-  const handleRecord = () => {
-    setActiveCall(prev => prev ? { ...prev, isRecording: !prev.isRecording } : null);
-  };
-
-  const handleCallLogPress = (callLog: CallLog) => {
-    Alert.alert(
-      'Call Details',
-      `View details for call with ${callLog.contactName || callLog.phoneNumber}`,
-      [
-        { text: 'Call Back', onPress: () => handleCallBack(callLog) },
-        { text: 'Add Notes', onPress: () => handleAddNotes(callLog) },
-        { text: 'Close', style: 'cancel' },
-      ]
-    );
-  };
-
-  const handleCallBack = (callLog: CallLog) => {
-    setPhoneNumber(callLog.phoneNumber);
-    handleCall();
-  };
-
-  const handleAddNotes = (callLog: CallLog) => {
-    Alert.alert('Add Notes', `Add notes for call with ${callLog.contactName || callLog.phoneNumber}`);
-    // Navigate to notes screen
-  };
-
-  const renderCallLog = ({ item }: { item: CallLog }) => (
-    <CallLogCard
-      callLog={item}
-      onPress={handleCallLogPress}
-      onCallback={handleCallBack}
-      onAddNotes={handleAddNotes}
-    />
+  const renderNumberDisplay = () => (
+    <View style={styles.numberDisplay}>
+      <TextInput
+        ref={inputRef}
+        style={styles.numberInput}
+        value={phoneInput}
+        onChangeText={setPhoneInput}
+        placeholder="Enter number or name"
+        placeholderTextColor="#999999"
+        keyboardType="phone-pad"
+        autoCorrect={false}
+        autoCapitalize="none"
+        selectTextOnFocus
+      />
+      
+      {phoneInput.length > 0 && (
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={handleClear}
+        >
+          <Text style={styles.clearButtonText}>✕</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 
-  const renderStats = () => (
-    <View style={styles.statsContainer}>
-      <View style={styles.statCard}>
-        <Text style={styles.statNumber}>{callLogs.length}</Text>
-        <Text style={styles.statLabel}>Total Calls</Text>
+  const renderActionButtons = () => (
+    <View style={styles.actionButtons}>
+      {phoneInput.length > 0 && (
+        <TouchableOpacity
+          style={styles.backspaceButton}
+          onPress={handleBackspace}
+        >
+          <Text style={styles.backspaceText}>⌫</Text>
+        </TouchableOpacity>
+      )}
+      
+      <TouchableOpacity
+        style={[
+          styles.callButton,
+          !phoneInput.trim() && styles.callButtonDisabled,
+        ]}
+        onPress={handleCall}
+        disabled={!phoneInput.trim()}
+      >
+        <Text style={styles.callButtonText}>📞</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderDialerTab = () => (
+    <View style={styles.dialerContent}>
+      {renderNumberDisplay()}
+      
+      <Animated.View
+        style={[
+          styles.searchContainer,
+          {
+            height: searchAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, SCREEN_HEIGHT * 0.3],
+            }),
+            opacity: searchAnimation,
+          },
+        ]}
+      >
+        {showSearch && (
+          <T9Search
+            searchInput={phoneInput.replace(/\D/g, '')} // Remove formatting for search
+            onSelectLead={handleSelectLead}
+            onCallLead={handleCallLead}
+          />
+        )}
+      </Animated.View>
+      
+      <View style={styles.keypadContainer}>
+        <DialerKeypad
+          onKeyPress={handleKeyPress}
+          disabled={false}
+        />
+        
+        {renderActionButtons()}
       </View>
-      <View style={styles.statCard}>
-        <Text style={styles.statNumber}>
-          {callLogs.filter(log => log.direction === CallDirection.OUTBOUND).length}
+    </View>
+  );
+
+  const renderRecentTab = () => (
+    <View style={styles.recentContent}>
+      <RecentCalls
+        onCallPress={handleCallFromRecent}
+        refreshTrigger={refreshTrigger}
+      />
+    </View>
+  );
+
+  const renderTabs = () => (
+    <View style={styles.tabContainer}>
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'dialer' && styles.activeTab]}
+        onPress={() => handleTabChange('dialer')}
+      >
+        <Text style={[styles.tabText, activeTab === 'dialer' && styles.activeTabText]}>
+          📱 Dialer
         </Text>
-        <Text style={styles.statLabel}>Outbound</Text>
-      </View>
-      <View style={styles.statCard}>
-        <Text style={styles.statNumber}>
-          {callLogs.filter(log => log.outcome === CallOutcome.SUCCESSFUL).length}
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'recent' && styles.activeTab]}
+        onPress={() => handleTabChange('recent')}
+      >
+        <Text style={[styles.tabText, activeTab === 'recent' && styles.activeTabText]}>
+          📞 Recent
         </Text>
-        <Text style={styles.statLabel}>Successful</Text>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#14B8A6" />
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
       
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Dialer</Text>
+        <Text style={styles.headerTitle}>LeadZen Dialer</Text>
+        <Text style={styles.headerSubtitle}>Smart calling with lead integration</Text>
       </View>
 
-      {/* Content */}
+      {renderTabs()}
+
       <View style={styles.content}>
-        {/* Phone Input */}
-        <View style={styles.phoneInputContainer}>
-          <Input
-            label="Phone Number"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            placeholder="Enter phone number"
-            keyboardType="phone-pad"
-            style={styles.phoneInput}
-          />
-        </View>
-
-        {/* Dialpad */}
-        <View style={styles.dialpad}>
-          {dialpadNumbers.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.dialpadRow}>
-              {row.map((item) => (
-                <MaterialPressable
-                  key={item.number}
-                  style={styles.dialpadButton}
-                  onPress={() => handleNumberPress(item.number)}
-                  rippleColor="rgba(20, 184, 166, 0.16)"
-                >
-                  <Text style={styles.dialpadNumber}>{item.number}</Text>
-                  {item.letters && <Text style={styles.dialpadLetters}>{item.letters}</Text>}
-                </MaterialPressable>
-              ))}
-            </View>
-          ))}
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <MaterialPressable
-            style={styles.backspaceButton}
-            onPress={handleBackspace}
-            rippleColor="rgba(20, 184, 166, 0.08)"
-          >
-            <Text style={styles.backspaceIcon}>⌫</Text>
-          </MaterialPressable>
-          
-          <MaterialPressable
-            style={styles.callButton}
-            onPress={handleCall}
-            rippleColor="rgba(255, 255, 255, 0.2)"
-          >
-            <Text style={styles.callIcon}>📞</Text>
-            <Text style={styles.callText}>Call</Text>
-          </MaterialPressable>
-          
-          <View style={styles.spacer} />
-        </View>
-
-        {/* Call Logs */}
-        <View style={styles.callLogsSection}>
-          <Text style={styles.sectionTitle}>Recent Calls</Text>
-          {callLogs.length > 0 ? (
-            <>
-              {renderStats()}
-              <FlatList
-                data={callLogs.slice(0, 3)}
-                renderItem={renderCallLog}
-                keyExtractor={(item) => item.id}
-                style={styles.callLogsList}
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={false}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                    tintColor="#14B8A6"
-                    colors={['#14B8A6']}
-                  />
-                }
-              />
-            </>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>📞</Text>
-              <Text style={styles.emptyText}>No recent calls</Text>
-              <Text style={styles.emptySubtext}>Your call history will appear here</Text>
-            </View>
-          )}
-        </View>
+        {activeTab === 'dialer' ? renderDialerTab() : renderRecentTab()}
       </View>
-
-      {/* Active Call Screen */}
-      <ActiveCallScreen
-        activeCall={activeCall}
-        onEndCall={handleEndCall}
-        onMute={handleMute}
-        onSpeaker={handleSpeaker}
-        onKeypad={handleKeypad}
-        onHold={handleHold}
-        onRecord={handleRecord}
-      />
     </SafeAreaView>
   );
 };
@@ -401,192 +250,143 @@ const Dialer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
   },
   header: {
-    backgroundColor: '#14B8A6',
+    backgroundColor: Colors.primary.base,
     paddingHorizontal: 20,
     paddingVertical: 16,
     alignItems: 'center',
-    shadowColor: '#14B8A6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 3,
   },
   headerTitle: {
-    fontSize: 20,
+    ...Typography.h2,
+    color: Colors.white,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    ...Typography.body2,
+    color: Colors.primary.light,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F8F9FA',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1E5E9',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: Colors.primary.base,
+    backgroundColor: '#FFFFFF',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666666',
+  },
+  activeTabText: {
+    color: Colors.primary.base,
     fontWeight: '600',
-    color: '#FFFFFF',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
   },
-  phoneInputContainer: {
-    marginBottom: 32,
-    width: '84%',
-    alignSelf: 'center',
+  dialerContent: {
+    flex: 1,
   },
-  phoneInput: {
-    width: '100%',
+  recentContent: {
+    flex: 1,
   },
-  dialpad: {
-    marginBottom: 24,
-    paddingHorizontal: 12,
-  },
-  dialpadRow: {
+  numberDisplay: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 16,
-  },
-  dialpadButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1E5E9',
     backgroundColor: '#FFFFFF',
+  },
+  numberInput: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: '400',
+    color: '#333333',
+    textAlign: 'center',
+    paddingVertical: 12,
+    fontFamily: 'monospace',
+  },
+  clearButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F3F4',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    marginLeft: 12,
   },
-  dialpadNumber: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#1E293B',
-    lineHeight: 32,
+  clearButtonText: {
+    fontSize: 16,
+    color: '#666666',
   },
-  dialpadLetters: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#64748B',
-    marginTop: -2,
-    letterSpacing: 1,
+  searchContainer: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1E5E9',
+    overflow: 'hidden',
+  },
+  keypadContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: 40,
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 12,
+    paddingHorizontal: 40,
+    paddingTop: 20,
+    gap: 20,
   },
   backspaceButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F1F5F9',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#E1E5E9',
   },
-  backspaceIcon: {
+  backspaceText: {
     fontSize: 24,
-    color: '#64748B',
+    color: '#666666',
   },
   callButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#14B8A6',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#34C759',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#14B8A6',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
     shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 4,
-  },
-  callIcon: {
-    fontSize: 28,
-    color: '#FFFFFF',
-    marginBottom: 2,
-  },
-  callText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  spacer: {
-    width: 64,
-  },
-  callLogsSection: {
-    flex: 1,
-    minHeight: 200,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
     shadowRadius: 8,
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    elevation: 8,
   },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#14B8A6',
-    marginBottom: 4,
+  callButtonDisabled: {
+    backgroundColor: '#E1E5E9',
   },
-  statLabel: {
-    fontSize: 10,
-    color: '#64748B',
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  callLogsList: {
-    flexGrow: 0,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    opacity: 0.3,
-    marginBottom: 16,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#64748B',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#94A3B8',
-    textAlign: 'center',
+  callButtonText: {
+    fontSize: 32,
   },
 });
 

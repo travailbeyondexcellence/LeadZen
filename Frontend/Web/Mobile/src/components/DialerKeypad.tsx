@@ -1,0 +1,173 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Vibration,
+  Dimensions,
+} from 'react-native';
+
+interface Props {
+  onKeyPress: (key: string) => void;
+  onLongPress?: (key: string) => void;
+  disabled?: boolean;
+}
+
+const { width } = Dimensions.get('window');
+const KEYPAD_WIDTH = Math.min(width - 40, 300);
+const KEY_SIZE = (KEYPAD_WIDTH - 40) / 3; // 3 keys per row with spacing
+
+const KEYPAD_LAYOUT = [
+  [
+    { key: '1', subText: '' },
+    { key: '2', subText: 'ABC' },
+    { key: '3', subText: 'DEF' },
+  ],
+  [
+    { key: '4', subText: 'GHI' },
+    { key: '5', subText: 'JKL' },
+    { key: '6', subText: 'MNO' },
+  ],
+  [
+    { key: '7', subText: 'PQRS' },
+    { key: '8', subText: 'TUV' },
+    { key: '9', subText: 'WXYZ' },
+  ],
+  [
+    { key: '*', subText: '' },
+    { key: '0', subText: '+' },
+    { key: '#', subText: '' },
+  ],
+];
+
+const DialerKeypad: React.FC<Props> = ({
+  onKeyPress,
+  onLongPress,
+  disabled = false,
+}) => {
+  
+  const handleKeyPress = (key: string) => {
+    if (disabled) return;
+    
+    // Provide haptic feedback
+    Vibration.vibrate(50);
+    
+    // Call the callback
+    onKeyPress(key);
+  };
+
+  const handleLongPress = (key: string) => {
+    if (disabled) return;
+    
+    // Longer vibration for long press
+    Vibration.vibrate(100);
+    
+    // Special handling for certain keys
+    if (key === '0' && onLongPress) {
+      onLongPress('+'); // Long press 0 adds +
+    } else if (onLongPress) {
+      onLongPress(key);
+    }
+  };
+
+  const renderKey = (keyData: { key: string; subText: string }) => {
+    const { key, subText } = keyData;
+    
+    return (
+      <TouchableOpacity
+        key={key}
+        style={[
+          styles.keyButton,
+          disabled && styles.keyButtonDisabled,
+        ]}
+        onPress={() => handleKeyPress(key)}
+        onLongPress={() => handleLongPress(key)}
+        delayLongPress={500}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.keyText, disabled && styles.keyTextDisabled]}>
+          {key}
+        </Text>
+        {subText && (
+          <Text style={[styles.subText, disabled && styles.subTextDisabled]}>
+            {subText}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderRow = (row: { key: string; subText: string }[], rowIndex: number) => (
+    <View key={rowIndex} style={styles.keypadRow}>
+      {row.map(renderKey)}
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.keypad}>
+        {KEYPAD_LAYOUT.map(renderRow)}
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  keypad: {
+    width: KEYPAD_WIDTH,
+  },
+  keypadRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  keyButton: {
+    width: KEY_SIZE,
+    height: KEY_SIZE,
+    borderRadius: KEY_SIZE / 2,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#E1E5E9',
+  },
+  keyButtonDisabled: {
+    backgroundColor: '#F1F3F4',
+    opacity: 0.6,
+  },
+  keyText: {
+    fontSize: 28,
+    fontWeight: '400',
+    color: '#333333',
+    textAlign: 'center',
+  },
+  keyTextDisabled: {
+    color: '#999999',
+  },
+  subText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: -2,
+    letterSpacing: 1,
+  },
+  subTextDisabled: {
+    color: '#BBBBBB',
+  },
+});
+
+export default DialerKeypad;

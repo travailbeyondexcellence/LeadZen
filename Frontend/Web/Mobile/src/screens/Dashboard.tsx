@@ -255,6 +255,14 @@ const Dashboard: React.FC = () => {
                 <Text style={styles.actionIcon}>🧪</Text>
                 <Text style={styles.actionText}>Test Call Overlay</Text>
               </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.dialerTestButton]}
+                onPress={() => navigation.navigate('Dialer' as never)}
+              >
+                <Text style={styles.actionIcon}>📱</Text>
+                <Text style={styles.actionText}>Test Dialer & T9</Text>
+              </TouchableOpacity>
             </View>
           </>
         )}
@@ -501,6 +509,10 @@ const styles = StyleSheet.create({
   testButton: {
     backgroundColor: '#FF6B35',
     borderColor: '#FF6B35',
+  },
+  dialerTestButton: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
   },
 });
 
