@@ -9,7 +9,7 @@ import com.facebook.soloader.SoLoader;
 import com.facebook.react.PackageList;
 import java.util.List;
 
-import io.liteglue.SQLitePluginPackage;
+
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -23,7 +23,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       @SuppressWarnings("UnnecessaryLocalVariable")
       List<ReactPackage> packages = new PackageList(this).getPackages();
-      packages.add(new SQLitePluginPackage());
+      
       // Packages that cannot be autolinked yet can be added manually here
       return packages;
     }

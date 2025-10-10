@@ -16,7 +16,8 @@
       "Bash(git commit:*)",
       "Bash(git config:*)",
       "Bash(git config user.name \"Zen\")",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
