@@ -6,6 +6,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { initializeDatabase } from './src/utils/dbInit';
 import PermissionService from './src/services/PermissionService';
 import CallDetectionService from './src/services/CallDetectionService';
+import CallOverlay from './src/components/CallOverlay';
 
 function App(): React.JSX.Element {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -75,9 +76,14 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <NavigationContainer>
-      <AppNavigator />
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+      
+      {/* Call Overlay - Global overlay for call detection */}
+      <CallOverlay />
+    </>
   );
 }
 

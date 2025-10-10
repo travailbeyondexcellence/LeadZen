@@ -518,6 +518,148 @@ class DatabaseService {
     };
   }
 
+  // Phone number lookup methods for call detection
+  
+  public async getLeadByPhone(phoneNumber: string): Promise<Lead | null> {
+    if (!this.database) throw new Error('Database not initialized');
+
+    // Import phone utilities
+    const { PhoneUtils } = await import('../utils/phoneUtils');
+    const searchVariants = PhoneUtils.createSearchVariants(phoneNumber);
+    
+    if (searchVariants.length === 0) return null;
+
+    // Create placeholders for the IN clause
+    const placeholders = searchVariants.map(() => '?').join(',');
+    
+    const query = `
+      SELECT * FROM leads 
+      WHERE phone_primary IN (${placeholders})
+         OR phone_secondary IN (${placeholders})
+      ORDER BY last_contact_at DESC
+      LIMIT 1
+    `;
+
+    // Duplicate search variants for both phone columns
+    const params = [...searchVariants, ...searchVariants];
+
+    try {
+      const [result] = await this.database.executeSql(query, params);
+      
+      if (result.rows.length === 0) {
+        console.log('No lead found for phone number:', phoneNumber);
+        return null;
+      }
+      
+      const lead = this.mapRowToLead(result.rows.item(0));
+      console.log('Lead found for phone number:', phoneNumber, '-> Lead:', lead.name);
+      return lead;
+    } catch (error) {
+      console.error('Failed to get lead by phone:', error);
+      return null;
+    }
+  }
+
+  public async searchLeadsByPhone(phoneNumber: string): Promise<Lead[]> {
+    if (!this.database) throw new Error('Database not initialized');
+
+    // Import phone utilities
+    const { PhoneUtils } = await import('../utils/phoneUtils');
+    const searchVariants = PhoneUtils.createSearchVariants(phoneNumber);
+    
+    if (searchVariants.length === 0) return [];
+
+    // Create placeholders for the IN clause
+    const placeholders = searchVariants.map(() => '?').join(',');
+    
+    const query = `
+      SELECT * FROM leads 
+      WHERE phone_primary IN (${placeholders})
+         OR phone_secondary IN (${placeholders})
+      ORDER BY last_contact_at DESC
+    `;
+
+    // Duplicate search variants for both phone columns
+    const params = [...searchVariants, ...searchVariants];
+
+    try {
+      const [result] = await this.database.executeSql(query, params);
+      const leads: Lead[] = [];
+      
+      for (let i = 0; i < result.rows.length; i++) {
+        leads.push(this.mapRowToLead(result.rows.item(i)));
+      }
+      
+      console.log(`Found ${leads.length} leads for phone number:`, phoneNumber);
+      return leads;
+    } catch (error) {
+      console.error('Failed to search leads by phone:', error);
+      return [];
+    }
+  }
+
+  public async getCallHistoryForPhone(phoneNumber: string, limit: number = 10): Promise<CallLog[]> {
+    if (!this.database) throw new Error('Database not initialized');
+
+    // Import phone utilities
+    const { PhoneUtils } = await import('../utils/phoneUtils');
+    const searchVariants = PhoneUtils.createSearchVariants(phoneNumber);
+    
+    if (searchVariants.length === 0) return [];
+
+    const placeholders = searchVariants.map(() => '?').join(',');
+    
+    const query = `
+      SELECT cl.*, l.name as lead_name 
+      FROM call_logs cl
+      LEFT JOIN leads l ON cl.lead_id = l.id
+      WHERE cl.phone_number IN (${placeholders})
+      ORDER BY cl.started_at DESC
+      LIMIT ?
+    `;
+
+    const params = [...searchVariants, limit];
+
+    try {
+      const [result] = await this.database.executeSql(query, params);
+      const callLogs: CallLog[] = [];
+      
+      for (let i = 0; i < result.rows.length; i++) {
+        const row = result.rows.item(i);
+        callLogs.push({
+          id: row.id,
+          lead_id: row.lead_id,
+          phone_number: row.phone_number,
+          call_type: row.call_type,
+          call_status: row.call_status,
+          duration: row.duration,
+          started_at: new Date(row.started_at),
+          ended_at: row.ended_at ? new Date(row.ended_at) : undefined,
+          notes: row.notes,
+        });
+      }
+      
+      return callLogs;
+    } catch (error) {
+      console.error('Failed to get call history:', error);
+      return [];
+    }
+  }
+
+  public async updateLeadLastContact(leadId: number, contactDate: Date = new Date()): Promise<void> {
+    if (!this.database) throw new Error('Database not initialized');
+
+    const query = 'UPDATE leads SET last_contact_at = ? WHERE id = ?';
+    
+    try {
+      await this.database.executeSql(query, [contactDate.toISOString(), leadId]);
+      console.log('Updated last contact for lead:', leadId);
+    } catch (error) {
+      console.error('Failed to update lead last contact:', error);
+      throw error;
+    }
+  }
+
   // Close database connection
   public async closeDatabase(): Promise<void> {
     if (this.database) {

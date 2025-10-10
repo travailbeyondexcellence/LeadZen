@@ -1,5 +1,6 @@
 import CallDetectorManager from 'react-native-call-detection';
 import PermissionService from './PermissionService';
+import OverlayService from './OverlayService';
 
 class CallDetectionService {
   constructor() {
@@ -101,26 +102,17 @@ class CallDetectionService {
   handleIncomingCall(phoneNumber) {
     console.log('📞 Incoming call from:', phoneNumber);
     
-    // TODO: Next task will implement overlay display
-    // For now, just log the event
-    console.log('📋 Action: Would show lead overlay for incoming call');
-    
-    // Future implementation:
-    // - Look up lead by phone number
-    // - Show overlay with lead info
-    // - Track call in database
+    // Show call overlay with lead lookup
+    OverlayService.showCallOverlay(phoneNumber, 'incoming');
+    console.log('📋 Action: Showing lead overlay for incoming call');
   }
 
   handleOutgoingCall(phoneNumber) {
     console.log('📱 Outgoing call to:', phoneNumber);
     
-    // TODO: Next task will implement overlay display
-    console.log('📋 Action: Would show lead overlay for outgoing call');
-    
-    // Future implementation:
-    // - Look up lead by phone number
-    // - Show overlay with lead info
-    // - Pre-populate call notes
+    // Show call overlay with lead lookup
+    OverlayService.showCallOverlay(phoneNumber, 'outgoing');
+    console.log('📋 Action: Showing lead overlay for outgoing call');
   }
 
   handleCallAnswered(phoneNumber) {
@@ -133,14 +125,10 @@ class CallDetectionService {
   handleCallEnded(phoneNumber) {
     console.log('📴 Call ended with:', phoneNumber);
     
-    // TODO: Next task will implement post-call actions
-    console.log('📋 Action: Would show post-call options (add notes, schedule follow-up)');
-    
-    // Future implementation:
-    // - Calculate call duration
-    // - Show post-call action dialog
-    // - Option to add call notes
-    // - Option to schedule follow-up
+    // Calculate call duration and show post-call tray
+    const callDuration = OverlayService.getCallDuration();
+    OverlayService.showPostCallTray(callDuration);
+    console.log('📋 Action: Showing post-call tray with duration:', callDuration);
     
     this.currentCall = null;
   }
@@ -148,13 +136,9 @@ class CallDetectionService {
   handleMissedCall(phoneNumber) {
     console.log('📵 Missed call from:', phoneNumber);
     
-    // TODO: Handle missed call notifications
-    console.log('📋 Action: Would create missed call notification');
-    
-    // Future implementation:
-    // - Create missed call entry
-    // - Show notification
-    // - Add to follow-up list
+    // Show post-call tray for missed calls
+    OverlayService.showPostCallTray(0); // 0 duration for missed calls
+    console.log('📋 Action: Showing post-call tray for missed call');
   }
 
   getCurrentCall() {

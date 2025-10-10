@@ -18,6 +18,8 @@ import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import AsyncStorageService from '../services/AsyncStorageService';
 import { Lead, LeadStatus } from '../types/Lead';
 import { PIPELINE_STAGES, statusToPipelineStage } from '../utils/pipelineConfig';
+import OverlayService from '../services/OverlayService';
+import CallDetectionService from '../services/CallDetectionService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
@@ -97,6 +99,20 @@ const Dashboard: React.FC = () => {
     }).start(() => {
       setSidebarVisible(false);
     });
+  };
+
+  const testCallOverlay = () => {
+    // Test with a phone number that should match a demo lead
+    const testPhoneNumber = '+1 (415) 555-0101'; // This should match Michael Johnson from demo data
+    console.log('🧪 Testing call overlay with:', testPhoneNumber);
+    
+    // Simulate incoming call
+    OverlayService.simulateCall(testPhoneNumber, 'incoming');
+    
+    // After 5 seconds, simulate call end and show post-call tray
+    setTimeout(() => {
+      CallDetectionService.simulateCallEvent('Disconnected', testPhoneNumber);
+    }, 5000);
   };
 
   return (
@@ -230,6 +246,14 @@ const Dashboard: React.FC = () => {
               >
                 <Text style={styles.actionIcon}>📊</Text>
                 <Text style={styles.actionText}>View Pipeline</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.testButton]}
+                onPress={testCallOverlay}
+              >
+                <Text style={styles.actionIcon}>🧪</Text>
+                <Text style={styles.actionText}>Test Call Overlay</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -473,6 +497,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text.primary,
     fontWeight: '500',
+  },
+  testButton: {
+    backgroundColor: '#FF6B35',
+    borderColor: '#FF6B35',
   },
 });
 
