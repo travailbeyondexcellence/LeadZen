@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import DialerService from '../services/DialerService';
 import { PhoneUtils } from '../utils/phoneUtils';
+import NoCallsEmpty from './EmptyStates/NoCallsEmpty';
+import ShimmerPlaceholder from './LoadingStates/ShimmerPlaceholder';
 
 interface CallLog {
   id: number;
@@ -150,7 +152,34 @@ const RecentCalls: React.FC<Props> = ({ onCallPress, refreshTrigger }) => {
     </TouchableOpacity>
   );
 
-  const renderEmptyState = () => (
+  const renderLoadingSkeleton = () => (
+    <View style={styles.container}>
+      {[1, 2, 3, 4, 5].map((item) => (
+        <View key={item} style={styles.callItem}>
+          <View style={styles.callIconContainer}>
+            <ShimmerPlaceholder width={40} height={40} borderRadius={20} />
+          </View>
+          <View style={styles.callInfo}>
+            <ShimmerPlaceholder width="70%" height={16} borderRadius={8} style={{ marginBottom: 4 }} />
+            <ShimmerPlaceholder width="50%" height={12} borderRadius={6} style={{ marginBottom: 4 }} />
+            <ShimmerPlaceholder width="80%" height={12} borderRadius={6} style={{ marginBottom: 4 }} />
+            <ShimmerPlaceholder width="40%" height={10} borderRadius={5} />
+          </View>
+          <View style={styles.callButton}>
+            <ShimmerPlaceholder width={36} height={36} borderRadius={18} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
+  const renderEmptyState = () => <NoCallsEmpty />;
+
+  if (loading && callHistory.length === 0) {
+    return renderLoadingSkeleton();
+  }
+
+  const renderOldEmptyState = () => (
     <View style={styles.emptyState}>
       <Text style={styles.emptyIcon}>📞</Text>
       <Text style={styles.emptyText}>No recent calls</Text>
@@ -169,17 +198,6 @@ const RecentCalls: React.FC<Props> = ({ onCallPress, refreshTrigger }) => {
     </View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading call history...</Text>
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>

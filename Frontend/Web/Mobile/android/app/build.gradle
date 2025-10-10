@@ -14,6 +14,12 @@ android {
         versionCode 1
         versionName "1.0"
         manifestPlaceholders = [usesCleartextTraffic:"true"]
+        
+        // Enable multidex for large apps
+        multiDexEnabled true
+        
+        // Optimize APK size
+        resConfigs "en", "xxhdpi"
     }
     
     signingConfigs {
@@ -25,14 +31,31 @@ android {
         }
     }
     
+    // Split APKs by architecture for smaller downloads
+    splits {
+        abi {
+            enable true
+            reset()
+            include "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
+            universalApk false
+        }
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            applicationIdSuffix ".debug"
+            debuggable true
         }
         release {
             signingConfig signingConfigs.debug
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            
+            // Crash reporting and optimization
+            buildConfigField("String", "BUILD_TYPE", "\"release\"")
         }
     }
 

@@ -7,6 +7,8 @@ import { initializeDatabase } from './src/utils/dbInit';
 import PermissionService from './src/services/PermissionService';
 import CallDetectionService from './src/services/CallDetectionService';
 import CallOverlay from './src/components/CallOverlay';
+import ErrorBoundary from './src/components/ErrorBoundary';
+import { PerformanceMonitor } from './src/utils/performance';
 
 function App(): React.JSX.Element {
   const [isDbReady, setIsDbReady] = useState(false);
@@ -16,11 +18,15 @@ function App(): React.JSX.Element {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        PerformanceMonitor.startMeasurement('App Initialization');
         console.log('🚀 Initializing LeadZen app...');
         
         // Step 1: Initialize database
         console.log('📊 Initializing database...');
-        const dbSuccess = await initializeDatabase();
+        const dbSuccess = await PerformanceMonitor.measureAsync(
+          'Database Initialization',
+          () => initializeDatabase()
+        );
         if (!dbSuccess) {
           setDbError('Failed to initialize database');
           return;
@@ -29,11 +35,17 @@ function App(): React.JSX.Element {
         
         // Step 2: Initialize permissions
         console.log('🔒 Initializing permissions...');
-        await PermissionService.initializePermissions();
+        await PerformanceMonitor.measureAsync(
+          'Permissions Initialization',
+          () => PermissionService.initializePermissions()
+        );
         
         // Step 3: Start call detection service
         console.log('📞 Starting call detection service...');
-        const callServiceStarted = await CallDetectionService.start();
+        const callServiceStarted = await PerformanceMonitor.measureAsync(
+          'Call Detection Service',
+          () => CallDetectionService.start()
+        );
         
         if (callServiceStarted) {
           console.log('✅ Call detection service started successfully');
@@ -42,11 +54,13 @@ function App(): React.JSX.Element {
         }
         
         setServicesReady(true);
+        PerformanceMonitor.endMeasurement('App Initialization');
         console.log('✅ App initialization complete!');
         
       } catch (error) {
         console.error('❌ App initialization error:', error);
         setDbError('App initialization failed');
+        PerformanceMonitor.endMeasurement('App Initialization');
       }
     };
 
@@ -75,15 +89,21 @@ function App(): React.JSX.Element {
     );
   }
 
+  const handleError = (error: Error, errorInfo: any) => {
+    console.error('App-level error caught by ErrorBoundary:', error);
+    // Log to crash reporting service
+    PerformanceMonitor.generatePerformanceReport();
+  };
+
   return (
-    <>
+    <ErrorBoundary onError={handleError}>
       <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
       
       {/* Call Overlay - Global overlay for call detection */}
       <CallOverlay />
-    </>
+    </ErrorBoundary>
   );
 }
 

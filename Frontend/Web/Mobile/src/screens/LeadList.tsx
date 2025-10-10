@@ -17,6 +17,9 @@ import SearchBar from '../components/SearchBar';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
 import DatabaseService from '../services/DatabaseService';
 import { Colors, Spacing, BorderRadius } from '../theme';
+import NoLeadsEmpty from '../components/EmptyStates/NoLeadsEmpty';
+import LeadCardSkeleton from '../components/LoadingStates/LeadCardSkeleton';
+import { PerformanceMonitor } from '../utils/performance';
 
 const LeadList: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -53,8 +56,10 @@ const LeadList: React.FC = () => {
   const loadLeads = async () => {
     setLoading(true);
     try {
-      // Load leads from database
-      const dbLeads = await DatabaseService.getLeads(100, 0);
+      const dbLeads = await PerformanceMonitor.measureAsync(
+        'Load Leads',
+        () => DatabaseService.getLeads(100, 0)
+      );
       setLeads(dbLeads);
       setFilteredLeads(dbLeads);
     } catch (error) {
@@ -127,18 +132,15 @@ const LeadList: React.FC = () => {
     </View>
   );
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>📋</Text>
-      <Text style={styles.emptyTitle}>No leads yet</Text>
-      <Text style={styles.emptySubtitle}>Start building your pipeline by adding your first lead</Text>
-      <MaterialPressable
-        style={styles.emptyButton}
-        onPress={handleAddLead}
-        rippleColor="rgba(255, 255, 255, 0.2)"
-      >
-        <Text style={styles.emptyButtonText}>Add First Lead</Text>
-      </MaterialPressable>
+  const renderLoadingSkeleton = () => (
+    <View style={styles.content}>
+      {renderHeader()}
+      {renderStats()}
+      <View style={styles.listContainer}>
+        {[1, 2, 3, 4, 5].map((item) => (
+          <LeadCardSkeleton key={item} />
+        ))}
+      </View>
     </View>
   );
 
@@ -155,10 +157,7 @@ const LeadList: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#14B8A6" />
-        {renderHeader()}
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading leads...</Text>
-        </View>
+        {renderLoadingSkeleton()}
       </SafeAreaView>
     );
   }
@@ -191,7 +190,8 @@ const LeadList: React.FC = () => {
           />
         }
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyState}
+        ListEmptyComponent={NoLeadsEmpty}
+        {...PerformanceMonitor.optimizeListRendering()}
       />
     </SafeAreaView>
   );

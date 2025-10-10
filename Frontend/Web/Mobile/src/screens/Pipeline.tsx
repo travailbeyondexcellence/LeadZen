@@ -12,6 +12,8 @@ import { PipelineBoardV2 } from '../components/PipelineBoardV2';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
+import PipelineSkeleton from '../components/LoadingStates/PipelineSkeleton';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Pipeline = () => {
   const navigation = useNavigation();
@@ -133,6 +135,7 @@ export const Pipeline = () => {
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
+    </ErrorBoundary>
   );
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
+import { MicroAnimations } from '../animations/MicroAnimations';
 
 interface DraggableLeadCardProps {
   lead: Lead;
@@ -22,6 +23,61 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
   onPress,
   onLongPress,
 }) => {
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const elevationValue = useRef(new Animated.Value(4)).current;
+  const rotateValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isDragging) {
+      Animated.parallel([
+        Animated.timing(scaleValue, {
+          toValue: 1.05,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(elevationValue, {
+          toValue: 12,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+        Animated.timing(rotateValue, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(scaleValue, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(elevationValue, {
+          toValue: 4,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+        Animated.timing(rotateValue, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isDragging, scaleValue, elevationValue, rotateValue]);
+
+  const handlePressIn = () => {
+    const animation = MicroAnimations.buttonPress(scaleValue);
+    animation.pressIn();
+  };
+
+  const handlePressOut = () => {
+    if (!isDragging) {
+      const animation = MicroAnimations.buttonPress(scaleValue);
+      animation.pressOut();
+    }
+  };
   const getInitials = (name: string): string => {
     if (!name || name.trim() === '') return '??';
     return name
@@ -69,16 +125,45 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
     }
   };
 
+  const animatedStyle = {
+    transform: [
+      { perspective: 1000 },
+      { scale: scaleValue },
+      {
+        rotateX: rotateValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['0deg', '2deg'],
+        }),
+      },
+    ],
+    elevation: elevationValue,
+    shadowOffset: {
+      width: 0,
+      height: elevationValue.interpolate({
+        inputRange: [4, 12],
+        outputRange: [1, 4],
+      }),
+    },
+    shadowOpacity: elevationValue.interpolate({
+      inputRange: [4, 12],
+      outputRange: [0.1, 0.2],
+    }),
+    shadowRadius: elevationValue.interpolate({
+      inputRange: [4, 12],
+      outputRange: [2, 8],
+    }),
+  };
+
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      onLongPress={onLongPress}
-      activeOpacity={0.8}
-      style={[
-        styles.container,
-        isDragging && styles.dragging,
-      ]}
-    >
+    <Animated.View style={[styles.container, animatedStyle]}>
+      <TouchableOpacity
+        onPress={onPress}
+        onLongPress={onLongPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+        style={styles.touchable}
+      >
       <View style={styles.header}>
         <View style={[styles.avatar, { backgroundColor: Colors.primary.base + '20' }]}>
           <Text style={styles.avatarText}>{getInitials(lead.name || '')}</Text>
@@ -117,7 +202,8 @@ export const DraggableLeadCard: React.FC<DraggableLeadCardProps> = ({
           </View>
         ) : null}
       </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
@@ -125,22 +211,13 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.background.card,
     borderRadius: BorderRadius.md,
-    padding: Spacing.sm,
     marginHorizontal: Spacing.xs,
     marginVertical: Spacing.xs,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  dragging: {
-    opacity: 0.8,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
-    transform: [{ scale: 1.02 }],
+  touchable: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.md,
   },
   header: {
     flexDirection: 'row',
