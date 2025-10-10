@@ -38,8 +38,11 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   const panResponder = useRef(
     PanResponder.create({
       // Ask to be the responder
-      onStartShouldSetPanResponder: () => true, // Always capture to handle long press
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only move if we're dragging or if it's a long press
+        return isDragging || isLongPress || Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
+      },
       
       // Start of drag gesture
       onPanResponderGrant: (evt, gestureState) => {
@@ -53,16 +56,16 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           Animated.parallel([
             Animated.spring(scale, {
               toValue: 1.1,
-              useNativeDriver: true,
+              useNativeDriver: false,
               friction: 5,
             }),
             Animated.timing(opacity, {
-              toValue: 0.95,
+              toValue: 0.8,
               duration: 100,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
           ]).start();
-        }, 200); // 200ms for long press
+        }, 150); // 150ms for long press
         
         // Set the initial value to the current position
         pan.setOffset({
@@ -74,18 +77,19 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       
       // During drag
       onPanResponderMove: (evt, gestureState) => {
-        // If moved more than 10 pixels, cancel long press timer
-        if ((Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10)) {
-          if (longPressTimer.current && !isLongPress) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-            return;
-          }
-        }
-        
         // If long press was detected, allow dragging
         if (isLongPress && isDragging) {
-          pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+          // Update pan values to follow finger
+          Animated.event(
+            [null, { dx: pan.x, dy: pan.y }],
+            { useNativeDriver: false }
+          )(evt, gestureState);
+        } else if ((Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10)) {
+          // If moved too much without long press, cancel timer
+          if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+          }
         }
       },
       
@@ -108,13 +112,13 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           Animated.parallel([
             Animated.spring(scale, {
               toValue: 1,
-              useNativeDriver: true,
+              useNativeDriver: false,
               friction: 5,
             }),
             Animated.timing(opacity, {
               toValue: 1,
               duration: 100,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
           ]).start();
           
@@ -124,7 +128,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           // Animate back to original position
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
+            useNativeDriver: false,
             friction: 5,
           }).start();
         } else if (!isLongPress && Math.abs(gestureState.dx) < 10 && Math.abs(gestureState.dy) < 10) {
@@ -146,16 +150,16 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         Animated.parallel([
           Animated.spring(scale, {
             toValue: 1,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.timing(opacity, {
             toValue: 1,
             duration: 100,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
         ]).start();
       },
@@ -199,8 +203,8 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       { scale: scale },
     ],
     opacity: opacity,
-    zIndex: isDragging ? 9999 : 1,
-    elevation: isDragging ? 9999 : 2,
+    zIndex: isDragging ? 1000 : 1,
+    elevation: isDragging ? 10 : 2,
   };
   
   return (

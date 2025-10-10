@@ -22,8 +22,9 @@ interface PipelineColumnV2Props {
   onLeadPress?: (lead: Lead) => void;
   onDropLead?: (lead: Lead, stageId: string) => void;
   isDropTarget?: boolean;
-  onDragStart?: () => void;
+  onDragStart?: (lead: Lead) => void;
   onDragEnd?: () => void;
+  onDragOver?: (stageId: string) => void;
 }
 
 export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
@@ -36,6 +37,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   isDropTarget = false,
   onDragStart,
   onDragEnd,
+  onDragOver,
 }) => {
   const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const highlightAnimation = useRef(new Animated.Value(0)).current;
@@ -86,6 +88,10 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
     }
     
     onDragEnd?.();
+  };
+  
+  const handleDragStart = (lead: Lead) => {
+    onDragStart?.(lead);
   };
   
   const borderColor = highlightAnimation.interpolate({
@@ -151,7 +157,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
               key={lead.id}
               lead={lead}
               onPress={() => onLeadPress?.(lead)}
-              onDragStart={onDragStart}
+              onDragStart={() => handleDragStart(lead)}
               onDragEnd={handleDragEnd}
             />
           ))

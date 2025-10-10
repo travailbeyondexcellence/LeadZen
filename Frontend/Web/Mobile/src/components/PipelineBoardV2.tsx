@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { PipelineColumnV2 } from './PipelineColumnV2';
@@ -36,6 +37,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
   const [targetStage, setTargetStage] = useState<string | null>(null);
+  const [showInstructions, setShowInstructions] = useState(true);
   
   // Group leads by pipeline stage
   const getLeadsByStage = (stageId: string): Lead[] => {
@@ -63,8 +65,9 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   };
   
   // Handle drag start
-  const handleDragStart = () => {
+  const handleDragStart = (lead: Lead) => {
     setIsDragging(true);
+    setDraggedLead(lead);
   };
   
   // Handle drag end
@@ -72,6 +75,13 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     setIsDragging(false);
     setDraggedLead(null);
     setTargetStage(null);
+  };
+  
+  // Handle drag over column
+  const handleDragOver = (stageId: string) => {
+    if (isDragging) {
+      setTargetStage(stageId);
+    }
   };
   
   // Handle lead drop on a stage
@@ -176,6 +186,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
                 isDropTarget={isDragging && targetStage === stage.id}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
               />
             );
           })
@@ -183,14 +194,25 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
       </ScrollView>
       
       {/* Instructions */}
-      {!isLoading && leads.length > 0 && (
+      {!isLoading && leads.length > 0 && showInstructions && (
         <View style={styles.instructionBar}>
-          <Text style={styles.instructionText}>
-            ✋ Press and drag lead cards to move them between stages
-          </Text>
-          <Text style={styles.subInstructionText}>
-            The drag handle at the top makes dragging easier
-          </Text>
+          <View style={styles.instructionContent}>
+            <View style={styles.instructionTextContainer}>
+              <Text style={styles.instructionText}>
+                ✋ Press and drag lead cards to move them between stages
+              </Text>
+              <Text style={styles.subInstructionText}>
+                The drag handle at the top makes dragging easier
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowInstructions(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -251,6 +273,14 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: Colors.border.base,
   },
+  instructionContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  instructionTextContainer: {
+    flex: 1,
+  },
   instructionText: {
     fontSize: 13,
     color: Colors.primary.base,
@@ -262,5 +292,14 @@ const styles = StyleSheet.create({
     color: Colors.text.secondary,
     textAlign: 'center',
     marginTop: 2,
+  },
+  closeButton: {
+    padding: Spacing.xs,
+    marginLeft: Spacing.sm,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: Colors.text.secondary,
+    fontWeight: '600',
   },
 });

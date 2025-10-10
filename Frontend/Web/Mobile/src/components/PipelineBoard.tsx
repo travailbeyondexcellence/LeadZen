@@ -39,6 +39,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
   const [showStageModal, setShowStageModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [dropTargetStage, setDropTargetStage] = useState<string | null>(null);
+  const [showInstructions, setShowInstructions] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Group leads by pipeline stage
@@ -185,11 +186,20 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
       </ScrollView>
 
       {/* Drag Instruction */}
-      {!isLoading && leads.length > 0 && (
+      {!isLoading && leads.length > 0 && showInstructions && (
         <View style={styles.instructionBar}>
-          <Text style={styles.instructionText}>
-            💡 Tap and hold a lead card to move it between stages
-          </Text>
+          <View style={styles.instructionContent}>
+            <Text style={styles.instructionText}>
+              💡 Tap and hold a lead card to move it between stages
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowInstructions(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -311,10 +321,25 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: Colors.border.base,
   },
+  instructionContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   instructionText: {
     fontSize: 12,
     color: Colors.primary.base,
     textAlign: 'center',
+    flex: 1,
+  },
+  closeButton: {
+    padding: Spacing.xs,
+    marginLeft: Spacing.sm,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: Colors.text.secondary,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
