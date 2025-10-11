@@ -2,6 +2,7 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 import { initializeDatabase } from './src/utils/dbInit';
 import PermissionService from './src/services/PermissionService';
@@ -69,10 +70,12 @@ function App(): React.JSX.Element {
 
   if (dbError) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: {dbError}</Text>
-        <Text style={styles.subText}>Please restart the app</Text>
-      </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <Text style={styles.errorText}>Error: {dbError}</Text>
+          <Text style={styles.subText}>Please restart the app</Text>
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
@@ -82,10 +85,12 @@ function App(): React.JSX.Element {
       : 'Starting services...';
       
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#14B8A6" />
-        <Text style={styles.loadingText}>{loadingText}</Text>
-      </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color="#14B8A6" />
+          <Text style={styles.loadingText}>{loadingText}</Text>
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
@@ -96,14 +101,16 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <ErrorBoundary onError={handleError}>
-      <NavigationContainer>
-        <AppNavigator />
-      </NavigationContainer>
-      
-      {/* Call Overlay - Global overlay for call detection */}
-      <CallOverlay />
-    </ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary onError={handleError}>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+        
+        {/* Call Overlay - Global overlay for call detection */}
+        <CallOverlay />
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
 

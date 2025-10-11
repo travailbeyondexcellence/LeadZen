@@ -4,6 +4,7 @@ import BottomTabNavigator from './BottomTabNavigator';
 import LeadDetail from '../screens/LeadDetail';
 import LeadForm from '../screens/LeadForm';
 import PermissionRequest from '../screens/PermissionRequest';
+import Settings from '../screens/Settings';
 import { Colors } from '../theme';
 
 export type RootStackParamList = {
@@ -11,6 +12,7 @@ export type RootStackParamList = {
   LeadDetail: { leadId: string };
   LeadForm: { leadId?: string };
   PermissionRequest: undefined;
+  Settings: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -55,6 +57,14 @@ const AppNavigator: React.FC = () => {
         component={PermissionRequest}
         options={{ 
           title: 'Permissions Required',
+          headerBackTitle: 'Back'
+        }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={Settings}
+        options={{ 
+          title: 'Settings',
           headerBackTitle: 'Back'
         }}
       />

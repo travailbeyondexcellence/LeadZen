@@ -48,7 +48,7 @@ const PostCallTray: React.FC<Props> = ({
       // Slide up animation
       Animated.spring(translateY, {
         toValue: screenHeight * 0.3, // Show 70% of screen
-        useNativeDriver: true,
+        useNativeDriver: false,
         tension: 100,
         friction: 8,
       }).start();
@@ -57,7 +57,7 @@ const PostCallTray: React.FC<Props> = ({
       Animated.timing(translateY, {
         toValue: screenHeight,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     }
   }, [visible, translateY]);
