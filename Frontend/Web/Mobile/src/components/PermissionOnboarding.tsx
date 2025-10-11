@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Colors, Spacing } from '../theme';
 import { 
   REQUIRED_PERMISSIONS, 
@@ -23,6 +24,7 @@ interface PermissionOnboardingProps {
 const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [grantedPermissions, setGrantedPermissions] = useState<string[]>([]);
+  const [deniedPermissions, setDeniedPermissions] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const steps = [
@@ -48,6 +50,21 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     },
   ];
 
+  // Check current permission status on mount and when step changes
+  useEffect(() => {
+    checkCurrentPermissions();
+  }, [currentStep]);
+
+  const checkCurrentPermissions = async () => {
+    try {
+      const status = await PermissionService.checkAllPermissions();
+      setGrantedPermissions(status.granted || []);
+      setDeniedPermissions(status.denied || []);
+    } catch (error) {
+      console.error('Error checking current permissions:', error);
+    }
+  };
+
   const handleNext = async () => {
     if (currentStep === 0) {
       setCurrentStep(1);
@@ -60,11 +77,14 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
       try {
         const results = await PermissionService.requestMultiplePermissions(step.permissions);
         const granted = results.granted || [];
+        const denied = results.denied || [];
+        
         setGrantedPermissions(prev => [...prev, ...granted]);
+        setDeniedPermissions(prev => [...prev, ...denied]);
         
         if (step.isRequired && granted.length < step.permissions.length) {
           // Show alert for required permissions
-          PermissionService.showPermissionDeniedAlert(results.denied || []);
+          PermissionService.showPermissionDeniedAlert(denied);
         }
       } catch (error) {
         console.error('Error requesting permissions:', error);
@@ -91,17 +111,65 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     }
   };
 
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSwipeGesture = (event: any) => {
+    const { translationX, state } = event.nativeEvent;
+    
+    if (state === State.END) {
+      const swipeThreshold = 50; // minimum distance for swipe
+      
+      if (translationX > swipeThreshold) {
+        // Swipe right - go to previous step
+        handlePrevious();
+      } else if (translationX < -swipeThreshold) {
+        // Swipe left - go to next step
+        if (currentStep < steps.length - 1) {
+          setCurrentStep(currentStep + 1);
+        }
+      }
+    }
+  };
+
   const renderPermissionItem = (permission: string) => {
     const explanation = PERMISSION_EXPLANATIONS[permission];
     const isGranted = grantedPermissions.includes(permission);
+    const isDenied = deniedPermissions.includes(permission);
+    
+    let permissionStyle = styles.permissionItem;
+    let statusIcon = '';
+    let statusText = '';
+    let statusStyle = styles.permissionStatus;
+    
+    if (isGranted) {
+      permissionStyle = [styles.permissionItem, styles.permissionItemGranted];
+      statusIcon = '✅';
+      statusText = 'Granted';
+      statusStyle = [styles.permissionStatus, styles.permissionStatusGranted];
+    } else if (isDenied) {
+      permissionStyle = [styles.permissionItem, styles.permissionItemDenied];
+      statusIcon = '⚠️';
+      statusText = 'Not Granted';
+      statusStyle = [styles.permissionStatus, styles.permissionStatusDenied];
+    }
     
     return (
-      <View key={permission} style={styles.permissionItem}>
+      <View key={permission} style={permissionStyle}>
         <View style={styles.permissionHeader}>
           <Text style={styles.permissionTitle}>
             {explanation?.title || 'Permission'}
           </Text>
-          {isGranted && <Text style={styles.grantedBadge}>✅ Granted</Text>}
+          {(isGranted || isDenied) && (
+            <View style={styles.permissionStatusContainer}>
+              <Text style={statusStyle}>
+                {statusIcon} {statusText}
+              </Text>
+            </View>
+          )}
         </View>
         <Text style={styles.permissionDescription}>
           {explanation?.description || 'Required for app functionality'}
@@ -160,7 +228,7 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         <View style={styles.progressContainer}>
           {steps.map((_, index) => (
             <View 
-              key={index}
+              key={`progress-dot-${index}`}
               style={[
                 styles.progressDot,
                 index <= currentStep && styles.progressDotActive
@@ -170,9 +238,11 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         </View>
       </View>
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderStep()}
-      </ScrollView>
+      <PanGestureHandler onGestureEvent={handleSwipeGesture}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {renderStep()}
+        </ScrollView>
+      </PanGestureHandler>
     </SafeAreaView>
   );
 };
@@ -248,6 +318,16 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
+  permissionItemGranted: {
+    backgroundColor: '#F0FDF4', // Light green background
+    borderColor: '#22C55E',
+    borderWidth: 1,
+  },
+  permissionItemDenied: {
+    backgroundColor: '#FFFBEB', // Light yellow background
+    borderColor: '#F59E0B',
+    borderWidth: 1,
+  },
   permissionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -260,10 +340,18 @@ const styles = StyleSheet.create({
     color: '#1E293B',
     flex: 1,
   },
-  grantedBadge: {
+  permissionStatusContainer: {
+    flexShrink: 0,
+  },
+  permissionStatus: {
     fontSize: 12,
-    color: '#059669',
     fontWeight: '600',
+  },
+  permissionStatusGranted: {
+    color: '#059669',
+  },
+  permissionStatusDenied: {
+    color: '#D97706',
   },
   permissionDescription: {
     fontSize: 14,

@@ -8,6 +8,9 @@ import {
   Dimensions,
 } from 'react-native';
 import PermissionService from '../services/PermissionService';
+import { usePermission } from '../hooks/usePermission';
+import PermissionModal from './PermissionModal';
+import { ANDROID_PERMISSIONS } from '../utils/androidPermissions';
 
 interface Props {
   onKeyPress: (key: string) => void;
@@ -47,31 +50,44 @@ const DialerKeypad: React.FC<Props> = ({
   onLongPress,
   disabled = false,
 }) => {
+  const { checkPermissionAndPrompt, modalVisible, modalData, closeModal, handlePermissionGranted } = usePermission();
   
-  const handleKeyPress = (key: string) => {
+  const handleKeyPress = async (key: string) => {
     if (disabled) return;
     
-    // Provide haptic feedback (safe vibration)
-    try {
-      Vibration.vibrate(50);
-    } catch (error) {
-      // Ignore vibration errors if permission not granted
-      console.log('Vibration not available:', error.message);
+    // Check vibration permission and provide haptic feedback
+    const hasVibrationPermission = await checkPermissionAndPrompt(
+      ANDROID_PERMISSIONS.VIBRATE, 
+      'Dialer Haptic Feedback'
+    );
+    
+    if (hasVibrationPermission) {
+      try {
+        Vibration.vibrate(50);
+      } catch (error) {
+        console.log('Vibration not available:', error.message);
+      }
     }
     
     // Call the callback
     onKeyPress(key);
   };
 
-  const handleLongPress = (key: string) => {
+  const handleLongPress = async (key: string) => {
     if (disabled) return;
     
-    // Longer vibration for long press (safe vibration)
-    try {
-      Vibration.vibrate(100);
-    } catch (error) {
-      // Ignore vibration errors if permission not granted
-      console.log('Vibration not available:', error.message);
+    // Check vibration permission for long press
+    const hasVibrationPermission = await checkPermissionAndPrompt(
+      ANDROID_PERMISSIONS.VIBRATE, 
+      'Dialer Haptic Feedback'
+    );
+    
+    if (hasVibrationPermission) {
+      try {
+        Vibration.vibrate(100);
+      } catch (error) {
+        console.log('Vibration not available:', error.message);
+      }
     }
     
     // Special handling for certain keys
@@ -120,6 +136,16 @@ const DialerKeypad: React.FC<Props> = ({
       <View style={styles.keypad}>
         {KEYPAD_LAYOUT.map(renderRow)}
       </View>
+      
+      {modalVisible && modalData && (
+        <PermissionModal
+          visible={modalVisible}
+          permission={modalData.permission}
+          featureName={modalData.featureName}
+          onClose={closeModal}
+          onGranted={() => handlePermissionGranted(modalData.permission)}
+        />
+      )}
     </View>
   );
 };
