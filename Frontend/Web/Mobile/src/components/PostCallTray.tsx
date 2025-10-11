@@ -148,14 +148,14 @@ const PostCallTray: React.FC<Props> = ({
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Contact Information</Text>
             <Text style={styles.infoText}>📧 {leadData.email || 'No email'}</Text>
-            <Text style={styles.infoText}>📞 {PhoneUtils.formatPhoneNumber(phoneNumber)}</Text>
+            <Text style={styles.infoText}>📞 {phoneNumber ? PhoneUtils.formatPhoneNumber(phoneNumber) : 'Unknown number'}</Text>
             <Text style={styles.infoText}>💼 {leadData.position || 'No position'}</Text>
             <Text style={styles.infoText}>🏢 {leadData.company || 'No company'}</Text>
           </View>
 
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Call Summary</Text>
-            <Text style={styles.infoText}>📞 {callType.charAt(0).toUpperCase() + callType.slice(1)} call</Text>
+            <Text style={styles.infoText}>📞 {callType ? (callType.charAt(0).toUpperCase() + callType.slice(1)) : 'Unknown'} call</Text>
             <Text style={styles.infoText}>⏱️ Duration: {formatCallDuration(callDuration)}</Text>
             <Text style={styles.infoText}>📅 {formatDate(new Date())}</Text>
           </View>
@@ -189,7 +189,7 @@ const PostCallTray: React.FC<Props> = ({
         <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
           <View style={styles.unknownCallerSection}>
             <Text style={styles.unknownCallerTitle}>Unknown Caller</Text>
-            <Text style={styles.unknownCallerPhone}>{PhoneUtils.formatPhoneNumber(phoneNumber)}</Text>
+            <Text style={styles.unknownCallerPhone}>{phoneNumber ? PhoneUtils.formatPhoneNumber(phoneNumber) : 'Unknown number'}</Text>
             <Text style={styles.unknownCallerText}>This number is not in your CRM</Text>
             
             <TouchableOpacity style={styles.addLeadButton} onPress={onAddLead}>
@@ -226,7 +226,7 @@ const PostCallTray: React.FC<Props> = ({
         <Text style={styles.activityIcon}>📞</Text>
         <View style={styles.activityContent}>
           <Text style={styles.activityText}>
-            {callType.charAt(0).toUpperCase() + callType.slice(1)} call - {formatCallDuration(callDuration)}
+            {callType ? (callType.charAt(0).toUpperCase() + callType.slice(1)) : 'Unknown'} call - {formatCallDuration(callDuration)}
           </Text>
           <Text style={styles.activityTime}>Just now</Text>
         </View>
@@ -264,6 +264,12 @@ const PostCallTray: React.FC<Props> = ({
 
   if (!visible) return null;
 
+  // Guard against invalid state
+  if (!phoneNumber && !leadData && !callType) {
+    console.warn('PostCallTray rendered with all null values');
+    return null;
+  }
+
   return (
     <PanGestureHandler
       onGestureEvent={onGestureEvent}
@@ -287,7 +293,7 @@ const PostCallTray: React.FC<Props> = ({
             {leadData ? leadData.name : 'Unknown Caller'}
           </Text>
           <Text style={styles.headerSubtitle}>
-            {leadData ? leadData.company || PhoneUtils.formatPhoneNumber(phoneNumber) : PhoneUtils.formatPhoneNumber(phoneNumber)}
+            {leadData ? (leadData.company || (phoneNumber ? PhoneUtils.formatPhoneNumber(phoneNumber) : 'Unknown number')) : (phoneNumber ? PhoneUtils.formatPhoneNumber(phoneNumber) : 'Unknown number')}
           </Text>
         </View>
 
