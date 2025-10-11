@@ -22,10 +22,10 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 const MainWithSidebar: React.FC = () => {
-  const { sidebarActive } = useSidebarContext();
+  const { sidebarActive, animatedValue } = useSidebarContext();
   
   return (
-    <AnimatedMainContent sidebarActive={sidebarActive}>
+    <AnimatedMainContent sidebarActive={sidebarActive} animatedValue={animatedValue}>
       <BottomTabNavigator />
     </AnimatedMainContent>
   );
@@ -92,6 +92,7 @@ const AppNavigator: React.FC = () => {
         }}
       />
     </Stack.Navigator>
+    </SidebarProvider>
   );
 };
 

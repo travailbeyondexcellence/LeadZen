@@ -1,9 +1,10 @@
 import React, { createContext, useContext } from 'react';
-import { SharedValue } from 'react-native-reanimated';
+import { Animated } from 'react-native';
 import { useSidebar } from '../hooks/useSidebar';
 
 interface SidebarContextType {
-  sidebarActive: SharedValue<boolean>;
+  sidebarActive: boolean;
+  animatedValue: Animated.Value;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openSidebar: () => void;

@@ -1,22 +1,44 @@
-import { useSharedValue } from 'react-native-reanimated';
+import { useState, useRef } from 'react';
+import { Animated } from 'react-native';
 
 export const useSidebar = () => {
-  const sidebarActive = useSharedValue(false);
+  const [sidebarActive, setSidebarActive] = useState(false);
+  const animatedValue = useRef(new Animated.Value(0)).current;
 
   const toggleSidebar = () => {
-    sidebarActive.value = !sidebarActive.value;
+    const newValue = !sidebarActive;
+    setSidebarActive(newValue);
+    
+    Animated.timing(animatedValue, {
+      toValue: newValue ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const closeSidebar = () => {
-    sidebarActive.value = false;
+    setSidebarActive(false);
+    
+    Animated.timing(animatedValue, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const openSidebar = () => {
-    sidebarActive.value = true;
+    setSidebarActive(true);
+    
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   return {
     sidebarActive,
+    animatedValue,
     toggleSidebar,
     closeSidebar,
     openSidebar,

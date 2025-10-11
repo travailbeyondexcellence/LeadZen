@@ -1,55 +1,56 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withSpring,
-  withTiming,
-  SharedValue,
-} from 'react-native-reanimated';
+import { StyleSheet, Animated } from 'react-native';
 import Sidebar from './Sidebar';
 import Overlay from './Overlay';
 
 interface AnimatedMainContentProps {
   children: React.ReactNode;
-  sidebarActive: SharedValue<boolean>;
+  sidebarActive: boolean;
+  animatedValue: Animated.Value;
 }
 
 const AnimatedMainContent: React.FC<AnimatedMainContentProps> = ({ 
   children, 
-  sidebarActive 
+  sidebarActive,
+  animatedValue 
 }) => {
-  const progress = useDerivedValue(() => {
-    return withTiming(sidebarActive.value ? 1 : 0);
+  const scale = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.8],
   });
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(
-      progress.value,
-      [0, 1],
-      [0, -15],
-      Extrapolation.CLAMP,
-    );
-    return {
-      transform: [
-        { scale: sidebarActive.value ? withTiming(0.8) : withTiming(1) },
-        { translateX: sidebarActive.value ? withSpring(240) : withTiming(0) },
-        { rotateY: `${rotateY}deg` },
-      ],
-      borderRadius: sidebarActive.value ? withTiming(28) : withTiming(0),
-    };
+  
+  const translateX = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 240],
+  });
+  
+  const rotateY = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '-15deg'],
+  });
+  
+  const borderRadius = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 28],
   });
 
   return (
     <>
-      <Animated.View style={[styles.container, animatedStyle]}>
+      <Animated.View style={[
+        styles.container,
+        {
+          transform: [
+            { scale },
+            { translateX },
+            { rotateY },
+          ],
+          borderRadius,
+        }
+      ]}>
         {children}
-        <Overlay active={sidebarActive} />
+        <Overlay active={sidebarActive} animatedValue={animatedValue} />
       </Animated.View>
-      <Sidebar active={sidebarActive} />
+      <Sidebar active={sidebarActive} animatedValue={animatedValue} />
     </>
   );
 };

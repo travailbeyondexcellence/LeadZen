@@ -1,22 +1,24 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { SharedValue } from 'react-native-reanimated';
 import { SidebarListType } from '../types/sidebar';
+import { useSidebarContext } from '../context/SidebarContext';
 import { Colors, Spacing } from '../theme';
 
 interface SidebarItemProps {
   item: SidebarListType;
-  active: SharedValue<boolean>;
+  active: boolean;
+  animatedValue: Animated.Value;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ item, active }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ item, active, animatedValue }) => {
   const navigation = useNavigation<any>();
+  const { closeSidebar } = useSidebarContext();
 
   const handlePress = () => {
     navigation.navigate(item.navigate);
-    active.value = false;
+    closeSidebar();
   };
 
   return (

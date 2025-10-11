@@ -2,26 +2,22 @@ import React from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Animated,
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  SharedValue,
-} from 'react-native-reanimated';
 import { sidebarList } from '../types/sidebar';
 import SidebarItem from './SidebarItem';
 import { Colors, Spacing, BorderRadius } from '../theme';
 
 interface SidebarProps {
-  active: SharedValue<boolean>;
+  active: boolean;
+  animatedValue: Animated.Value;
 }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const Sidebar: React.FC<SidebarProps> = ({ active }) => {
+const Sidebar: React.FC<SidebarProps> = ({ active, animatedValue }) => {
 
   return (
     <View style={styles.container}>
@@ -31,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ active }) => {
         </View>
         <View style={styles.containerItem}>
           {sidebarList.map((item, index) => {
-            return <SidebarItem item={item} key={index} active={active} />;
+            return <SidebarItem item={item} key={index} active={active} animatedValue={animatedValue} />;
           })}
         </View>
         <View style={styles.footer}>

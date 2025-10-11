@@ -1,30 +1,35 @@
 import React from 'react';
-import { StyleSheet, TouchableWithoutFeedback } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  SharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { StyleSheet, TouchableWithoutFeedback, Animated } from 'react-native';
+import { useSidebarContext } from '../context/SidebarContext';
 
 interface OverlayProps {
-  active: SharedValue<boolean>;
+  active: boolean;
+  animatedValue: Animated.Value;
 }
 
-const Overlay: React.FC<OverlayProps> = ({ active }) => {
-  const overlayStyle = useAnimatedStyle(() => {
-    return {
-      opacity: active.value ? withTiming(1) : withTiming(0),
-      pointerEvents: active.value ? 'auto' : 'none',
-    };
+const Overlay: React.FC<OverlayProps> = ({ active, animatedValue }) => {
+  const { closeSidebar } = useSidebarContext();
+  
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.3],
   });
 
   const handlePress = () => {
-    active.value = false;
+    closeSidebar();
   };
 
   return (
     <TouchableWithoutFeedback onPress={handlePress}>
-      <Animated.View style={[styles.overlay, overlayStyle]} />
+      <Animated.View 
+        style={[
+          styles.overlay, 
+          {
+            opacity,
+            pointerEvents: active ? 'auto' : 'none',
+          }
+        ]} 
+      />
     </TouchableWithoutFeedback>
   );
 };
