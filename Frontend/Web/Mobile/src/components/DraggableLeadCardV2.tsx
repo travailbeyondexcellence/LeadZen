@@ -334,7 +334,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
             onPress={handleWhatsApp}
             disabled={!lead.phone}
           >
-            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>💬</Text>
+            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>🟢</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 

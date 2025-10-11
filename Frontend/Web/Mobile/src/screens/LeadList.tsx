@@ -9,6 +9,7 @@ import {
   Alert,
   RefreshControl,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import MaterialPressable from '../components/Pressable';
@@ -82,16 +83,31 @@ const LeadList: React.FC = () => {
 
   const handleCall = (lead: Lead) => {
     if (lead.phone) {
-      Alert.alert('Call Lead', `Calling ${lead.name} at ${lead.phone}`);
-      // Implement actual calling functionality
+      Linking.openURL(`tel:${lead.phone.replace(/[^0-9+]/g, '')}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number.');
     }
   };
 
   const handleEmail = (lead: Lead) => {
     if (lead.email) {
-      Alert.alert('Email Lead', `Composing email to ${lead.name} at ${lead.email}`);
-      // Implement email functionality
+      Linking.openURL(`mailto:${lead.email}`);
+    } else {
+      Alert.alert('No Email', 'This lead does not have an email address.');
     }
+  };
+
+  const handleWhatsApp = (lead: Lead) => {
+    if (lead.phone) {
+      const cleanPhone = lead.phone.replace(/[^0-9+]/g, '');
+      Linking.openURL(`whatsapp://send?phone=${cleanPhone}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for WhatsApp.');
+    }
+  };
+
+  const handleNotes = (lead: Lead) => {
+    navigation.navigate('LeadForm', { leadId: lead.id });
   };
 
   const handleAddLead = () => {
@@ -150,6 +166,8 @@ const LeadList: React.FC = () => {
       onPress={handleLeadPress}
       onCall={handleCall}
       onEmail={handleEmail}
+      onWhatsApp={handleWhatsApp}
+      onNotes={handleNotes}
     />
   );
 

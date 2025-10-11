@@ -10,9 +10,11 @@ interface LeadCardProps {
   onPress: (lead: Lead) => void;
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
+  onWhatsApp?: (lead: Lead) => void;
+  onNotes?: (lead: Lead) => void;
 }
 
-const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail }) => {
+const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onWhatsApp, onNotes }) => {
   const formatValue = (value?: number): string => {
     if (!value) return '';
     // Manual currency formatting for JSC compatibility
@@ -117,7 +119,25 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail }) =
               onPress={() => onEmail(lead)}
               rippleColor="rgba(20, 184, 166, 0.2)"
             >
-              <Text style={styles.actionIcon}>📧</Text>
+              <Text style={styles.actionIcon}>✉️</Text>
+            </MaterialPressable>
+          )}
+          {lead.phone && onWhatsApp && (
+            <MaterialPressable
+              style={styles.actionButton}
+              onPress={() => onWhatsApp(lead)}
+              rippleColor="rgba(20, 184, 166, 0.2)"
+            >
+              <Text style={styles.actionIcon}>🟢</Text>
+            </MaterialPressable>
+          )}
+          {onNotes && (
+            <MaterialPressable
+              style={styles.actionButton}
+              onPress={() => onNotes(lead)}
+              rippleColor="rgba(20, 184, 166, 0.2)"
+            >
+              <Text style={styles.actionIcon}>📝</Text>
             </MaterialPressable>
           )}
         </View>
