@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AsyncStorageService from './AsyncStorageService';
 import { Note, NoteTag } from '../types/notes';
 
@@ -15,7 +16,8 @@ class NotesService {
       
       // In a real app, this would be a database query
       // For now, we'll use AsyncStorage with a notes key
-      const notesData = await AsyncStorageService.getData(`notes_${leadId}`) || [];
+      const notesJson = await AsyncStorage.getItem(`@leadzen_notes_${leadId}`);
+      const notesData = notesJson ? JSON.parse(notesJson) : [];
       
       // Convert stored data back to Note objects with proper Date objects
       const notes = notesData.map((note: any) => ({
@@ -53,7 +55,7 @@ class NotesService {
       const updatedNotes = [...existingNotes, newNote];
       
       // Save back to storage
-      await AsyncStorageService.saveData(`notes_${noteData.leadId}`, updatedNotes);
+      await AsyncStorage.setItem(`@leadzen_notes_${noteData.leadId}`, JSON.stringify(updatedNotes));
       
       console.log('✅ Note added successfully');
       return newNote;
@@ -106,7 +108,7 @@ class NotesService {
       );
 
       // Save back to storage
-      await AsyncStorageService.saveData(`notes_${targetLeadId}`, updatedNotes);
+      await AsyncStorage.setItem(`@leadzen_notes_${targetLeadId}`, JSON.stringify(updatedNotes));
       
       console.log('✅ Note updated successfully');
       return updatedNote;
@@ -147,7 +149,7 @@ class NotesService {
       const updatedNotes = existingNotes.filter(note => note.id !== noteId);
 
       // Save back to storage
-      await AsyncStorageService.saveData(`notes_${targetLeadId}`, updatedNotes);
+      await AsyncStorage.setItem(`@leadzen_notes_${targetLeadId}`, JSON.stringify(updatedNotes));
       
       console.log('✅ Note deleted successfully');
     } catch (error) {
