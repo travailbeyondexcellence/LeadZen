@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, translateX }) => 
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Dialer')}>
-              <Text style={styles.menuIcon}>☎️</Text>
+              <Text style={styles.menuIcon}>📞</Text>
               <Text style={styles.menuText}>Dialer</Text>
             </TouchableOpacity>
 

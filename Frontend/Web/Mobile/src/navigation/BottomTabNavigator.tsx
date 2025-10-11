@@ -55,7 +55,7 @@ const BottomTabNavigator: React.FC = () => {
         component={Dialer}
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="☎️" focused={focused} color={color} />
+            <TabIcon icon="📞" focused={focused} color={color} />
           ),
         }}
       />
@@ -83,15 +83,6 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon icon="📝" focused={focused} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={Settings}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="⚙️" focused={focused} color={color} />
           ),
         }}
       />
