@@ -3,11 +3,21 @@ import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Colors } from '../theme';
 
+export type TabParamList = {
+  Dashboard: undefined;
+  Dialer: undefined;
+  Pipeline: undefined;
+  Leads: undefined;
+  Tasks: undefined;
+  Settings: undefined;
+};
+
 // Import screens
 import Dashboard from '../screens/Dashboard';
 import LeadList from '../screens/LeadList';
 import { Pipeline } from '../screens/Pipeline';
 import Dialer from '../screens/Dialer';
+import Tasks from '../screens/Tasks';
 import Settings from '../screens/Settings';
 
 const Tab = createBottomTabNavigator();
@@ -41,11 +51,11 @@ const BottomTabNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="Leads"
-        component={LeadList}
+        name="Dialer"
+        component={Dialer}
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="📋" focused={focused} color={color} />
+            <TabIcon icon="☎️" focused={focused} color={color} />
           ),
         }}
       />
@@ -59,11 +69,20 @@ const BottomTabNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="Dialer"
-        component={Dialer}
+        name="Leads"
+        component={LeadList}
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon icon="☎️" focused={focused} color={color} />
+            <TabIcon icon="📋" focused={focused} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Tasks"
+        component={Tasks}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon icon="📝" focused={focused} color={color} />
           ),
         }}
       />

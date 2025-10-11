@@ -8,6 +8,7 @@ import {
   Dimensions,
   Modal,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 
 interface SidebarProps {
@@ -20,6 +21,18 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
 
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, translateX }) => {
+  const navigation = useNavigation<any>();
+
+  const handleNavigation = (screen: string) => {
+    onClose(); // Close sidebar first
+    navigation.navigate(screen);
+  };
+
+  const handleTasksNavigation = () => {
+    onClose(); // Close sidebar first
+    navigation.navigate('Tasks');
+  };
+
   return (
     <Modal
       visible={isVisible}
@@ -46,27 +59,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, translateX }) => 
           </View>
 
           <View style={styles.content}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Dashboard')}>
               <Text style={styles.menuIcon}>📊</Text>
               <Text style={styles.menuText}>Dashboard</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>📞</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Dialer')}>
+              <Text style={styles.menuIcon}>☎️</Text>
               <Text style={styles.menuText}>Dialer</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>👥</Text>
-              <Text style={styles.menuText}>Contacts</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Leads')}>
+              <Text style={styles.menuIcon}>📋</Text>
+              <Text style={styles.menuText}>Leads</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuIcon}>📋</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Pipeline')}>
+              <Text style={styles.menuIcon}>📈</Text>
+              <Text style={styles.menuText}>Pipeline</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Tasks')}>
+              <Text style={styles.menuIcon}>📝</Text>
               <Text style={styles.menuText}>Tasks</Text>
             </TouchableOpacity>
+          </View>
 
-            <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.settingsSection}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Settings')}>
               <Text style={styles.menuIcon}>⚙️</Text>
               <Text style={styles.menuText}>Settings</Text>
             </TouchableOpacity>
@@ -145,6 +165,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: 32,
+  },
+  settingsSection: {
+    paddingTop: 16,
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
   menuItem: {
     flexDirection: 'row',
