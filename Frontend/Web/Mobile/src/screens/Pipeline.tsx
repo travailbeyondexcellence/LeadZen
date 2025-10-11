@@ -60,7 +60,8 @@ export const Pipeline = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ErrorBoundary>
+      <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Pipeline Board</Text>
@@ -134,7 +135,7 @@ export const Pipeline = () => {
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
     </ErrorBoundary>
   );
 };
