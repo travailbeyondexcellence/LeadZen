@@ -25,6 +25,10 @@ interface PipelineColumnV2Props {
   onDragStart?: (lead: Lead) => void;
   onDragEnd?: () => void;
   onDragOver?: (stageId: string) => void;
+  onCall?: (lead: Lead) => void;
+  onEmail?: (lead: Lead) => void;
+  onWhatsApp?: (lead: Lead) => void;
+  onNotes?: (lead: Lead) => void;
 }
 
 export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
@@ -38,6 +42,10 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   onDragStart,
   onDragEnd,
   onDragOver,
+  onCall,
+  onEmail,
+  onWhatsApp,
+  onNotes,
 }) => {
   const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const highlightAnimation = useRef(new Animated.Value(0)).current;
@@ -159,6 +167,10 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
               onPress={() => onLeadPress?.(lead)}
               onDragStart={() => handleDragStart(lead)}
               onDragEnd={handleDragEnd}
+              onCall={onCall}
+              onEmail={onEmail}
+              onWhatsApp={onWhatsApp}
+              onNotes={onNotes}
             />
           ))
         )}

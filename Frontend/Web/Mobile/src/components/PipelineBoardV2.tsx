@@ -26,11 +26,19 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface PipelineBoardV2Props {
   onLeadPress?: (lead: Lead) => void;
   refreshTrigger?: number;
+  onCall?: (lead: Lead) => void;
+  onEmail?: (lead: Lead) => void;
+  onWhatsApp?: (lead: Lead) => void;
+  onNotes?: (lead: Lead) => void;
 }
 
 export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   onLeadPress,
   refreshTrigger = 0,
+  onCall,
+  onEmail,
+  onWhatsApp,
+  onNotes,
 }) => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -188,6 +196,10 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
                 onDragOver={handleDragOver}
+                onCall={onCall}
+                onEmail={onEmail}
+                onWhatsApp={onWhatsApp}
+                onNotes={onNotes}
               />
             );
           })

@@ -6,6 +6,9 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  TouchableOpacity,
+  Linking,
+  Alert,
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
@@ -17,6 +20,10 @@ interface DraggableLeadCardV2Props {
   onDragStart?: () => void;
   onDragEnd?: (lead: Lead, gestureState: any) => void;
   onPress?: () => void;
+  onCall?: (lead: Lead) => void;
+  onEmail?: (lead: Lead) => void;
+  onWhatsApp?: (lead: Lead) => void;
+  onNotes?: (lead: Lead) => void;
 }
 
 export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
@@ -24,6 +31,10 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   onDragStart,
   onDragEnd,
   onPress,
+  onCall,
+  onEmail,
+  onWhatsApp,
+  onNotes,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLongPress, setIsLongPress] = useState(false);
@@ -195,6 +206,46 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         return Colors.text.secondary;
     }
   };
+
+  // Action handlers
+  const handleCall = () => {
+    if (onCall) {
+      onCall(lead);
+    } else if (lead.phone) {
+      Linking.openURL(`tel:${lead.phone.replace(/[^0-9+]/g, '')}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number.');
+    }
+  };
+
+  const handleEmail = () => {
+    if (onEmail) {
+      onEmail(lead);
+    } else if (lead.email) {
+      Linking.openURL(`mailto:${lead.email}`);
+    } else {
+      Alert.alert('No Email', 'This lead does not have an email address.');
+    }
+  };
+
+  const handleWhatsApp = () => {
+    if (onWhatsApp) {
+      onWhatsApp(lead);
+    } else if (lead.phone) {
+      const cleanPhone = lead.phone.replace(/[^0-9+]/g, '');
+      Linking.openURL(`whatsapp://send?phone=${cleanPhone}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for WhatsApp.');
+    }
+  };
+
+  const handleNotes = () => {
+    if (onNotes) {
+      onNotes(lead);
+    } else {
+      Alert.alert('Notes', 'Notes feature coming soon!');
+    }
+  };
   
   const animatedStyle = {
     transform: [
@@ -258,6 +309,40 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
               {formatValue(lead.value)}
             </Text>
           ) : null}
+        </View>
+        
+        {/* Action Icons */}
+        <View style={styles.actions}>
+          <TouchableOpacity 
+            style={[styles.actionButton, !lead.phone && styles.actionButtonDisabled]} 
+            onPress={handleCall}
+            disabled={!lead.phone}
+          >
+            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>📞</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.actionButton, !lead.email && styles.actionButtonDisabled]} 
+            onPress={handleEmail}
+            disabled={!lead.email}
+          >
+            <Text style={[styles.actionIcon, !lead.email && styles.actionIconDisabled]}>✉️</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.actionButton, !lead.phone && styles.actionButtonDisabled]} 
+            onPress={handleWhatsApp}
+            disabled={!lead.phone}
+          >
+            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>💬</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={handleNotes}
+          >
+            <Text style={styles.actionIcon}>📝</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Animated.View>
@@ -344,5 +429,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.semantic.success,
     marginTop: 4,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: Spacing.md,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border.base,
+  },
+  actionButtonDisabled: {
+    backgroundColor: Colors.background.primary,
+    opacity: 0.5,
+  },
+  actionIcon: {
+    fontSize: 16,
+  },
+  actionIconDisabled: {
+    opacity: 0.3,
   },
 });

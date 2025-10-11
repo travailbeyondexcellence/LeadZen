@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Linking,
 } from 'react-native';
 import { PipelineBoardV2 } from '../components/PipelineBoardV2';
 import { Lead } from '../types/Lead';
@@ -29,6 +30,38 @@ export const Pipeline = () => {
   const handleRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
   };
+
+  // Action handlers for lead cards
+  const handleCall = useCallback((lead: Lead) => {
+    if (lead.phone) {
+      Linking.openURL(`tel:${lead.phone.replace(/[^0-9+]/g, '')}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number.');
+    }
+  }, []);
+
+  const handleEmail = useCallback((lead: Lead) => {
+    if (lead.email) {
+      Linking.openURL(`mailto:${lead.email}`);
+    } else {
+      Alert.alert('No Email', 'This lead does not have an email address.');
+    }
+  }, []);
+
+  const handleWhatsApp = useCallback((lead: Lead) => {
+    if (lead.phone) {
+      const cleanPhone = lead.phone.replace(/[^0-9+]/g, '');
+      Linking.openURL(`whatsapp://send?phone=${cleanPhone}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for WhatsApp.');
+    }
+  }, []);
+
+  const handleNotes = useCallback((lead: Lead) => {
+    navigation.navigate('LeadForm' as never, { 
+      leadId: lead.id 
+    } as never);
+  }, [navigation]);
 
   const handleLeadAction = (action: string) => {
     setShowLeadModal(false);
@@ -77,6 +110,10 @@ export const Pipeline = () => {
       <PipelineBoardV2
         onLeadPress={handleLeadPress}
         refreshTrigger={refreshTrigger}
+        onCall={handleCall}
+        onEmail={handleEmail}
+        onWhatsApp={handleWhatsApp}
+        onNotes={handleNotes}
       />
 
       {/* Lead Action Modal */}
