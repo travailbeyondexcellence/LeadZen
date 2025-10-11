@@ -10,7 +10,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
 
