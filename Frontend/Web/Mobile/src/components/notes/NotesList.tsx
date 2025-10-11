@@ -105,13 +105,16 @@ const NotesList: React.FC<NotesListProps> = ({
       {notes.length === 0 ? (
         renderEmpty()
       ) : (
-        <FlatList
-          data={notes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
-          renderItem={renderNote}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-        />
+        <View style={styles.listContainer}>
+          {notes
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .map((note) => (
+              <View key={note.id}>
+                {renderNote({ item: note })}
+              </View>
+            ))
+          }
+        </View>
       )}
     </View>
   );
