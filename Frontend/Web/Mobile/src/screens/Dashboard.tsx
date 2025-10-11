@@ -12,6 +12,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import Sidebar from '../components/Sidebar';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
@@ -99,6 +100,17 @@ const Dashboard: React.FC = () => {
     }).start(() => {
       setSidebarVisible(false);
     });
+  };
+
+  const getStageIcon = (stageId: string): string => {
+    const iconMap: Record<string, string> = {
+      'follow_up': 'clock-outline',
+      'warm_leads': 'fire',
+      'quote': 'file-document-outline',
+      'closed_deal': 'check-circle',
+      'not_relevant': 'close-circle-outline'
+    };
+    return iconMap[stageId] || 'help-circle-outline';
   };
 
   const testCallOverlay = () => {
@@ -193,33 +205,59 @@ const Dashboard: React.FC = () => {
               </View>
             </View>
 
-            <TouchableOpacity 
-              style={styles.pipelineOverview}
-              onPress={() => navigation?.navigate('Pipeline' as never)}
-            >
+            <View style={styles.pipelineOverview}>
               <View style={styles.pipelineHeader}>
                 <Text style={styles.sectionTitle}>Pipeline Overview</Text>
-                <Text style={styles.viewAllText}>View Board →</Text>
+                <TouchableOpacity onPress={() => navigation?.navigate('Pipeline' as never)}>
+                  <Text style={styles.viewAllText}>View Board →</Text>
+                </TouchableOpacity>
               </View>
               
-              <View style={styles.pipelineStages}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.pipelineScrollContainer}
+                style={styles.pipelineScrollView}
+              >
                 {PIPELINE_STAGES.map((stage) => {
                   const count = leads.filter(lead => 
                     statusToPipelineStage(lead.status) === stage.id
                   ).length;
                   
                   return (
-                    <View key={stage.id} style={styles.stageCard}>
-                      <View style={[styles.stageIndicator, { backgroundColor: stage.color }]} />
-                      <Text style={styles.stageCount}>{count}</Text>
-                      <Text style={styles.stageTitle} numberOfLines={1}>
-                        {stage.title}
+                    <TouchableOpacity 
+                      key={stage.id} 
+                      style={[styles.pipelineCard, { borderTopColor: stage.color }]}
+                      onPress={() => navigation?.navigate('Pipeline' as never, { focusStage: stage.id } as never)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.cardHeader}>
+                        <View style={[styles.iconContainer, { backgroundColor: stage.color + '20' }]}>
+                          <Icon 
+                            name={getStageIcon(stage.id)} 
+                            size={24} 
+                            color={stage.color} 
+                          />
+                        </View>
+                        <View style={styles.countBadge}>
+                          <Text style={styles.countText}>{count}</Text>
+                        </View>
+                      </View>
+                      
+                      <Text style={styles.cardTitle}>{stage.title}</Text>
+                      <Text style={styles.cardDescription} numberOfLines={2}>
+                        {stage.description}
                       </Text>
-                    </View>
+                      
+                      <View style={styles.cardFooter}>
+                        <Text style={styles.leadsText}>{count} leads</Text>
+                        <Icon name="arrow-right" size={16} color={Colors.text.secondary} />
+                      </View>
+                    </TouchableOpacity>
                   );
                 })}
-              </View>
-            </TouchableOpacity>
+              </ScrollView>
+            </View>
 
             <View style={styles.quickActions}>
               <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -428,46 +466,79 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   viewAllText: {
     fontSize: 14,
     color: Colors.primary.base,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  pipelineStages: {
+  pipelineScrollView: {
+    paddingLeft: 0,
+  },
+  pipelineScrollContainer: {
+    paddingRight: 16,
+  },
+  pipelineCard: {
+    backgroundColor: Colors.background.card,
+    width: 280,
+    marginRight: 16,
+    padding: 20,
+    borderRadius: 16,
+    borderTopWidth: 4,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  stageCard: {
-    flex: 1,
-    backgroundColor: Colors.background.card,
-    marginHorizontal: 4,
-    padding: 12,
-    borderRadius: 8,
     alignItems: 'center',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    marginBottom: 16,
   },
-  stageIndicator: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  countBadge: {
+    backgroundColor: Colors.primary.base,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    minWidth: 36,
+    alignItems: 'center',
+  },
+  countText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text.primary,
     marginBottom: 8,
   },
-  stageCount: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text.primary,
-    marginBottom: 4,
-  },
-  stageTitle: {
-    fontSize: 10,
+  cardDescription: {
+    fontSize: 14,
     color: Colors.text.secondary,
-    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leadsText: {
+    fontSize: 12,
+    color: Colors.text.secondary,
+    fontWeight: '500',
   },
   quickActions: {
     paddingHorizontal: 16,
