@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import BottomTabNavigator from './BottomTabNavigator';
+import MainScreenContainer from './MainScreenContainer';
 import LeadDetail from '../screens/LeadDetail';
 import LeadForm from '../screens/LeadForm';
 import PermissionRequest from '../screens/PermissionRequest';
@@ -26,7 +26,7 @@ const MainWithSidebar: React.FC = () => {
   
   return (
     <AnimatedMainContent sidebarActive={sidebarActive} animatedValue={animatedValue}>
-      <BottomTabNavigator />
+      <MainScreenContainer />
     </AnimatedMainContent>
   );
 };
