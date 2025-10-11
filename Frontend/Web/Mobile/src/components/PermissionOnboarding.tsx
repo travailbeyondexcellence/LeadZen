@@ -38,14 +38,14 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
       title: '📞 Essential Permissions',
       subtitle: 'Required for core CRM functionality',
       content: 'These permissions are essential for call detection, dialing, and lead management.',
-      permissions: REQUIRED_PERMISSIONS,
+      permissions: [...new Set(REQUIRED_PERMISSIONS)], // Remove duplicates
       isRequired: true,
     },
     {
       title: '✨ Enhanced Features',
       subtitle: 'Optional permissions for additional features',
       content: 'These permissions enable extra features like contact sync and photo uploads.',
-      permissions: OPTIONAL_PERMISSIONS,
+      permissions: [...new Set(OPTIONAL_PERMISSIONS)], // Remove duplicates
       isRequired: false,
     },
   ];
@@ -112,22 +112,30 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
   };
 
   const handlePrevious = () => {
+    console.log('🔙 HandlePrevious called, currentStep:', currentStep);
     if (currentStep > 0) {
+      console.log('🔙 Going to previous step:', currentStep - 1);
       setCurrentStep(currentStep - 1);
+    } else {
+      console.log('🔙 Already at first step, cannot go back');
     }
   };
 
   const handleSwipeGesture = (event: any) => {
     const { translationX, state } = event.nativeEvent;
     
+    console.log('🔄 Swipe gesture:', { translationX, state, currentStep });
+    
     if (state === State.END) {
       const swipeThreshold = 50; // minimum distance for swipe
       
       if (translationX > swipeThreshold) {
         // Swipe right - go to previous step
+        console.log('➡️ Swiping right - going to previous step');
         handlePrevious();
       } else if (translationX < -swipeThreshold) {
         // Swipe left - go to next step
+        console.log('⬅️ Swiping left - going to next step');
         if (currentStep < steps.length - 1) {
           setCurrentStep(currentStep + 1);
         }
@@ -135,7 +143,30 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     }
   };
 
-  const renderPermissionItem = (permission: string) => {
+  const handleGrantIndividualPermission = async (permission: string) => {
+    setIsProcessing(true);
+    try {
+      console.log('🔒 Granting individual permission:', permission);
+      const results = await PermissionService.requestMultiplePermissions([permission]);
+      const granted = results.granted || [];
+      const denied = results.denied || [];
+      
+      if (granted.includes(permission)) {
+        setGrantedPermissions(prev => [...prev.filter(p => p !== permission), permission]);
+        setDeniedPermissions(prev => prev.filter(p => p !== permission));
+        console.log('✅ Individual permission granted:', permission);
+      } else {
+        setDeniedPermissions(prev => [...prev.filter(p => p !== permission), permission]);
+        setGrantedPermissions(prev => prev.filter(p => p !== permission));
+        console.log('❌ Individual permission denied:', permission);
+      }
+    } catch (error) {
+      console.error('Error granting individual permission:', error);
+    }
+    setIsProcessing(false);
+  };
+
+  const renderPermissionItem = (permission: string, index: number) => {
     const explanation = PERMISSION_EXPLANATIONS[permission];
     const isGranted = grantedPermissions.includes(permission);
     const isDenied = deniedPermissions.includes(permission);
@@ -158,7 +189,7 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     }
     
     return (
-      <View key={permission} style={permissionStyle}>
+      <View key={`permission-${index}-${permission}`} style={permissionStyle}>
         <View style={styles.permissionHeader}>
           <Text style={styles.permissionTitle}>
             {explanation?.title || 'Permission'}
@@ -174,12 +205,30 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         <Text style={styles.permissionDescription}>
           {explanation?.description || 'Required for app functionality'}
         </Text>
+        
+        {isDenied && (
+          <TouchableOpacity
+            style={styles.grantNowButton}
+            onPress={() => handleGrantIndividualPermission(permission)}
+          >
+            <Text style={styles.grantNowButtonText}>Grant Now</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
   const renderStep = () => {
     const step = steps[currentStep];
+    
+    // Debug: Check for duplicate permissions
+    if (step.permissions) {
+      console.log('📋 Rendering step permissions:', step.permissions);
+      const duplicates = step.permissions.filter((item, index) => step.permissions.indexOf(item) !== index);
+      if (duplicates.length > 0) {
+        console.warn('⚠️ Duplicate permissions found:', duplicates);
+      }
+    }
     
     return (
       <View style={styles.stepContainer}>
@@ -189,7 +238,7 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         
         {step.permissions && (
           <View style={styles.permissionsContainer}>
-            {step.permissions.map(renderPermissionItem)}
+            {step.permissions.map((permission, index) => renderPermissionItem(permission, index))}
           </View>
         )}
         
@@ -238,10 +287,17 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         </View>
       </View>
       
-      <PanGestureHandler onGestureEvent={handleSwipeGesture}>
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {renderStep()}
-        </ScrollView>
+      <PanGestureHandler 
+        onHandlerStateChange={handleSwipeGesture}
+        minPointers={1}
+        maxPointers={1}
+        shouldCancelWhenOutside={false}
+      >
+        <View style={styles.gestureContainer}>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {renderStep()}
+          </ScrollView>
+        </View>
       </PanGestureHandler>
     </SafeAreaView>
   );
@@ -275,6 +331,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  gestureContainer: {
+    flex: 1,
   },
   stepContainer: {
     flex: 1,
@@ -357,6 +416,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748B',
     lineHeight: 20,
+  },
+  grantNowButton: {
+    backgroundColor: '#14B8A6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 12,
+    alignSelf: 'flex-start',
+  },
+  grantNowButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   buttonContainer: {
     flexDirection: 'row',
