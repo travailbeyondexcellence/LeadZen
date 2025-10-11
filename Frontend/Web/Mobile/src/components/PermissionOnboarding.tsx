@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Colors, Spacing } from '../theme';
@@ -53,6 +54,10 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
   // Check current permission status on mount and when step changes
   useEffect(() => {
     checkCurrentPermissions();
+    
+    // Debug: Log all permission constants
+    console.log('🔍 REQUIRED_PERMISSIONS:', REQUIRED_PERMISSIONS);
+    console.log('🔍 OPTIONAL_PERMISSIONS:', OPTIONAL_PERMISSIONS);
   }, [currentStep]);
 
   const checkCurrentPermissions = async () => {
@@ -166,7 +171,20 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     try {
       console.log('🔒 Requesting individual permission from Android system:', permission);
       
-      // Directly request the specific permission from Android system
+      // First check current status
+      const currentStatus = await PermissionService.checkAllPermissions();
+      const currentPermissionStatus = currentStatus.granted?.includes(permission) ? 'granted' : 
+                                    currentStatus.denied?.includes(permission) ? 'denied' : 'unknown';
+      
+      console.log('📊 Current permission status for', permission, ':', currentPermissionStatus);
+      
+      // If already granted, no need to request
+      if (currentPermissionStatus === 'granted') {
+        console.log('✅ Permission already granted:', permission);
+        return;
+      }
+      
+      // Request the specific permission from Android system
       const results = await PermissionService.requestMultiplePermissions([permission]);
       console.log('📱 Android permission result:', results);
       
@@ -182,7 +200,29 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         });
         setDeniedPermissions(prev => prev.filter(p => p !== permission));
         console.log('✅ Individual permission granted by user:', permission);
-      } else if (denied.includes(permission) || blocked.includes(permission)) {
+      } else if (blocked.includes(permission)) {
+        // Permission is blocked - direct user to settings
+        console.log('🚫 Permission blocked, directing to settings:', permission);
+        const explanation = PERMISSION_EXPLANATIONS[permission];
+        Alert.alert(
+          '⚙️ Permission Blocked',
+          `${explanation?.title || 'This permission'} has been permanently denied. Please grant it manually in Android Settings.`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Open Settings', 
+              onPress: () => PermissionService.openAppSettings() 
+            }
+          ]
+        );
+        
+        // Still update UI to show denied state
+        setDeniedPermissions(prev => {
+          const filtered = prev.filter(p => p !== permission);
+          return [...filtered, permission];
+        });
+        setGrantedPermissions(prev => prev.filter(p => p !== permission));
+      } else if (denied.includes(permission)) {
         // Update UI to show denied state
         setDeniedPermissions(prev => {
           const filtered = prev.filter(p => p !== permission);
@@ -254,12 +294,17 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
   const renderStep = () => {
     const step = steps[currentStep];
     
-    // Debug: Check for duplicate permissions
+    // Debug: Check for duplicate permissions and undefined values
     if (step.permissions) {
       console.log('📋 Rendering step permissions:', step.permissions);
       const duplicates = step.permissions.filter((item, index) => step.permissions.indexOf(item) !== index);
       if (duplicates.length > 0) {
         console.warn('⚠️ Duplicate permissions found:', duplicates);
+      }
+      const undefinedPerms = step.permissions.filter(item => item === undefined || item === null);
+      if (undefinedPerms.length > 0) {
+        console.error('❌ Undefined permissions found:', undefinedPerms);
+        console.error('❌ Full permissions array:', step.permissions);
       }
     }
     
@@ -271,7 +316,9 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         
         {step.permissions && (
           <View style={styles.permissionsContainer}>
-            {step.permissions.map((permission, index) => renderPermissionItem(permission, index))}
+            {step.permissions
+              .filter(permission => permission !== undefined && permission !== null)
+              .map((permission, index) => renderPermissionItem(permission, index))}
           </View>
         )}
         
@@ -370,8 +417,10 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
+    paddingVertical: 20,
+    minHeight: '100%',
   },
   stepTitle: {
     fontSize: 28,
