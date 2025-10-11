@@ -6,6 +6,8 @@ import LeadForm from '../screens/LeadForm';
 import PermissionRequest from '../screens/PermissionRequest';
 import Settings from '../screens/Settings';
 import MyProfile from '../screens/MyProfile';
+import AnimatedMainContent from '../components/AnimatedMainContent';
+import { SidebarProvider, useSidebarContext } from '../context/SidebarContext';
 import { Colors } from '../theme';
 
 export type RootStackParamList = {
@@ -19,25 +21,36 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+const MainWithSidebar: React.FC = () => {
+  const { sidebarActive } = useSidebarContext();
+  
+  return (
+    <AnimatedMainContent sidebarActive={sidebarActive}>
+      <BottomTabNavigator />
+    </AnimatedMainContent>
+  );
+};
+
 const AppNavigator: React.FC = () => {
   return (
-    <Stack.Navigator
-      initialRouteName="Main"
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: Colors.primary.base,
-        },
-        headerTintColor: Colors.white,
-        headerTitleStyle: {
-          fontWeight: '600',
-        },
-      }}
-    >
-      <Stack.Screen
-        name="Main"
-        component={BottomTabNavigator}
-        options={{ headerShown: false }}
-      />
+    <SidebarProvider>
+      <Stack.Navigator
+        initialRouteName="Main"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: Colors.primary.base,
+          },
+          headerTintColor: Colors.white,
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
+        }}
+      >
+        <Stack.Screen
+          name="Main"
+          component={MainWithSidebar}
+          options={{ headerShown: false }}
+        />
       <Stack.Screen
         name="LeadDetail"
         component={LeadDetail}

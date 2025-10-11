@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  Animated,
-  Dimensions,
   ScrollView,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import Sidebar from '../components/Sidebar';
+import { useSidebarContext } from '../context/SidebarContext';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import AsyncStorageService from '../services/AsyncStorageService';
 import { Lead, LeadStatus } from '../types/Lead';
@@ -22,16 +20,12 @@ import { PIPELINE_STAGES, statusToPipelineStage } from '../utils/pipelineConfig'
 import OverlayService from '../services/OverlayService';
 import CallDetectionService from '../services/CallDetectionService';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.8;
-
 const Dashboard: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const { toggleSidebar } = useSidebarContext();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
 
   useEffect(() => {
     loadDashboardData();
@@ -71,36 +65,6 @@ const Dashboard: React.FC = () => {
     }).length,
   };
 
-  const toggleSidebar = () => {
-    if (sidebarVisible) {
-      // Close sidebar
-      Animated.timing(translateX, {
-        toValue: -SIDEBAR_WIDTH,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => {
-        setSidebarVisible(false);
-      });
-    } else {
-      // Open sidebar
-      setSidebarVisible(true);
-      Animated.timing(translateX, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
-
-  const closeSidebar = () => {
-    Animated.timing(translateX, {
-      toValue: -SIDEBAR_WIDTH,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setSidebarVisible(false);
-    });
-  };
 
   const getStageIcon = (stageId: string): string => {
     const iconMap: Record<string, string> = {
@@ -306,12 +270,6 @@ const Dashboard: React.FC = () => {
         )}
       </ScrollView>
 
-      {/* Sidebar */}
-      <Sidebar
-        isVisible={sidebarVisible}
-        onClose={closeSidebar}
-        translateX={translateX}
-      />
     </SafeAreaView>
   );
 };
