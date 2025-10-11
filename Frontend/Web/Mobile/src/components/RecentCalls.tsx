@@ -62,6 +62,7 @@ const RecentCalls: React.FC<Props> = ({ onCallPress, refreshTrigger }) => {
   };
 
   const handleCallPress = (call: CallLog) => {
+    console.log('📞 Recent call pressed:', call.lead_name || 'Unknown', call.phone_number);
     onCallPress(call.phone_number);
   };
 

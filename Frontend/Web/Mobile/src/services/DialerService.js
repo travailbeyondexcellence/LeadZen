@@ -37,8 +37,13 @@ class DialerService {
       // Make the call
       await Linking.openURL(url);
       
-      // Provide haptic feedback
-      Vibration.vibrate(100);
+      // Provide haptic feedback (safe vibration)
+      try {
+        Vibration.vibrate(100);
+      } catch (error) {
+        // Ignore vibration errors if permission not granted
+        console.log('Vibration not available:', error.message);
+      }
       
       console.log('✅ Call initiated successfully');
       return { success: true, phoneNumber: cleanNumber };

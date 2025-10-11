@@ -7,6 +7,7 @@ import {
   Vibration,
   Dimensions,
 } from 'react-native';
+import PermissionService from '../services/PermissionService';
 
 interface Props {
   onKeyPress: (key: string) => void;
@@ -50,8 +51,13 @@ const DialerKeypad: React.FC<Props> = ({
   const handleKeyPress = (key: string) => {
     if (disabled) return;
     
-    // Provide haptic feedback
-    Vibration.vibrate(50);
+    // Provide haptic feedback (safe vibration)
+    try {
+      Vibration.vibrate(50);
+    } catch (error) {
+      // Ignore vibration errors if permission not granted
+      console.log('Vibration not available:', error.message);
+    }
     
     // Call the callback
     onKeyPress(key);
@@ -60,8 +66,13 @@ const DialerKeypad: React.FC<Props> = ({
   const handleLongPress = (key: string) => {
     if (disabled) return;
     
-    // Longer vibration for long press
-    Vibration.vibrate(100);
+    // Longer vibration for long press (safe vibration)
+    try {
+      Vibration.vibrate(100);
+    } catch (error) {
+      // Ignore vibration errors if permission not granted
+      console.log('Vibration not available:', error.message);
+    }
     
     // Special handling for certain keys
     if (key === '0' && onLongPress) {

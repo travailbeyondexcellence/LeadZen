@@ -46,20 +46,39 @@ const Dialer: React.FC = () => {
   }, [phoneInput, showSearch, searchAnimation]);
 
   const handleKeyPress = (key: string) => {
+    console.log('🔤 Dialer key pressed:', key);
+    // Blur TextInput to prevent interference
+    inputRef.current?.blur();
+    
     setPhoneInput(prev => {
       const newInput = prev + key;
-      return DialerService.formatInput(newInput);
+      const formatted = DialerService.formatInput(newInput);
+      console.log('📱 Input updated:', prev, '→', formatted);
+      return formatted;
     });
   };
 
   const handleBackspace = () => {
+    console.log('⌫ Backspace pressed');
+    // Blur TextInput to prevent interference
+    inputRef.current?.blur();
+    
     setPhoneInput(prev => {
+      if (prev.length === 0) {
+        console.log('⌫ Input already empty');
+        return '';
+      }
       const newInput = prev.slice(0, -1);
-      return DialerService.formatInput(newInput);
+      const formatted = DialerService.formatInput(newInput);
+      console.log('⌫ Input updated:', prev, '→', formatted);
+      return formatted;
     });
   };
 
   const handleClear = () => {
+    console.log('🧹 Clearing dialer input');
+    // Blur TextInput to prevent interference
+    inputRef.current?.blur();
     setPhoneInput('');
   };
 
@@ -98,10 +117,14 @@ const Dialer: React.FC = () => {
   };
 
   const handleCallFromRecent = async (phoneNumber: string) => {
+    console.log('📞 Making call from recent calls to:', phoneNumber);
     const result = await DialerService.makeCall(phoneNumber);
     
     if (result.success) {
+      console.log('✅ Recent call successful, refreshing call list');
       setRefreshTrigger(prev => prev + 1);
+    } else {
+      console.error('❌ Recent call failed:', result.error);
     }
   };
 
@@ -118,19 +141,25 @@ const Dialer: React.FC = () => {
         ref={inputRef}
         style={styles.numberInput}
         value={phoneInput}
-        onChangeText={setPhoneInput}
+        onChangeText={(text) => {
+          // Format the input through DialerService
+          const formatted = DialerService.formatInput(text);
+          setPhoneInput(formatted);
+        }}
         placeholder="Enter number or name"
         placeholderTextColor="#999999"
         keyboardType="phone-pad"
         autoCorrect={false}
         autoCapitalize="none"
         selectTextOnFocus
+        blurOnSubmit={false}
       />
       
       {phoneInput.length > 0 && (
         <TouchableOpacity
           style={styles.clearButton}
           onPress={handleClear}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Text style={styles.clearButtonText}>✕</Text>
         </TouchableOpacity>
@@ -144,6 +173,8 @@ const Dialer: React.FC = () => {
         <TouchableOpacity
           style={styles.backspaceButton}
           onPress={handleBackspace}
+          activeOpacity={0.7}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
           <Text style={styles.backspaceText}>⌫</Text>
         </TouchableOpacity>
@@ -156,6 +187,7 @@ const Dialer: React.FC = () => {
         ]}
         onPress={handleCall}
         disabled={!phoneInput.trim()}
+        activeOpacity={0.8}
       >
         <Text style={styles.callButtonText}>📞</Text>
       </TouchableOpacity>
