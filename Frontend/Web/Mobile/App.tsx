@@ -9,12 +9,15 @@ import PermissionService from './src/services/PermissionService';
 import CallDetectionService from './src/services/CallDetectionService';
 import CallOverlay from './src/components/CallOverlay';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import PermissionOnboarding from './src/components/PermissionOnboarding';
 import { PerformanceMonitor } from './src/utils/performance';
 
 function App(): React.JSX.Element {
   const [isDbReady, setIsDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [servicesReady, setServicesReady] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -34,14 +37,25 @@ function App(): React.JSX.Element {
         }
         setIsDbReady(true);
         
-        // Step 2: Initialize permissions
+        // Step 2: Check if onboarding is needed
+        console.log('🔍 Checking if permission onboarding is needed...');
+        const needsOnboarding = await PermissionService.needsOnboarding();
+        setOnboardingChecked(true);
+        
+        if (needsOnboarding) {
+          console.log('📱 Showing permission onboarding...');
+          setShowOnboarding(true);
+          return; // Don't continue with service initialization until onboarding is complete
+        }
+        
+        // Step 3: Initialize permissions (if onboarding already completed)
         console.log('🔒 Initializing permissions...');
         await PerformanceMonitor.measureAsync(
           'Permissions Initialization',
           () => PermissionService.initializePermissions()
         );
         
-        // Step 3: Start call detection service
+        // Step 4: Start call detection service
         console.log('📞 Starting call detection service...');
         const callServiceStarted = await PerformanceMonitor.measureAsync(
           'Call Detection Service',
@@ -68,6 +82,47 @@ function App(): React.JSX.Element {
     initializeApp();
   }, []);
 
+  const handleOnboardingComplete = async (success: boolean) => {
+    console.log('🎯 Onboarding completed with success:', success);
+    
+    if (success) {
+      // Mark onboarding as completed
+      await PermissionService.setOnboardingCompleted();
+    }
+    
+    setShowOnboarding(false);
+    
+    try {
+      // Continue with app initialization after onboarding
+      console.log('🔒 Initializing permissions after onboarding...');
+      await PerformanceMonitor.measureAsync(
+        'Permissions Initialization',
+        () => PermissionService.initializePermissionsQuietly()
+      );
+      
+      // Start call detection service
+      console.log('📞 Starting call detection service...');
+      const callServiceStarted = await PerformanceMonitor.measureAsync(
+        'Call Detection Service',
+        () => CallDetectionService.start()
+      );
+      
+      if (callServiceStarted) {
+        console.log('✅ Call detection service started successfully');
+      } else {
+        console.warn('⚠️ Call detection service failed to start');
+      }
+      
+      setServicesReady(true);
+      PerformanceMonitor.endMeasurement('App Initialization');
+      console.log('✅ App initialization complete after onboarding!');
+      
+    } catch (error) {
+      console.error('❌ App initialization error after onboarding:', error);
+      setDbError('App initialization failed after onboarding');
+    }
+  };
+
   if (dbError) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -79,10 +134,22 @@ function App(): React.JSX.Element {
     );
   }
 
-  if (!isDbReady || !servicesReady) {
-    const loadingText = !isDbReady 
-      ? 'Initializing database...' 
-      : 'Starting services...';
+  // Show onboarding if needed and onboarding check is complete
+  if (onboardingChecked && showOnboarding) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <PermissionOnboarding onComplete={handleOnboardingComplete} />
+      </GestureHandlerRootView>
+    );
+  }
+
+  if (!isDbReady || !onboardingChecked || !servicesReady) {
+    let loadingText = 'Initializing database...';
+    if (isDbReady && !onboardingChecked) {
+      loadingText = 'Checking permissions...';
+    } else if (isDbReady && onboardingChecked && !servicesReady) {
+      loadingText = 'Starting services...';
+    }
       
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>

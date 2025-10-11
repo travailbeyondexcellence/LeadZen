@@ -5,6 +5,7 @@ import {
   openSettings 
 } from 'react-native-permissions';
 import { Alert, Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   ALL_PERMISSIONS, 
   REQUIRED_PERMISSIONS, 
@@ -65,6 +66,20 @@ class PermissionService {
     }
   }
 
+  async requestMultiplePermissions(permissions) {
+    try {
+      console.log('🔒 Requesting multiple permissions:', permissions);
+      const results = await requestMultiple(permissions);
+      this.permissionStatus = { ...this.permissionStatus, ...results };
+      
+      console.log('📝 Multiple Permission Request Results:', results);
+      return this.analyzePermissionResults(results);
+    } catch (error) {
+      console.error('❌ Error requesting multiple permissions:', error);
+      return { granted: [], denied: permissions };
+    }
+  }
+
   analyzePermissionResults(results) {
     const granted = [];
     const denied = [];
@@ -104,6 +119,27 @@ class PermissionService {
     
     console.log('🔍 Required permissions granted:', requiredGranted);
     return requiredGranted;
+  }
+
+  async checkRequiredPermissionsQuietly() {
+    try {
+      const results = await checkMultiple(REQUIRED_PERMISSIONS);
+      this.permissionStatus = { ...this.permissionStatus, ...results };
+      
+      const grantedPermissions = Object.keys(results).filter(
+        permission => results[permission] === RESULTS.GRANTED
+      );
+      
+      const requiredGranted = REQUIRED_PERMISSIONS.every(permission => 
+        grantedPermissions.includes(permission)
+      );
+      
+      console.log('🔍 Required permissions check (quiet):', requiredGranted);
+      return requiredGranted;
+    } catch (error) {
+      console.error('❌ Error checking required permissions quietly:', error);
+      return false;
+    }
   }
 
   showPermissionDeniedAlert(deniedPermissions) {
@@ -146,6 +182,25 @@ class PermissionService {
     };
   }
 
+  async needsOnboarding() {
+    try {
+      const onboardingCompleted = await AsyncStorage.getItem('permission_onboarding_completed');
+      return onboardingCompleted !== 'true';
+    } catch (error) {
+      console.error('❌ Error checking onboarding status:', error);
+      return true; // Default to showing onboarding if we can't check
+    }
+  }
+
+  async setOnboardingCompleted() {
+    try {
+      await AsyncStorage.setItem('permission_onboarding_completed', 'true');
+      console.log('✅ Permission onboarding marked as completed');
+    } catch (error) {
+      console.error('❌ Error setting onboarding completed:', error);
+    }
+  }
+
   async initializePermissions() {
     console.log('🚀 Initializing permission service...');
     
@@ -158,6 +213,20 @@ class PermissionService {
     
     console.log('✅ All required permissions already granted');
     return status;
+  }
+
+  async initializePermissionsQuietly() {
+    console.log('🚀 Initializing permission service (quiet mode)...');
+    
+    const requiredGranted = await this.checkRequiredPermissionsQuietly();
+    
+    if (!requiredGranted) {
+      console.log('⚠️ Some required permissions still not granted after onboarding');
+      return { granted: [], denied: REQUIRED_PERMISSIONS };
+    }
+    
+    console.log('✅ All required permissions granted after onboarding');
+    return { granted: REQUIRED_PERMISSIONS, denied: [] };
   }
 }
 

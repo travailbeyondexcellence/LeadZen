@@ -8,6 +8,7 @@ export const ANDROID_PERMISSIONS = {
   READ_CONTACTS: PERMISSIONS.ANDROID.READ_CONTACTS,
   WRITE_EXTERNAL_STORAGE: PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
   CAMERA: PERMISSIONS.ANDROID.CAMERA,
+  VIBRATE: PERMISSIONS.ANDROID.VIBRATE,
 };
 
 export const PERMISSION_EXPLANATIONS = {
@@ -46,6 +47,11 @@ export const PERMISSION_EXPLANATIONS = {
     description: 'To take photos for lead profiles',
     required: false,
   },
+  [ANDROID_PERMISSIONS.VIBRATE]: {
+    title: '📳 Vibration',
+    description: 'To provide haptic feedback when dialing',
+    required: true,
+  },
 };
 
 export const REQUIRED_PERMISSIONS = [
@@ -53,6 +59,7 @@ export const REQUIRED_PERMISSIONS = [
   ANDROID_PERMISSIONS.CALL_PHONE,
   ANDROID_PERMISSIONS.ANSWER_PHONE_CALLS,
   ANDROID_PERMISSIONS.SYSTEM_ALERT_WINDOW,
+  ANDROID_PERMISSIONS.VIBRATE,
 ];
 
 export const OPTIONAL_PERMISSIONS = [
