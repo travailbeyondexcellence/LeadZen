@@ -5,6 +5,7 @@ import LeadDetail from '../screens/LeadDetail';
 import LeadForm from '../screens/LeadForm';
 import PermissionRequest from '../screens/PermissionRequest';
 import Settings from '../screens/Settings';
+import MyProfile from '../screens/MyProfile';
 import { Colors } from '../theme';
 
 export type RootStackParamList = {
@@ -13,6 +14,7 @@ export type RootStackParamList = {
   LeadForm: { leadId?: string };
   PermissionRequest: undefined;
   Settings: undefined;
+  MyProfile: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -65,6 +67,14 @@ const AppNavigator: React.FC = () => {
         component={Settings}
         options={{ 
           title: 'Settings',
+          headerBackTitle: 'Back'
+        }}
+      />
+      <Stack.Screen
+        name="MyProfile"
+        component={MyProfile}
+        options={{ 
+          title: 'My Profile',
           headerBackTitle: 'Back'
         }}
       />

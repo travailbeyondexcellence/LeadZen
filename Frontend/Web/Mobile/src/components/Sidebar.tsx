@@ -86,6 +86,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose, translateX }) => 
           </View>
 
           <View style={styles.settingsSection}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('MyProfile')}>
+              <Text style={styles.menuIcon}>👤</Text>
+              <Text style={styles.menuText}>My Profile</Text>
+            </TouchableOpacity>
+            
             <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('Settings')}>
               <Text style={styles.menuIcon}>⚙️</Text>
               <Text style={styles.menuText}>Settings</Text>
