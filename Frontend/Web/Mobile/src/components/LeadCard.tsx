@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialPressable from './Pressable';
 import StatusBadge from './StatusBadge';
 import PriorityBadge from './PriorityBadge';
@@ -128,7 +129,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onW
               onPress={() => onWhatsApp(lead)}
               rippleColor="rgba(20, 184, 166, 0.2)"
             >
-              <Text style={styles.actionIcon}>🟢</Text>
+              <Icon name="whatsapp" size={16} color="#25D366" />
             </MaterialPressable>
           )}
           {onNotes && (

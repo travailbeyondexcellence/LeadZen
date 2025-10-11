@@ -10,6 +10,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
 
@@ -334,7 +335,11 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
             onPress={handleWhatsApp}
             disabled={!lead.phone}
           >
-            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>🟢</Text>
+            <Icon 
+              name="whatsapp" 
+              size={16} 
+              color={!lead.phone ? '#999' : '#25D366'} 
+            />
           </TouchableOpacity>
           
           <TouchableOpacity 
