@@ -13,7 +13,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
-import DatabaseService from '../services/DatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import { formatPhoneNumber, formatCurrency } from '../utils/validation';
 
 type RouteParams = {
@@ -38,7 +38,7 @@ const LeadDetail: React.FC = () => {
   const loadLead = async () => {
     try {
       setLoading(true);
-      const leadData = await DatabaseService.getLeadById(leadId);
+      const leadData = await AsyncStorageService.getLeadById(leadId);
       setLead(leadData);
     } catch (error) {
       console.error('Failed to load lead:', error);
@@ -85,7 +85,7 @@ const LeadDetail: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await DatabaseService.deleteLead(leadId);
+              await AsyncStorageService.deleteLead(leadId);
               Alert.alert('Success', 'Lead deleted successfully');
               navigation.goBack();
             } catch (error) {

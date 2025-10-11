@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { PipelineColumn } from './PipelineColumn';
-import DatabaseService from '../services/DatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import { 
   PIPELINE_STAGES, 
   statusToPipelineStage, 
@@ -59,7 +59,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
     }
 
     try {
-      const allLeads = await DatabaseService.getLeads(100, 0);
+      const allLeads = await AsyncStorageService.getLeads(100, 0);
       setLeads(allLeads);
     } catch (error) {
       console.error('Failed to load leads:', error);
@@ -74,7 +74,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
   const handleDropLead = async (leadId: string, newStage: string): Promise<void> => {
     try {
       const newStatus = pipelineStageToStatus(newStage);
-      await DatabaseService.updateLead(leadId, { status: newStatus });
+      await AsyncStorageService.updateLead(parseInt(leadId), { status: newStatus });
       
       // Update local state optimistically
       setLeads(prevLeads => 

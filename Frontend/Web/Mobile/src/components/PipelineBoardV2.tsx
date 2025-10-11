@@ -13,7 +13,7 @@ import {
 import { Lead } from '../types/Lead';
 import { PipelineColumnV2 } from './PipelineColumnV2';
 import { Colors, Spacing } from '../theme';
-import DatabaseService from '../services/DatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import {
   PIPELINE_STAGES,
   statusToPipelineStage,
@@ -53,7 +53,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     }
     
     try {
-      const allLeads = await DatabaseService.getLeads(100, 0);
+      const allLeads = await AsyncStorageService.getLeads(100, 0);
       setLeads(allLeads);
     } catch (error) {
       console.error('Failed to load leads:', error);
@@ -97,7 +97,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
       const newStatus = pipelineStageToStatus(newStageId);
       
       // Update in database
-      await DatabaseService.updateLead(lead.id, { status: newStatus });
+      await AsyncStorageService.updateLead(lead.id, { status: newStatus });
       
       // Update local state optimistically
       setLeads(prevLeads =>

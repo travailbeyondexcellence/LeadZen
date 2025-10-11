@@ -15,7 +15,7 @@ import MaterialPressable from '../components/Pressable';
 import LeadCard from '../components/LeadCard';
 import SearchBar from '../components/SearchBar';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
-import DatabaseService from '../services/DatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import { Colors, Spacing, BorderRadius } from '../theme';
 import NoLeadsEmpty from '../components/EmptyStates/NoLeadsEmpty';
 import LeadCardSkeleton from '../components/LoadingStates/LeadCardSkeleton';
@@ -58,7 +58,7 @@ const LeadList: React.FC = () => {
     try {
       const dbLeads = await PerformanceMonitor.measureAsync(
         'Load Leads',
-        () => DatabaseService.getLeads(100, 0)
+        () => AsyncStorageService.getLeads(100, 0)
       );
       setLeads(dbLeads);
       setFilteredLeads(dbLeads);

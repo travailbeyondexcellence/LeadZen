@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import DatabaseService from '../services/DatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import OverlayService from '../services/OverlayService';
 import { PhoneUtils } from '../utils/phoneUtils';
 
@@ -71,16 +71,20 @@ const PostCallTray: React.FC<Props> = ({
     try {
       if (leadData && callNotes.trim()) {
         // Add call notes
-        await DatabaseService.addNote({
-          lead_id: leadData.id,
-          content: callNotes.trim(),
-          note_type: 'general'
+        // Note: AsyncStorage doesn't have separate notes table
+        // For now, we'll add notes to the lead's notes field
+        const currentLead = await AsyncStorageService.getLeadById(leadData.id);
+        const existingNotes = currentLead?.notes || '';
+        const newNotes = existingNotes ? `${existingNotes}\n\nCall Note (${new Date().toLocaleDateString()}): ${callNotes.trim()}` : `Call Note (${new Date().toLocaleDateString()}): ${callNotes.trim()}`;
+        
+        await AsyncStorageService.updateLead(leadData.id, {
+          notes: newNotes
         });
       }
 
       if (leadData && selectedStatus !== leadData.status) {
         // Update lead status
-        await DatabaseService.updateLead(leadData.id, {
+        await AsyncStorageService.updateLead(leadData.id, {
           status: selectedStatus
         });
       }

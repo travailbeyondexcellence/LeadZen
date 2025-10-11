@@ -34,7 +34,7 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
   const scaleValue = useRef(new Animated.Value(1)).current;
   const rotateXValue = useRef(new Animated.Value(0)).current;
   const rotateYValue = useRef(new Animated.Value(0)).current;
-  const translateZValue = useRef(new Animated.Value(0)).current;
+  // translateZ removed - not supported by JSC engine
   const elevationValue = useRef(new Animated.Value(4)).current;
   const fadeInValue = useRef(new Animated.Value(0)).current;
 
@@ -57,8 +57,7 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
     if (enable3D) {
       const { animateIn } = MicroAnimations.card3DEffect(
         rotateXValue,
-        rotateYValue,
-        translateZValue
+        rotateYValue
       );
       animateIn.start();
     }
@@ -73,8 +72,7 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
     if (enable3D) {
       const { animateOut } = MicroAnimations.card3DEffect(
         rotateXValue,
-        rotateYValue,
-        translateZValue
+        rotateYValue
       );
       animateOut.start();
     }
@@ -111,12 +109,7 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
           outputRange: ['0deg', '1deg'],
         }),
       },
-      {
-        translateZ: translateZValue.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 5],
-        }),
-      },
+      // translateZ removed - not supported by JSC engine
     ],
   };
 

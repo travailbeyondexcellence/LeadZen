@@ -1,5 +1,5 @@
 import { Linking, Alert, Vibration } from 'react-native';
-import DatabaseService from './DatabaseService';
+import AsyncStorageService from './AsyncStorageService';
 import { PhoneUtils } from '../utils/phoneUtils';
 import { T9Search } from '../utils/t9Utils';
 
@@ -95,7 +95,10 @@ class DialerService {
   async logOutgoingCall(phoneNumber) {
     try {
       // Find lead by phone number
-      const lead = await DatabaseService.getLeadByPhone(phoneNumber);
+      // Note: AsyncStorageService doesn't have getLeadByPhone method
+      // We'll search through all leads to find matching phone number
+      const allLeads = await AsyncStorageService.getLeads(1000, 0);
+      const lead = allLeads.find(l => l.phone === phoneNumber);
       
       const callLog = {
         lead_id: lead ? lead.id : null,
@@ -107,7 +110,7 @@ class DialerService {
         notes: null
       };
 
-      await DatabaseService.addCallLog(callLog);
+      await AsyncStorageService.addCallLog(callLog);
       console.log('📝 Outgoing call logged to database');
       
     } catch (error) {
@@ -129,7 +132,7 @@ class DialerService {
       console.log('🔍 Searching leads with T9 input:', input);
       
       // Get all leads from database
-      const allLeads = await DatabaseService.getLeads(500, 0); // Get more leads for better search
+      const allLeads = await AsyncStorageService.getLeads(500, 0); // Get more leads for better search
       
       // Use T9 search to filter leads
       const matches = T9Search.searchLeads(input, allLeads, 8);

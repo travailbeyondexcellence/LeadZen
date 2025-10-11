@@ -16,7 +16,7 @@ import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 import { Lead, LeadStatus, LeadPriority, LeadSource, getSourceDisplayName } from '../types/Lead';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import DatabaseService from '../services/DatabaseService';
+import AsyncStorageService from '../services/AsyncStorageService';
 import { validateForm, formatPhoneNumber } from '../utils/validation';
 
 type RouteParams = {
@@ -65,7 +65,7 @@ const LeadForm: React.FC = () => {
     
     try {
       setLoading(true);
-      const lead = await DatabaseService.getLeadById(leadId);
+      const lead = await AsyncStorageService.getLeadById(leadId);
       if (lead) {
         setFormData({
           name: lead.name,
@@ -144,10 +144,10 @@ const LeadForm: React.FC = () => {
       };
       
       if (isEditMode && leadId) {
-        await DatabaseService.updateLead(leadId, leadData);
+        await AsyncStorageService.updateLead(leadId, leadData);
         Alert.alert('Success', 'Lead updated successfully');
       } else {
-        await DatabaseService.createLead({
+        await AsyncStorageService.createLead({
           ...leadData,
           id: Date.now().toString(),
           createdAt: new Date(),

@@ -1,4 +1,4 @@
-import DatabaseService from './DatabaseService';
+import AsyncStorageService from './AsyncStorageService';
 import { PhoneUtils } from '../utils/phoneUtils';
 
 export const OverlayStates = {
@@ -83,7 +83,11 @@ class OverlayService {
         this.currentLead = lead;
         
         // Update last contact time
-        await DatabaseService.updateLeadLastContact(lead.id);
+        // Note: AsyncStorageService doesn't have updateLeadLastContact method
+        // We'll update the lead with lastContactedAt field
+        await AsyncStorageService.updateLead(lead.id, {
+          lastContactedAt: new Date()
+        });
       } else {
         console.log('❓ Unknown caller:', phoneNumber);
         this.currentLead = null;
@@ -150,7 +154,10 @@ class OverlayService {
       if (!cleanedNumber) return null;
       
       console.log('🔍 Looking up lead for phone:', phoneNumber);
-      const lead = await DatabaseService.getLeadByPhone(cleanedNumber);
+      // Note: AsyncStorageService doesn't have getLeadByPhone method
+      // We'll search through all leads to find matching phone number
+      const allLeads = await AsyncStorageService.getLeads(1000, 0);
+      const lead = allLeads.find(l => l.phone === cleanedNumber);
       
       return lead;
     } catch (error) {
@@ -177,7 +184,7 @@ class OverlayService {
         notes: null
       };
 
-      await DatabaseService.addCallLog(callLog);
+      await AsyncStorageService.addCallLog(callLog);
       console.log('📝 Call logged to database');
       
     } catch (error) {
@@ -202,10 +209,14 @@ class OverlayService {
       }
 
       // Add note to database
-      await DatabaseService.addNote({
-        lead_id: this.currentLead.id,
-        content: note,
-        note_type: 'general'
+      // Note: AsyncStorageService doesn't have separate notes table
+      // We'll add notes to the lead's notes field
+      const currentLead = await AsyncStorageService.getLeadById(this.currentLead.id);
+      const existingNotes = currentLead?.notes || '';
+      const newNotes = existingNotes ? `${existingNotes}\n\nQuick Note (${new Date().toLocaleDateString()}): ${note}` : `Quick Note (${new Date().toLocaleDateString()}): ${note}`;
+      
+      await AsyncStorageService.updateLead(this.currentLead.id, {
+        notes: newNotes
       });
 
       console.log('📝 Quick note added:', note);
@@ -224,7 +235,7 @@ class OverlayService {
         return false;
       }
 
-      await DatabaseService.updateLead(this.currentLead.id, {
+      await AsyncStorageService.updateLead(this.currentLead.id, {
         status: newStatus
       });
 

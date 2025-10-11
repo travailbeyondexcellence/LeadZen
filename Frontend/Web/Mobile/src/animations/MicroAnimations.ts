@@ -145,8 +145,7 @@ export class MicroAnimations {
 
   static card3DEffect(
     rotateXValue: Animated.Value,
-    rotateYValue: Animated.Value,
-    translateZValue: Animated.Value
+    rotateYValue: Animated.Value
   ) {
     const animateIn = Animated.parallel([
       Animated.timing(rotateXValue, {
@@ -161,12 +160,7 @@ export class MicroAnimations {
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.timing(translateZValue, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
+      // translateZ removed - not supported by JSC
     ]);
 
     const animateOut = Animated.parallel([
@@ -182,12 +176,7 @@ export class MicroAnimations {
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
-      Animated.timing(translateZValue, {
-        toValue: 0,
-        duration: 200,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }),
+      // translateZ removed - not supported by JSC
     ]);
 
     return { animateIn, animateOut };

@@ -1,10 +1,10 @@
 module.exports = {
   dependencies: {
-    // Exclude react-native-sqlite-storage from autolinking
+    // Disable react-native-sqlite-storage autolinking (use AsyncStorage fallback)
     'react-native-sqlite-storage': {
       platforms: {
-        android: null, // Disable Android
-        ios: null,     // Disable iOS
+        android: null, // Disable Android - use AsyncStorage fallback
+        ios: null,     // Disable iOS - use AsyncStorage fallback
       },
     },
   },
