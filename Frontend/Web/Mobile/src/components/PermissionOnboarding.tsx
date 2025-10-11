@@ -57,11 +57,17 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
 
   const checkCurrentPermissions = async () => {
     try {
+      console.log('🔍 Checking current permission status...');
       const status = await PermissionService.checkAllPermissions();
+      console.log('📊 Current permission status:', status);
+      
       setGrantedPermissions(status.granted || []);
       setDeniedPermissions(status.denied || []);
+      
+      console.log('✅ Granted permissions:', status.granted || []);
+      console.log('❌ Denied permissions:', status.denied || []);
     } catch (error) {
-      console.error('Error checking current permissions:', error);
+      console.error('❌ Error checking current permissions:', error);
     }
   };
 
@@ -75,19 +81,32 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     if (step.permissions && step.permissions.length > 0) {
       setIsProcessing(true);
       try {
+        console.log('🔒 Requesting step permissions:', step.permissions);
         const results = await PermissionService.requestMultiplePermissions(step.permissions);
+        console.log('📱 Step permission results:', results);
+        
         const granted = results.granted || [];
         const denied = results.denied || [];
+        const blocked = results.blocked || [];
         
-        setGrantedPermissions(prev => [...prev, ...granted]);
-        setDeniedPermissions(prev => [...prev, ...denied]);
+        // Update granted permissions (remove duplicates)
+        setGrantedPermissions(prev => {
+          const filtered = prev.filter(p => !step.permissions.includes(p));
+          return [...filtered, ...granted];
+        });
+        
+        // Update denied permissions (include blocked as denied)
+        setDeniedPermissions(prev => {
+          const filtered = prev.filter(p => !step.permissions.includes(p));
+          return [...filtered, ...denied, ...blocked];
+        });
         
         if (step.isRequired && granted.length < step.permissions.length) {
-          // Show alert for required permissions
-          PermissionService.showPermissionDeniedAlert(denied);
+          console.warn('⚠️ Some required permissions denied:', [...denied, ...blocked]);
+          PermissionService.showPermissionDeniedAlert([...denied, ...blocked]);
         }
       } catch (error) {
-        console.error('Error requesting permissions:', error);
+        console.error('❌ Error requesting step permissions:', error);
       }
       setIsProcessing(false);
     }
@@ -144,26 +163,41 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
   };
 
   const handleGrantIndividualPermission = async (permission: string) => {
-    setIsProcessing(true);
     try {
-      console.log('🔒 Granting individual permission:', permission);
+      console.log('🔒 Requesting individual permission from Android system:', permission);
+      
+      // Directly request the specific permission from Android system
       const results = await PermissionService.requestMultiplePermissions([permission]);
+      console.log('📱 Android permission result:', results);
+      
       const granted = results.granted || [];
       const denied = results.denied || [];
+      const blocked = results.blocked || [];
       
       if (granted.includes(permission)) {
-        setGrantedPermissions(prev => [...prev.filter(p => p !== permission), permission]);
+        // Update UI to show granted state
+        setGrantedPermissions(prev => {
+          const filtered = prev.filter(p => p !== permission);
+          return [...filtered, permission];
+        });
         setDeniedPermissions(prev => prev.filter(p => p !== permission));
-        console.log('✅ Individual permission granted:', permission);
-      } else {
-        setDeniedPermissions(prev => [...prev.filter(p => p !== permission), permission]);
+        console.log('✅ Individual permission granted by user:', permission);
+      } else if (denied.includes(permission) || blocked.includes(permission)) {
+        // Update UI to show denied state
+        setDeniedPermissions(prev => {
+          const filtered = prev.filter(p => p !== permission);
+          return [...filtered, permission];
+        });
         setGrantedPermissions(prev => prev.filter(p => p !== permission));
-        console.log('❌ Individual permission denied:', permission);
+        console.log('❌ Individual permission denied by user:', permission);
       }
+      
+      // Refresh permission status to ensure accuracy
+      await checkCurrentPermissions();
+      
     } catch (error) {
-      console.error('Error granting individual permission:', error);
+      console.error('❌ Error requesting individual permission:', error);
     }
-    setIsProcessing(false);
   };
 
   const renderPermissionItem = (permission: string, index: number) => {
@@ -181,7 +215,8 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
       statusIcon = '✅';
       statusText = 'Granted';
       statusStyle = [styles.permissionStatus, styles.permissionStatusGranted];
-    } else if (isDenied) {
+    } else {
+      // Show warning state for any non-granted permission
       permissionStyle = [styles.permissionItem, styles.permissionItemDenied];
       statusIcon = '⚠️';
       statusText = 'Not Granted';
@@ -194,19 +229,17 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
           <Text style={styles.permissionTitle}>
             {explanation?.title || 'Permission'}
           </Text>
-          {(isGranted || isDenied) && (
-            <View style={styles.permissionStatusContainer}>
-              <Text style={statusStyle}>
-                {statusIcon} {statusText}
-              </Text>
-            </View>
-          )}
+          <View style={styles.permissionStatusContainer}>
+            <Text style={statusStyle}>
+              {statusIcon} {statusText}
+            </Text>
+          </View>
         </View>
         <Text style={styles.permissionDescription}>
           {explanation?.description || 'Required for app functionality'}
         </Text>
         
-        {isDenied && (
+        {!isGranted && (
           <TouchableOpacity
             style={styles.grantNowButton}
             onPress={() => handleGrantIndividualPermission(permission)}
