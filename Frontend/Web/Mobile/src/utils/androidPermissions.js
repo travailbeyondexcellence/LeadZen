@@ -29,8 +29,9 @@ export const PERMISSION_EXPLANATIONS = {
   },
   [ANDROID_PERMISSIONS.SYSTEM_ALERT_WINDOW]: {
     title: '🎯 Overlay Permission',
-    description: 'To show lead popup during active calls without interrupting you',
+    description: 'Special permission - enable in Settings > Special app access > Display over other apps',
     required: true,
+    special: true,
   },
   [ANDROID_PERMISSIONS.READ_CONTACTS]: {
     title: '👥 Contacts Access',
@@ -39,8 +40,9 @@ export const PERMISSION_EXPLANATIONS = {
   },
   [ANDROID_PERMISSIONS.WRITE_EXTERNAL_STORAGE]: {
     title: '💾 Storage Access',
-    description: 'To save lead photos and documents',
+    description: 'Deprecated in Android 10+ - app uses scoped storage instead',
     required: false,
+    deprecated: true,
   },
   [ANDROID_PERMISSIONS.CAMERA]: {
     title: '📸 Camera Access',
@@ -49,8 +51,9 @@ export const PERMISSION_EXPLANATIONS = {
   },
   [ANDROID_PERMISSIONS.VIBRATE]: {
     title: '📳 Vibration',
-    description: 'To provide haptic feedback when dialing',
-    required: true,
+    description: 'Auto-granted by Android - provides haptic feedback when dialing',
+    required: false,
+    autoGranted: true,
   },
 };
 
@@ -58,17 +61,36 @@ export const REQUIRED_PERMISSIONS = [
   ANDROID_PERMISSIONS.READ_PHONE_STATE,
   ANDROID_PERMISSIONS.CALL_PHONE,
   ANDROID_PERMISSIONS.ANSWER_PHONE_CALLS,
-  ANDROID_PERMISSIONS.SYSTEM_ALERT_WINDOW,
-  ANDROID_PERMISSIONS.VIBRATE,
+  // Note: SYSTEM_ALERT_WINDOW requires special handling
+  // ANDROID_PERMISSIONS.SYSTEM_ALERT_WINDOW,
+  // Note: VIBRATE is auto-granted, doesn't need user permission
+  // ANDROID_PERMISSIONS.VIBRATE,
 ];
 
 export const OPTIONAL_PERMISSIONS = [
   ANDROID_PERMISSIONS.READ_CONTACTS,
-  ANDROID_PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  // Note: WRITE_EXTERNAL_STORAGE is deprecated in Android 10+
+  // ANDROID_PERMISSIONS.WRITE_EXTERNAL_STORAGE,
   ANDROID_PERMISSIONS.CAMERA,
+];
+
+// Special permissions that need different handling
+export const SPECIAL_PERMISSIONS = [
+  ANDROID_PERMISSIONS.SYSTEM_ALERT_WINDOW, // Requires Settings > Special app access > Display over other apps
+];
+
+// Auto-granted permissions (don't need user approval)
+export const AUTO_GRANTED_PERMISSIONS = [
+  ANDROID_PERMISSIONS.VIBRATE, // Normal permission, auto-granted
+];
+
+// Deprecated permissions (not needed in modern Android)
+export const DEPRECATED_PERMISSIONS = [
+  ANDROID_PERMISSIONS.WRITE_EXTERNAL_STORAGE, // Use scoped storage instead
 ];
 
 export const ALL_PERMISSIONS = [
   ...REQUIRED_PERMISSIONS,
   ...OPTIONAL_PERMISSIONS,
+  // Don't include special or auto-granted permissions in regular flow
 ];

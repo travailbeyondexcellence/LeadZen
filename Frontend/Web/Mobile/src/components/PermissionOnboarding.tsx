@@ -14,7 +14,10 @@ import { Colors, Spacing } from '../theme';
 import { 
   REQUIRED_PERMISSIONS, 
   OPTIONAL_PERMISSIONS, 
-  PERMISSION_EXPLANATIONS 
+  PERMISSION_EXPLANATIONS,
+  SPECIAL_PERMISSIONS,
+  AUTO_GRANTED_PERMISSIONS,
+  DEPRECATED_PERMISSIONS
 } from '../utils/androidPermissions';
 import PermissionService from '../services/PermissionService';
 
