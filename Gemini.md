@@ -11,6 +11,13 @@
 - **NEVER run** `bun run android` - User runs build commands manually
 - **NEVER run** any React Native run commands - User controls execution
 
+### ⚠️ EMERGENCY EXCEPTIONS
+**ONLY when explicitly granted permission by user for specific errors:**
+- **CAN run** `npm run android` - When user grants exception for specific build errors
+- **MUST verify** explicit user permission before running
+- **MUST explain** what the command will do before executing
+- **MUST report** detailed results of execution
+
 ### ✅ ALLOWED COMMANDS
 - **CAN run** `npm install` - To solve dependency issues only
 - **CAN run** `npm install [package-name]` - When adding new dependencies
@@ -160,6 +167,7 @@ npm run android
 3. **Bug Fixing** - Solve code-level issues
 4. **Configuration** - Update configs and settings
 5. **Documentation** - Create guides and documentation
+6. **Emergency Build Resolution** - When granted explicit permission
 
 ### Secondary Support
 1. **Code Analysis** - Understand existing codebase
@@ -173,3 +181,91 @@ npm run android
 **Boundaries:** No build execution, no server control, no app running
 **Permissions:** Install packages, write code, fix errors, provide guidance
 **Goal:** Enable user to successfully build and run the application themselves
+
+---
+
+## 🚨 EMERGENCY BUILD TROUBLESHOOTING PROTOCOL
+
+### When react-native-gesture-handler Kotlin compilation fails:
+
+**Step 1: Identify the Exact Error**
+```bash
+# Run this and capture FULL output:
+cd Frontend/Web/Mobile
+npm run android 2>&1 | tee build-error.log
+```
+
+**Step 2: Check react-native-gesture-handler Version Compatibility**
+```bash
+# Check current version:
+npm list react-native-gesture-handler
+# Expected version for RN 0.73.6: ^2.14.0 or higher
+```
+
+**Step 3: Update react-native-gesture-handler (if needed)**
+```bash
+npm install react-native-gesture-handler@^2.14.1
+```
+
+**Step 4: Nuclear Clean (MANDATORY)**
+```bash
+cd Frontend/Web/Mobile
+# Stop Metro if running
+npx react-native start --reset-cache &
+# Kill Metro: Ctrl+C
+
+# Clean everything:
+rm -rf node_modules
+npm install
+cd android
+./gradlew clean
+./gradlew cleanBuildCache
+cd ..
+```
+
+**Step 5: Verify Android Configuration**
+Check that `android/app/src/main/java/.../MainActivity.java` has:
+```java
+import com.swmansion.gesturehandler.react.RNGestureHandlerEnabledRootView;
+```
+
+**Step 6: Try Build Again**
+```bash
+npm run android
+```
+
+**Step 7: If Still Failing - Check Specific Issues:**
+
+**A. Kotlin Version Issue:**
+Check `android/build.gradle` has:
+```gradle
+kotlinVersion = "1.9.10"
+```
+
+**B. Java/Kotlin Compatibility:**
+Check `android/app/build.gradle` has:
+```gradle
+android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+}
+```
+
+**C. NewArch Disabled:**
+Check `android/gradle.properties` has:
+```
+newArchEnabled=false
+```
+
+**CRITICAL RULES:**
+- ✅ ALWAYS run full clean before testing fixes
+- ✅ ALWAYS test ONE change at a time
+- ✅ ALWAYS revert changes if they don't work
+- ✅ CAPTURE full error logs for analysis
+- ❌ NEVER make multiple changes simultaneously
+- ❌ NEVER skip the nuclear clean step
