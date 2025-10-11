@@ -20,6 +20,7 @@ import {
   pipelineStageToStatus 
 } from '../utils/pipelineConfig';
 import { Colors, Spacing } from '../theme';
+import { formatNumber } from '../utils/formatting';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -136,7 +137,7 @@ export const PipelineBoard: React.FC<PipelineBoardProps> = ({
           </Text>
           <Text style={styles.statItem}>
             Value: <Text style={styles.statValue}>
-              ${statistics.totalValue.toLocaleString()}
+              ${formatNumber(statistics.totalValue)}
             </Text>
           </Text>
         </View>

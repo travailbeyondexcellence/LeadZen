@@ -25,10 +25,10 @@ const ContactCard: React.FC<ContactCardProps> = ({
 
   const formatDate = (date?: Date): string => {
     if (!date) return '';
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(date));
+    // Manual date formatting for JSC compatibility
+    const d = new Date(date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}`;
   };
 
   return (

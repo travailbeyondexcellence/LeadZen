@@ -13,6 +13,7 @@ import {
 import { Lead } from '../types/Lead';
 import { PipelineColumnV2 } from './PipelineColumnV2';
 import { Colors, Spacing } from '../theme';
+import { formatNumber } from '../utils/formatting';
 import AsyncStorageService from '../services/AsyncStorageService';
 import {
   PIPELINE_STAGES,
@@ -147,7 +148,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
           </Text>
           <Text style={styles.statItem}>
             <Text style={styles.statValue}>
-              ${statistics.totalValue.toLocaleString()}
+              ${formatNumber(statistics.totalValue)}
             </Text> total
           </Text>
         </View>

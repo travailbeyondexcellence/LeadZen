@@ -14,6 +14,7 @@ import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import AsyncStorageService from '../services/AsyncStorageService';
 import OverlayService from '../services/OverlayService';
 import { PhoneUtils } from '../utils/phoneUtils';
+import { formatDate } from '../utils/formatting';
 
 interface Props {
   visible: boolean;
@@ -75,7 +76,7 @@ const PostCallTray: React.FC<Props> = ({
         // For now, we'll add notes to the lead's notes field
         const currentLead = await AsyncStorageService.getLeadById(leadData.id);
         const existingNotes = currentLead?.notes || '';
-        const newNotes = existingNotes ? `${existingNotes}\n\nCall Note (${new Date().toLocaleDateString()}): ${callNotes.trim()}` : `Call Note (${new Date().toLocaleDateString()}): ${callNotes.trim()}`;
+        const newNotes = existingNotes ? `${existingNotes}\n\nCall Note (${formatDate(new Date())}): ${callNotes.trim()}` : `Call Note (${formatDate(new Date())}): ${callNotes.trim()}`;
         
         await AsyncStorageService.updateLead(leadData.id, {
           notes: newNotes
@@ -156,7 +157,7 @@ const PostCallTray: React.FC<Props> = ({
             <Text style={styles.sectionTitle}>Call Summary</Text>
             <Text style={styles.infoText}>📞 {callType.charAt(0).toUpperCase() + callType.slice(1)} call</Text>
             <Text style={styles.infoText}>⏱️ Duration: {formatCallDuration(callDuration)}</Text>
-            <Text style={styles.infoText}>📅 {new Date().toLocaleDateString()}</Text>
+            <Text style={styles.infoText}>📅 {formatDate(new Date())}</Text>
           </View>
 
           <View style={styles.infoSection}>
@@ -237,7 +238,7 @@ const PostCallTray: React.FC<Props> = ({
           <View style={styles.activityContent}>
             <Text style={styles.activityText}>Previous contact</Text>
             <Text style={styles.activityTime}>
-              {new Date(leadData.lastContactedAt).toLocaleDateString()}
+              {formatDate(new Date(leadData.lastContactedAt))}
             </Text>
           </View>
         </View>

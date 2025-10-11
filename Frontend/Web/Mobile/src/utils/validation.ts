@@ -124,12 +124,8 @@ export const formatPhoneNumber = (phone: string): string => {
 };
 
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+  // Manual currency formatting for JSC compatibility
+  return '$' + Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 export const validateEmail = (email: string): boolean => {

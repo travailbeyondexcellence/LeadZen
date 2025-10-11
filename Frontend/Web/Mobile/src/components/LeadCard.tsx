@@ -15,19 +15,16 @@ interface LeadCardProps {
 const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail }) => {
   const formatValue = (value?: number): string => {
     if (!value) return '';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
+    // Manual currency formatting for JSC compatibility
+    return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
   const formatDate = (date?: Date): string => {
     if (!date) return '';
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(date));
+    // Manual date formatting for JSC compatibility
+    const d = new Date(date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}`;
   };
 
   const getInitials = (name: string): string => {

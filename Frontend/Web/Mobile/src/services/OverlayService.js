@@ -1,5 +1,6 @@
 import AsyncStorageService from './AsyncStorageService';
 import { PhoneUtils } from '../utils/phoneUtils';
+import { formatDate } from '../utils/formatting';
 
 export const OverlayStates = {
   HIDDEN: 'hidden',
@@ -213,7 +214,7 @@ class OverlayService {
       // We'll add notes to the lead's notes field
       const currentLead = await AsyncStorageService.getLeadById(this.currentLead.id);
       const existingNotes = currentLead?.notes || '';
-      const newNotes = existingNotes ? `${existingNotes}\n\nQuick Note (${new Date().toLocaleDateString()}): ${note}` : `Quick Note (${new Date().toLocaleDateString()}): ${note}`;
+      const newNotes = existingNotes ? `${existingNotes}\n\nQuick Note (${formatDate(new Date())}): ${note}` : `Quick Note (${formatDate(new Date())}): ${note}`;
       
       await AsyncStorageService.updateLead(this.currentLead.id, {
         notes: newNotes

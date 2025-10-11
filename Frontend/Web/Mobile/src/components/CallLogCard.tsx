@@ -29,11 +29,14 @@ const CallLogCard: React.FC<CallLogCardProps> = ({
   const outcomeColor = callLog.outcome ? getCallOutcomeColor(callLog.outcome) : '#64748B';
   
   const formatTime = (date: Date): string => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    }).format(new Date(date));
+    // Manual time formatting for JSC compatibility
+    const d = new Date(date);
+    let hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    return `${hours}:${minutes} ${ampm}`;
   };
 
   const formatDate = (date: Date): string => {
@@ -47,12 +50,13 @@ const CallLogCard: React.FC<CallLogCardProps> = ({
     } else if (diffDays === 2) {
       return 'Yesterday';
     } else if (diffDays <= 7) {
-      return callDate.toLocaleDateString('en-US', { weekday: 'short' });
+      // Manual weekday formatting for JSC compatibility
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return weekdays[callDate.getDay()];
     } else {
-      return callDate.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
+      // Manual date formatting for JSC compatibility
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[callDate.getMonth()]} ${callDate.getDate()}`;
     }
   };
 
