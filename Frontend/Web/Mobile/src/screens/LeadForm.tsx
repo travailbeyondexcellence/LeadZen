@@ -232,17 +232,6 @@ const LeadForm: React.FC = () => {
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backIcon}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {isEditMode ? 'Edit Lead' : 'New Lead'}
-          </Text>
-          <View style={styles.headerSpacer} />
-        </View>
-        
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Basic Information */}
           <View style={styles.section}>
@@ -508,31 +497,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     fontSize: 14,
     color: Colors.text.secondary,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    backgroundColor: Colors.background.card,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border.light,
-  },
-  backButton: {
-    padding: Spacing.sm,
-  },
-  backIcon: {
-    fontSize: 24,
-    color: Colors.text.primary,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text.primary,
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    width: 40,
   },
   content: {
     flex: 1,
