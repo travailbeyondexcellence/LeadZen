@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import MainScreenContainer from './MainScreenContainer';
 import LeadDetail from '../screens/LeadDetail';
 import LeadForm from '../screens/LeadForm';
+import LeadNotes from '../screens/LeadNotes';
 import PermissionRequest from '../screens/PermissionRequest';
 import Settings from '../screens/Settings';
 import MyProfile from '../screens/MyProfile';
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   Main: undefined;
   LeadDetail: { leadId: string };
   LeadForm: { leadId?: string };
+  LeadNotes: { leadId: string };
   PermissionRequest: undefined;
   Settings: undefined;
   MyProfile: undefined;
@@ -68,6 +70,14 @@ const AppNavigator: React.FC = () => {
           title: route.params?.leadId ? 'Edit Lead' : 'New Lead',
           headerBackTitle: 'Cancel'
         })}
+      />
+      <Stack.Screen
+        name="LeadNotes"
+        component={LeadNotes}
+        options={{ 
+          title: 'Notes',
+          headerBackTitle: 'Back'
+        }}
       />
       <Stack.Screen
         name="PermissionRequest"

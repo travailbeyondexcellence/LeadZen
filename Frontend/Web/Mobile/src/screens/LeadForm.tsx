@@ -18,10 +18,6 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import AsyncStorageService from '../services/AsyncStorageService';
 import { validateForm, formatPhoneNumber } from '../utils/validation';
-import NotesList from '../components/notes/NotesList';
-import NotesModal from '../components/notes/NotesModal';
-import NotesService from '../services/NotesService';
-import { Note } from '../types/notes';
 
 type RouteParams = {
   LeadForm: {
@@ -52,9 +48,6 @@ const LeadForm: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [notesModalVisible, setNotesModalVisible] = useState(false);
-  const [editingNote, setEditingNote] = useState<Note | undefined>(undefined);
   
   const availableTags = [
     'VIP', 'Customer', 'Hot Lead', 'Cold Lead', 
@@ -64,19 +57,8 @@ const LeadForm: React.FC = () => {
   useEffect(() => {
     if (isEditMode) {
       loadLead();
-      loadNotes();
     }
   }, [leadId]);
-
-  const loadNotes = async () => {
-    if (!leadId) return;
-    try {
-      const leadNotes = await NotesService.getNotesForLead(leadId);
-      setNotes(leadNotes);
-    } catch (error) {
-      console.error('Failed to load notes:', error);
-    }
-  };
   
   const loadLead = async () => {
     if (!leadId) return;
@@ -130,39 +112,6 @@ const LeadForm: React.FC = () => {
     });
   };
 
-  const handleAddNote = () => {
-    setEditingNote(undefined);
-    setNotesModalVisible(true);
-  };
-
-  const handleEditNote = (note: Note) => {
-    setEditingNote(note);
-    setNotesModalVisible(true);
-  };
-
-  const handleSaveNote = async (noteData: Omit<Note, 'id' | 'createdAt'>) => {
-    try {
-      if (editingNote) {
-        await NotesService.updateNote(editingNote.id, noteData);
-      } else {
-        await NotesService.addNote(noteData);
-      }
-      await loadNotes();
-    } catch (error) {
-      console.error('Failed to save note:', error);
-      Alert.alert('Error', 'Failed to save note');
-    }
-  };
-
-  const handleDeleteNote = async (noteId: string) => {
-    try {
-      await NotesService.deleteNote(noteId);
-      await loadNotes();
-    } catch (error) {
-      console.error('Failed to delete note:', error);
-      Alert.alert('Error', 'Failed to delete note');
-    }
-  };
   
   const handleSave = async () => {
     // Validate form
@@ -384,29 +333,18 @@ const LeadForm: React.FC = () => {
           
           {/* Quick Notes */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Notes</Text>
+            <Text style={styles.sectionTitle}>Description</Text>
             <Input
               label=""
               value={formData.notes}
               onChangeText={(value) => handleFieldChange('notes', value)}
-              placeholder="Add a quick note about this lead..."
+              placeholder="Add a description about this lead..."
               multiline
               numberOfLines={2}
               style={styles.quickNotesInput}
             />
           </View>
 
-          {/* Tagged Notes System */}
-          {isEditMode && leadId && (
-            <View style={styles.section}>
-              <NotesList
-                notes={notes}
-                onAddNote={handleAddNote}
-                onEditNote={handleEditNote}
-                onDeleteNote={handleDeleteNote}
-              />
-            </View>
-          )}
           
           {/* Labels/Tags */}
           <View style={styles.section}>
@@ -455,13 +393,6 @@ const LeadForm: React.FC = () => {
           <View style={styles.bottomSpacer} />
         </ScrollView>
         
-        <NotesModal
-          visible={notesModalVisible}
-          leadId={leadId || ''}
-          existingNote={editingNote}
-          onClose={() => setNotesModalVisible(false)}
-          onSave={handleSaveNote}
-        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
