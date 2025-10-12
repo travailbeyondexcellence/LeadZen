@@ -83,14 +83,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       },
       
       onPanResponderRelease: (evt, gestureState) => {
-        console.log('🏁 Drag Handle - Released', lead.name);
-        pan.flattenOffset();
-        
-        // Reset scale
-        Animated.spring(scale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }).start();
+        console.log('🏁 Drag Handle - Released', lead.name, 'Final position dx:', gestureState.dx, 'dy:', gestureState.dy);
         
         // Call global drop handler first (this does the actual drop logic)
         onGlobalDrop?.(lead, gestureState);
@@ -99,14 +92,21 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         onDragEnd?.(lead, gestureState);
         setIsDragging(false);
         
-        // Force return to original position with better animation
-        pan.flattenOffset();
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
-          tension: 150,
-          friction: 8,
-        }).start();
+        // Reset everything with single animation
+        Animated.parallel([
+          Animated.spring(scale, {
+            toValue: 1,
+            useNativeDriver: true,
+          }),
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: true,
+            tension: 100,
+            friction: 8,
+          }),
+        ]).start(() => {
+          console.log('🔄 Drag Handle - Animation complete, card returned to origin');
+        });
       },
       
       onPanResponderTerminate: () => {
@@ -120,10 +120,12 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
             useNativeDriver: true,
-            tension: 150,
+            tension: 100,
             friction: 8,
           }),
-        ]).start();
+        ]).start(() => {
+          console.log('🔄 Drag Handle - Terminate animation complete');
+        });
       },
     })
   ).current;
@@ -163,14 +165,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       },
       
       onPanResponderRelease: (evt, gestureState) => {
-        console.log('🔴 Card - Released', lead.name, 'isDragging:', isDragging);
-        pan.flattenOffset();
-        
-        // Reset scale
-        Animated.spring(scale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }).start();
+        console.log('🔴 Card - Released', lead.name, 'isDragging:', isDragging, 'Final position dx:', gestureState.dx, 'dy:', gestureState.dy);
         
         if (isDragging) {
           // Call global drop handler first (this does the actual drop logic)
@@ -180,18 +175,34 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           onDragEnd?.(lead, gestureState);
           setIsDragging(false);
           
-          // Force return to original position with better animation
-          pan.flattenOffset();
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
-            tension: 150,
-            friction: 8,
-          }).start();
+          // Reset everything with single animation
+          Animated.parallel([
+            Animated.spring(scale, {
+              toValue: 1,
+              useNativeDriver: true,
+            }),
+            Animated.spring(pan, {
+              toValue: { x: 0, y: 0 },
+              useNativeDriver: true,
+              tension: 100,
+              friction: 8,
+            }),
+          ]).start(() => {
+            console.log('🔄 Card - Animation complete, card returned to origin');
+          });
         } else {
-          // This was a tap - but we're disabling tap functionality
-          console.log('👆 Card - Tap detected', lead.name, '- Tap functionality disabled');
-          // onPress?.(); // Completely disabled
+          // This was a tap - reset position anyway
+          console.log('👆 Card - Tap detected, resetting position');
+          Animated.parallel([
+            Animated.spring(scale, {
+              toValue: 1,
+              useNativeDriver: true,
+            }),
+            Animated.spring(pan, {
+              toValue: { x: 0, y: 0 },
+              useNativeDriver: true,
+            }),
+          ]).start();
         }
       },
       
@@ -206,10 +217,12 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
             useNativeDriver: true,
-            tension: 150,
+            tension: 100,
             friction: 8,
           }),
-        ]).start();
+        ]).start(() => {
+          console.log('🔄 Card - Terminate animation complete');
+        });
       },
     })
   ).current;
