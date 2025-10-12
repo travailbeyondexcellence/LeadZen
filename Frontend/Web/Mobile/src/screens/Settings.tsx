@@ -219,10 +219,6 @@ const Settings: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settings</Text>
-      </View>
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -414,18 +410,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background.primary,
-  },
-  header: {
-    backgroundColor: Colors.primary.base,
-    paddingHorizontal: Spacing.screen,
-    paddingVertical: Spacing.lg,
-    alignItems: 'center',
-    ...Shadows.primary,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text.inverse,
   },
   content: {
     flex: 1,
