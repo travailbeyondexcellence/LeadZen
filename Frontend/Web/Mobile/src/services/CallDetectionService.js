@@ -144,12 +144,35 @@ class CallDetectionService {
     }
   }
 
-  handleCallAnswered(phoneNumber) {
+  async handleCallAnswered(phoneNumber) {
     console.log('[FLOATING_CALL] ✅ Call answered with:', phoneNumber);
     
     // Track call start time for duration calculation
     this.callStartTime = Date.now();
     console.log('[FLOATING_CALL] 📋 Action: Call is now active, tracking start time');
+    
+    // If we don't have a floating overlay yet and we have a phone number, show it
+    if (phoneNumber && !this.currentCall?.hasFloatingOverlay) {
+      console.log('[FLOATING_CALL] 📱 Showing floating overlay on call answer');
+      try {
+        // Match phone number to lead
+        const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
+        console.log('[FLOATING_CALL] Match result on answer:', matchResult);
+        
+        // Determine call type based on current call state
+        const callType = this.currentCall?.event === 'Incoming' ? 'incoming' : 'outgoing';
+        
+        // Trigger floating call overlay
+        await this.showFloatingCallOverlay(phoneNumber, callType, matchResult);
+        
+        // Mark that we've shown the overlay for this call
+        if (this.currentCall) {
+          this.currentCall.hasFloatingOverlay = true;
+        }
+      } catch (error) {
+        console.error('[FLOATING_CALL] Error handling call answer:', error);
+      }
+    }
   }
 
   handleCallEnded(phoneNumber) {
@@ -196,9 +219,28 @@ class CallDetectionService {
   }
 
   // Method to simulate call events for testing
-  simulateCallEvent(event, phoneNumber = '+1234567890') {
+  simulateCallEvent(event, phoneNumber = '+919876543210') {
     console.log('🧪 Simulating call event for testing:', event, phoneNumber);
     this.handleCallEvent(event, phoneNumber);
+  }
+  
+  // Test method to directly show floating overlay
+  async testFloatingOverlay(phoneNumber = '+919876543210') {
+    console.log('🧪 Testing floating overlay with phone:', phoneNumber);
+    try {
+      // Match phone number to lead
+      const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
+      console.log('[FLOATING_TEST] Match result:', matchResult);
+      
+      // Show floating overlay
+      await this.showFloatingCallOverlay(phoneNumber, 'incoming', matchResult);
+      console.log('[FLOATING_TEST] ✅ Floating overlay test successful');
+      
+      return true;
+    } catch (error) {
+      console.error('[FLOATING_TEST] ❌ Error testing floating overlay:', error);
+      return false;
+    }
   }
 
   // Show floating call overlay

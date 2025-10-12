@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
+import CallDetectionService from '../services/CallDetectionService';
 
 interface AppSettings {
   // App Preferences
@@ -215,6 +216,33 @@ const Settings: React.FC = () => {
     </TouchableOpacity>
   );
 
+  const handleTestFloatingOverlay = async () => {
+    try {
+      console.log('[SETTINGS] Testing floating overlay...');
+      const result = await CallDetectionService.testFloatingOverlay('+919876543210');
+      
+      if (result) {
+        Alert.alert('Success', 'Floating overlay test successful! Check if the floating icon appeared.');
+      } else {
+        Alert.alert('Error', 'Floating overlay test failed. Check the logs for details.');
+      }
+    } catch (error) {
+      console.error('[SETTINGS] Error testing floating overlay:', error);
+      Alert.alert('Error', 'Failed to test floating overlay: ' + error.message);
+    }
+  };
+  
+  const handleSimulateCall = (callType: 'Incoming' | 'Outgoing') => {
+    try {
+      console.log(`[SETTINGS] Simulating ${callType} call...`);
+      CallDetectionService.simulateCallEvent(callType, '+919876543210');
+      Alert.alert('Success', `${callType} call simulation triggered. Check the logs and look for floating overlay.`);
+    } catch (error) {
+      console.error(`[SETTINGS] Error simulating ${callType} call:`, error);
+      Alert.alert('Error', `Failed to simulate ${callType} call: ` + error.message);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
@@ -375,6 +403,35 @@ const Settings: React.FC = () => {
             'lock-outline',
             () => Alert.alert('Feature Coming Soon', 'Password change will be available soon'),
             Colors.semantic.warning
+          )}
+        </View>
+
+        {/* Development/Testing */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Testing (Development)</Text>
+          
+          {renderActionRow(
+            'Test Floating Call Overlay',
+            'Test the new floating call overlay feature',
+            'phone-in-talk',
+            handleTestFloatingOverlay,
+            Colors.primary.base
+          )}
+          
+          {renderActionRow(
+            'Simulate Incoming Call',
+            'Simulate an incoming call event',
+            'phone-incoming',
+            () => handleSimulateCall('Incoming'),
+            Colors.semantic.success
+          )}
+          
+          {renderActionRow(
+            'Simulate Outgoing Call',
+            'Simulate an outgoing call event',
+            'phone-outgoing',
+            () => handleSimulateCall('Outgoing'),
+            Colors.semantic.info
           )}
         </View>
 
