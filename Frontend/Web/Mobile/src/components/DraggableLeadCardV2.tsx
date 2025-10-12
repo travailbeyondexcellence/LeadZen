@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Lead } from '../types/Lead';
@@ -40,48 +41,37 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   onNotes,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [isLongPress, setIsLongPress] = useState(false);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   
   // Animated values for position and visual feedback
   const pan = useRef(new Animated.ValueXY()).current;
   const scale = useRef(new Animated.Value(1)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
   
-  // Create PanResponder for handling drag gestures
+  // Simple PanResponder without complex logic
   const panResponder = useRef(
     PanResponder.create({
-      // Ask to be the responder
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        console.log('🟢 onStartShouldSetPanResponder', lead.name);
+        return false;
+      },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only move if we're dragging or if it's a long press
-        return isDragging || isLongPress || Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
+        const { dx, dy } = gestureState;
+        const shouldMove = Math.abs(dx) > 5 || Math.abs(dy) > 5;
+        console.log('🔵 onMoveShouldSetPanResponder', lead.name, 'dx:', dx, 'dy:', dy, 'shouldMove:', shouldMove);
+        return shouldMove;
       },
       
-      // Start of drag gesture
       onPanResponderGrant: (evt, gestureState) => {
-        // Start a timer for long press detection
-        longPressTimer.current = setTimeout(() => {
-          setIsLongPress(true);
-          setIsDragging(true);
-          onDragStart?.();
-          
-          // Animate visual feedback for drag start
-          Animated.parallel([
-            Animated.spring(scale, {
-              toValue: 1.1,
-              useNativeDriver: false,
-              friction: 5,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0.8,
-              duration: 100,
-              useNativeDriver: false,
-            }),
-          ]).start();
-        }, 150); // 150ms for long press
+        console.log('🟡 onPanResponderGrant - Starting drag', lead.name);
+        setIsDragging(true);
+        onDragStart?.();
         
-        // Set the initial value to the current position
+        // Scale up slightly
+        Animated.spring(scale, {
+          toValue: 1.05,
+          useNativeDriver: false,
+        }).start();
+        
+        // Set current pan position
         pan.setOffset({
           x: pan.x._value,
           y: pan.y._value,
@@ -89,86 +79,44 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         pan.setValue({ x: 0, y: 0 });
       },
       
-      // During drag
       onPanResponderMove: (evt, gestureState) => {
-        // If long press was detected, allow dragging
-        if (isLongPress && isDragging) {
-          // Update pan values to follow finger
-          Animated.event(
-            [null, { dx: pan.x, dy: pan.y }],
-            { useNativeDriver: false }
-          )(evt, gestureState);
-        } else if ((Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10)) {
-          // If moved too much without long press, cancel timer
-          if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
-          }
-        }
+        console.log('🟠 onPanResponderMove', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
+        pan.setValue({ x: gestureState.dx, y: gestureState.dy });
       },
       
-      // End of drag gesture
       onPanResponderRelease: (evt, gestureState) => {
-        // Clear the long press timer
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current);
-          longPressTimer.current = null;
-        }
-        
+        console.log('🔴 onPanResponderRelease', lead.name, 'isDragging:', isDragging);
         pan.flattenOffset();
         
-        if (isDragging && isLongPress) {
-          // This was a drag operation
-          setIsDragging(false);
-          setIsLongPress(false);
-          
-          // Reset visual feedback
-          Animated.parallel([
-            Animated.spring(scale, {
-              toValue: 1,
-              useNativeDriver: false,
-              friction: 5,
-            }),
-            Animated.timing(opacity, {
-              toValue: 1,
-              duration: 100,
-              useNativeDriver: false,
-            }),
-          ]).start();
-          
-          // Notify parent about drag end with position
+        // Reset scale
+        Animated.spring(scale, {
+          toValue: 1,
+          useNativeDriver: false,
+        }).start();
+        
+        if (isDragging) {
+          // Call drag end with position
           onDragEnd?.(lead, gestureState);
+          setIsDragging(false);
           
-          // Animate back to original position
+          // Return to original position
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
             useNativeDriver: false,
-            friction: 5,
           }).start();
-        } else if (!isLongPress && Math.abs(gestureState.dx) < 10 && Math.abs(gestureState.dy) < 10) {
-          // This was a tap (no long press, minimal movement)
+        } else {
+          // This was a tap
+          console.log('👆 Tap detected', lead.name);
           onPress?.();
         }
-        
-        setIsLongPress(false);
       },
       
       onPanResponderTerminate: () => {
-        // Another component has become the responder
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current);
-          longPressTimer.current = null;
-        }
+        console.log('❌ onPanResponderTerminate', lead.name);
         setIsDragging(false);
-        setIsLongPress(false);
         Animated.parallel([
           Animated.spring(scale, {
             toValue: 1,
-            useNativeDriver: false,
-          }),
-          Animated.timing(opacity, {
-            toValue: 1,
-            duration: 100,
             useNativeDriver: false,
           }),
           Animated.spring(pan, {
@@ -267,7 +215,6 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       { translateY: pan.y },
       { scale: scale },
     ],
-    opacity: opacity,
     zIndex: isDragging ? 1000 : 1,
     elevation: isDragging ? 10 : 2,
   };
@@ -398,21 +345,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    // Don't use overflow hidden to allow card to appear above container
   },
   dragHandle: {
-    height: 20,
+    height: 24,
     backgroundColor: Colors.background.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 2,
+    gap: 3,
+    paddingVertical: 4,
   },
   dragHandleLine: {
-    width: 20,
-    height: 2,
+    width: 24,
+    height: 3,
     backgroundColor: Colors.border.dark,
-    borderRadius: 1,
+    borderRadius: 1.5,
   },
   content: {
     padding: Spacing.md,

@@ -22,6 +22,7 @@ interface PipelineColumnV2Props {
   onLeadPress?: (lead: Lead) => void;
   onDropLead?: (lead: Lead, stageId: string) => void;
   isDropTarget?: boolean;
+  isDragging?: boolean;
   onDragStart?: (lead: Lead) => void;
   onDragEnd?: () => void;
   onDragOver?: (stageId: string) => void;
@@ -40,6 +41,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   onLeadPress,
   onDropLead,
   isDropTarget = false,
+  isDragging = false,
   onDragStart,
   onDragEnd,
   onDragOver,
@@ -152,6 +154,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!isDragging}
       >
         {leads.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     borderWidth: 2,
     borderLeftWidth: 4,
-    overflow: 'hidden', // Keep hidden to prevent layout issues
+    overflow: 'visible',
     maxHeight: '90%',
   },
   header: {

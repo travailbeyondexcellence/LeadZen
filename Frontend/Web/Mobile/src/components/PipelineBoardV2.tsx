@@ -77,12 +77,14 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   
   // Handle drag start
   const handleDragStart = (lead: Lead) => {
+    console.log('🚀 Board: Drag started for', lead.name);
     setIsDragging(true);
     setDraggedLead(lead);
   };
   
   // Handle drag end
   const handleDragEnd = () => {
+    console.log('🏁 Board: Drag ended');
     setIsDragging(false);
     setDraggedLead(null);
     setTargetStage(null);
@@ -195,6 +197,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
                 onLeadPress={onLeadPress}
                 onDropLead={handleDropLead}
                 isDropTarget={isDragging && targetStage === stage.id}
+                isDragging={isDragging}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
                 onDragOver={handleDragOver}
