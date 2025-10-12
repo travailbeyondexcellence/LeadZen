@@ -289,6 +289,11 @@ const Dialer: React.FC = () => {
         autoCapitalize="none"
         selectTextOnFocus
         blurOnSubmit={false}
+        showSoftInputOnFocus={false} // Prevent system keyboard from showing
+        onFocus={() => {
+          // Always blur when focused to prevent keyboard
+          inputRef.current?.blur();
+        }}
       />
       
       {phoneInput.length > 0 && (
