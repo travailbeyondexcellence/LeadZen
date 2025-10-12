@@ -160,10 +160,8 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
     outputRange: [Colors.border.base, color],
   });
   
-  const backgroundColor = highlightAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [Colors.background.primary, color + '10'],
-  });
+  // Use solid background color instead of animated gradient
+  const backgroundColor = Colors.background.primary;
   
   // Calculate statistics
   const totalValue = leads.reduce((sum, lead) => sum + (lead.value || 0), 0);
@@ -177,14 +175,14 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
           borderColor: borderColor,
           backgroundColor: backgroundColor,
           borderLeftColor: color,
-          overflow: isDragging ? 'visible' : 'hidden',
+          overflow: 'visible',
           borderRadius: isDragging ? 0 : BorderRadius.lg,
         }
       ]}
       onLayout={handleColumnLayoutEvent}
     >
       {/* Column Header */}
-      <View style={[styles.header, { backgroundColor: color + '15' }]}>
+      <View style={styles.header}>
         <View style={styles.headerTop}>
           <Text style={styles.title}>{title}</Text>
           <View style={[styles.badge, { backgroundColor: color + '30' }]}>
@@ -268,6 +266,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.card,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border.base,
+    zIndex: 10, // Ensure header stays above cards
+    elevation: 10, // Android elevation
+    position: 'relative',
   },
   headerTop: {
     flexDirection: 'row',

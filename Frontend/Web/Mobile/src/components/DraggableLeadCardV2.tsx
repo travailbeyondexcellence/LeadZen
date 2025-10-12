@@ -271,12 +271,14 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   
   const getPriorityColor = (priority?: string): string => {
     switch (priority?.toLowerCase()) {
+      case 'urgent':
+        return '#EF4444'; // Red
       case 'high':
-        return Colors.semantic.error;
+        return '#8B5CF6'; // Purple
       case 'medium':
-        return Colors.semantic.warning;
+        return '#F59E0B'; // Yellow
       case 'low':
-        return Colors.semantic.success;
+        return '#6B7280'; // Gray
       default:
         return Colors.text.secondary;
     }
@@ -342,8 +344,8 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   };
   
   const containerStyle = {
-    zIndex: isDragging ? 9999 : 1,
-    elevation: isDragging ? 999 : 2,
+    zIndex: isDragging ? 9999 : 0, // Lower z-index when not dragging
+    elevation: isDragging ? 999 : 1, // Lower elevation when not dragging
     position: 'relative' as const,
     overflow: 'visible',
     ...(isDragging && {
@@ -392,7 +394,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
               ]}
             >
               <Text style={[styles.priorityText, { color: getPriorityColor(lead.priority) }]}>
-                {lead.priority.charAt(0).toUpperCase() + lead.priority.slice(1)} Priority
+                {lead.priority.charAt(0).toUpperCase() + lead.priority.slice(1)}
               </Text>
             </View>
           )}
@@ -472,7 +474,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     position: 'relative',
-    overflow: 'hidden', // Prevent content from spilling out
+    overflow: 'visible', // Allow content to be visible during drag
   },
   dragHandle: {
     height: 24,

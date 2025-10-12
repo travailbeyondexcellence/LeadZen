@@ -4,8 +4,8 @@ import {
   StyleSheet,
   PanResponder,
   Dimensions,
-  ImageBackground,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import DockIcon from '../components/DockIcon';
 import { Colors } from '../theme';
 
@@ -85,16 +85,16 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
   return (
     <View style={styles.container}>
       <View style={styles.dockWrapper}>
-        {/* Wooden table platform with background image */}
-        <ImageBackground
-          source={require('../assets/images/DockBG.png')}
+        {/* Gradient platform behind icons */}
+        <LinearGradient
+          colors={['#e3ffe7', '#d9e7ff']}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 0}}
           style={styles.platform}
-          imageStyle={styles.platformImage}
-          resizeMode="cover"
         >
           {/* Trapezium perspective overlay */}
-          <View style={styles.perspectiveOverlay} />
-        </ImageBackground>
+          {/* <View style={styles.perspectiveOverlay} /> */}
+        </LinearGradient>
 
         <View
           style={styles.dock}
@@ -141,12 +141,10 @@ const styles = StyleSheet.create({
   platform: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
-    width: SCREEN_WIDTH,        // Full screen width - edge to edge
+    left: 20,
+    right: 20,
     height: 90,
-    // Remove rounded corners for full width
-    borderRadius: 0,
+    borderRadius: 20,           // Rounded corners for the gradient
     // Enhanced 3D trapezium perspective
     transform: [
       { perspective: 1200 },
@@ -155,21 +153,12 @@ const styles = StyleSheet.create({
       { translateY: 15 },        // Lift slightly for better perspective
     ],
     // Enhanced shadows for deeper 3D effect
-    shadowColor: '#5D4037',     // Darker brown shadow
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.5,
-    shadowRadius: 25,
-    elevation: 20,
-    // Wood table background
-    backgroundColor: '#8D6E63',  // Darker fallback wood color
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 15,
     overflow: 'hidden',         // Ensure clean edges
-  },
-  platformImage: {
-    borderRadius: 0,           // No rounded corners for full width
-    opacity: 0.85,            // Slightly more transparent for depth
-    transform: [
-      { scaleX: 1.1 },         // Stretch image horizontally to fill
-    ],
   },
   perspectiveOverlay: {
     position: 'absolute',
