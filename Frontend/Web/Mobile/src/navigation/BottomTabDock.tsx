@@ -126,11 +126,11 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 6,
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
-    paddingBottom: 0, // Remove gap - touch screen bottom
+    paddingBottom: 0,
   },
   dockWrapper: {
     alignItems: 'center',
@@ -177,12 +177,11 @@ const styles = StyleSheet.create({
   },
   dock: {
     flexDirection: 'row',
-    paddingHorizontal: 32,
     paddingVertical: 20,
     paddingTop: 35,
-    paddingBottom: 25,      // Ensure icons sit properly on table
+    paddingBottom: 4,       // Reduced by 42 pixels (46 - 42 = 4) to move icons down
     zIndex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
   },
 });
