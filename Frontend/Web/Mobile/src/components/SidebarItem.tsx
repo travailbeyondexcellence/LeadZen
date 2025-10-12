@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SidebarListType } from '../types/sidebar';
 import { useSidebarContext } from '../context/SidebarContext';
+import { useTabNavigation } from '../context/TabNavigationContext';
+import { TabParamList } from '../navigation/MainScreenContainer';
 import { Colors, Spacing } from '../theme';
 
 interface SidebarItemProps {
@@ -15,9 +17,21 @@ interface SidebarItemProps {
 const SidebarItem: React.FC<SidebarItemProps> = ({ item, active, animatedValue }) => {
   const navigation = useNavigation<any>();
   const { closeSidebar } = useSidebarContext();
+  const { navigateToTab } = useTabNavigation();
 
   const handlePress = () => {
-    navigation.navigate(item.navigate);
+    // Handle special cases for tab navigation
+    const tabScreens: (keyof TabParamList)[] = ['Dashboard', 'Dialer', 'Pipeline', 'Leads', 'Tasks'];
+    
+    if (tabScreens.includes(item.navigate as keyof TabParamList)) {
+      // For tab screens, use the tab navigation context
+      console.log('🔄 Sidebar navigating to tab:', item.navigate);
+      navigateToTab(item.navigate as keyof TabParamList);
+    } else {
+      // For other screens, use normal React Navigation
+      navigation.navigate(item.navigate);
+    }
+    
     closeSidebar();
   };
 

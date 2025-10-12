@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Dashboard from '../screens/Dashboard';
 import LeadList from '../screens/LeadList';
@@ -6,6 +6,7 @@ import { Pipeline } from '../screens/Pipeline';
 import Dialer from '../screens/Dialer';
 import Tasks from '../screens/Tasks';
 import BottomTabDock from './BottomTabDock';
+import { useTabNavigation } from '../context/TabNavigationContext';
 
 export type TabParamList = {
   Dashboard: undefined;
@@ -16,7 +17,7 @@ export type TabParamList = {
 };
 
 const MainScreenContainer: React.FC = () => {
-  const [activeScreen, setActiveScreen] = useState<keyof TabParamList>('Dashboard');
+  const { activeScreen, navigateToTab } = useTabNavigation();
 
   const renderActiveScreen = () => {
     console.log('🖥️ Rendering screen for:', activeScreen);
@@ -45,7 +46,7 @@ const MainScreenContainer: React.FC = () => {
   const handleTabChange = (tabName: keyof TabParamList) => {
     console.log('🔄 Tab change requested:', tabName);
     console.log('🔄 Current active screen:', activeScreen);
-    setActiveScreen(tabName);
+    navigateToTab(tabName);
     console.log('✅ Active screen updated to:', tabName);
   };
 

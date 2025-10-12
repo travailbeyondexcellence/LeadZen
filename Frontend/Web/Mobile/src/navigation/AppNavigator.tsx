@@ -8,6 +8,7 @@ import Settings from '../screens/Settings';
 import MyProfile from '../screens/MyProfile';
 import AnimatedMainContent from '../components/AnimatedMainContent';
 import { SidebarProvider, useSidebarContext } from '../context/SidebarContext';
+import { TabNavigationProvider } from '../context/TabNavigationContext';
 import { Colors } from '../theme';
 
 export type RootStackParamList = {
@@ -34,7 +35,8 @@ const MainWithSidebar: React.FC = () => {
 const AppNavigator: React.FC = () => {
   return (
     <SidebarProvider>
-      <Stack.Navigator
+      <TabNavigationProvider>
+        <Stack.Navigator
         initialRouteName="Main"
         screenOptions={{
           headerStyle: {
@@ -91,7 +93,8 @@ const AppNavigator: React.FC = () => {
           headerBackTitle: 'Back'
         }}
       />
-    </Stack.Navigator>
+        </Stack.Navigator>
+      </TabNavigationProvider>
     </SidebarProvider>
   );
 };

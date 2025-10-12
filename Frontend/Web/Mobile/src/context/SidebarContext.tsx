@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { Animated } from 'react-native';
 import { useSidebar } from '../hooks/useSidebar';
+import { TabParamList } from '../navigation/MainScreenContainer';
 
 interface SidebarContextType {
   sidebarActive: boolean;
@@ -8,6 +9,7 @@ interface SidebarContextType {
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openSidebar: () => void;
+  navigateToTab?: (tab: keyof TabParamList) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);

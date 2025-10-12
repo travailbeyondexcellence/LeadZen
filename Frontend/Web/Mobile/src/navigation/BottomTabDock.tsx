@@ -4,6 +4,7 @@ import {
   StyleSheet,
   PanResponder,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import DockIcon from '../components/DockIcon';
 import { Colors } from '../theme';
@@ -84,8 +85,13 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
   return (
     <View style={styles.container}>
       <View style={styles.dockWrapper}>
-        {/* macOS-style 3D platform/shelf */}
-        <View style={styles.platform} />
+        {/* Wooden table platform with background image */}
+        <ImageBackground
+          source={require('../../Dev_Images/UI_Refs/DockBG.png')}
+          style={styles.platform}
+          imageStyle={styles.platformImage}
+          resizeMode="cover"
+        />
 
         <View
           style={styles.dock}
@@ -121,7 +127,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
-    paddingBottom: 20,
+    paddingBottom: 0, // Remove gap - touch screen bottom
   },
   dockWrapper: {
     alignItems: 'center',
@@ -132,20 +138,38 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: SCREEN_WIDTH * 0.9,
     maxWidth: 420,
-    height: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    height: 80,
+    // Remove background color - will use image
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    borderBottomLeftRadius: 0,  // Sharp bottom corners to touch screen edge
+    borderBottomRightRadius: 0,
+    // 3D tilt effect - perspective view of table
+    transform: [
+      { perspective: 1000 },
+      { rotateX: '8deg' },      // Tilt to show table depth
+      { scaleX: 0.95 },         // Slightly narrow at bottom for perspective
+    ],
+    // Enhanced shadows for 3D table effect
+    shadowColor: '#8B4513',     // Brown shadow to match wood
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 15,
+    // Wood table background
+    backgroundColor: '#D2B48C',  // Fallback wood color
+  },
+  platformImage: {
+    borderRadius: 16,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    opacity: 0.9,  // Slightly transparent to blend with shadows
   },
   dock: {
     flexDirection: 'row',
     paddingHorizontal: 32,
-    paddingVertical: 24,
-    paddingTop: 40,
+    paddingVertical: 20,
+    paddingTop: 35,
+    paddingBottom: 25,      // Ensure icons sit properly on table
     zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',
