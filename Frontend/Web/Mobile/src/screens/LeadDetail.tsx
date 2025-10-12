@@ -30,7 +30,7 @@ const LeadDetail: React.FC = () => {
   
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'activity' | 'labels'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'activity' | 'reminders'>('info');
   
   useEffect(() => {
     loadLead();
@@ -120,6 +120,7 @@ const LeadDetail: React.FC = () => {
   
   const renderInfoTab = () => (
     <View style={styles.tabContent}>
+      {/* Contact Information Section */}
       <View style={styles.infoSection}>
         <Text style={styles.sectionTitle}>Contact Information</Text>
         
@@ -168,46 +169,72 @@ const LeadDetail: React.FC = () => {
         </View>
       </View>
       
-      <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>Lead Details</Text>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>🎯</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Pipeline Stage</Text>
-            <View style={[styles.badge, { backgroundColor: getStatusColor(lead?.status) }]}>
-              <Text style={styles.badgeText}>{getStatusLabel(lead?.status)}</Text>
+      {/* Lead Details and Labels Side by Side */}
+      <View style={styles.sideByySideContainer}>
+        {/* Left Side - Lead Details */}
+        <View style={styles.leftSection}>
+          <Text style={styles.sectionTitle}>Lead Details</Text>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>🎯</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Pipeline Stage</Text>
+              <View style={[styles.badge, { backgroundColor: getStatusColor(lead?.status) }]}>
+                <Text style={styles.badgeText}>{getStatusLabel(lead?.status)}</Text>
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>⚡</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Priority</Text>
+              <View style={[styles.badge, { backgroundColor: getPriorityColor(lead?.priority) }]}>
+                <Text style={styles.badgeText}>{lead?.priority || 'Medium'}</Text>
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>💰</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Value</Text>
+              <Text style={styles.infoValue}>
+                {lead?.value ? formatCurrency(lead.value) : 'Not set'}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>📅</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Created</Text>
+              <Text style={styles.infoValue}>
+                {lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : 'Unknown'}
+              </Text>
             </View>
           </View>
         </View>
         
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>⚡</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Priority</Text>
-            <View style={[styles.badge, { backgroundColor: getPriorityColor(lead?.priority) }]}>
-              <Text style={styles.badgeText}>{lead?.priority || 'Medium'}</Text>
-            </View>
-          </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>💰</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Value</Text>
-            <Text style={styles.infoValue}>
-              {lead?.value ? formatCurrency(lead.value) : 'Not set'}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>📅</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Created</Text>
-            <Text style={styles.infoValue}>
-              {lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : 'Unknown'}
-            </Text>
+        {/* Right Side - Labels */}
+        <View style={styles.rightSection}>
+          <Text style={styles.sectionTitle}>Labels</Text>
+          
+          <View style={styles.labelsContainer}>
+            {lead?.tags && lead.tags.length > 0 ? (
+              <View style={styles.labelsList}>
+                {lead.tags.map((tag, index) => (
+                  <View key={index} style={styles.label}>
+                    <Text style={styles.labelText}>{tag}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyLabelsState}>
+                <Text style={styles.emptyLabelsIcon}>🏷️</Text>
+                <Text style={styles.emptyLabelsText}>No labels yet</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -241,32 +268,15 @@ const LeadDetail: React.FC = () => {
     </View>
   );
   
-  const renderLabelsTab = () => (
+  const renderRemindersTab = () => (
     <View style={styles.tabContent}>
-      <View style={styles.labelsContainer}>
-        {lead?.tags && lead.tags.length > 0 ? (
-          <View style={styles.labelsList}>
-            {lead.tags.map((tag, index) => (
-              <View key={index} style={styles.label}>
-                <Text style={styles.labelText}>{tag}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>🏷️</Text>
-            <Text style={styles.emptyTitle}>No Labels</Text>
-            <Text style={styles.emptyText}>
-              Add labels to categorize this lead
-            </Text>
-          </View>
-        )}
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyIcon}>⏰</Text>
+        <Text style={styles.emptyTitle}>Reminders</Text>
+        <Text style={styles.emptyText}>
+          Feature is incoming
+        </Text>
       </View>
-      
-      <TouchableOpacity style={styles.addLabelButton} onPress={handleEdit}>
-        <Text style={styles.addLabelIcon}>🏷️</Text>
-        <Text style={styles.addLabelText}>Manage Labels</Text>
-      </TouchableOpacity>
     </View>
   );
   
@@ -403,11 +413,11 @@ const LeadDetail: React.FC = () => {
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'labels' && styles.activeTab]}
-          onPress={() => setActiveTab('labels')}
+          style={[styles.tab, activeTab === 'reminders' && styles.activeTab]}
+          onPress={() => setActiveTab('reminders')}
         >
-          <Text style={[styles.tabText, activeTab === 'labels' && styles.activeTabText]}>
-            Labels
+          <Text style={[styles.tabText, activeTab === 'reminders' && styles.activeTabText]}>
+            Reminders
           </Text>
         </TouchableOpacity>
       </View>
@@ -417,7 +427,7 @@ const LeadDetail: React.FC = () => {
         {activeTab === 'info' && renderInfoTab()}
         {activeTab === 'notes' && renderNotesTab()}
         {activeTab === 'activity' && renderActivityTab()}
-        {activeTab === 'labels' && renderLabelsTab()}
+        {activeTab === 'reminders' && renderRemindersTab()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -571,6 +581,16 @@ const styles = StyleSheet.create({
   infoSection: {
     marginBottom: Spacing.xl,
   },
+  sideByySideContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  leftSection: {
+    flex: 1,
+  },
+  rightSection: {
+    flex: 1,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -663,7 +683,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   labelsContainer: {
-    minHeight: 100,
+    minHeight: 80,
+  },
+  emptyLabelsState: {
+    alignItems: 'center',
+    paddingVertical: Spacing.lg,
+  },
+  emptyLabelsIcon: {
+    fontSize: 32,
+    marginBottom: Spacing.sm,
+  },
+  emptyLabelsText: {
+    fontSize: 12,
+    color: Colors.text.secondary,
+    textAlign: 'center',
   },
   labelsList: {
     flexDirection: 'row',
@@ -682,24 +715,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.primary.base,
     fontWeight: '500',
-  },
-  addLabelButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.md,
-    marginTop: Spacing.lg,
-    backgroundColor: Colors.secondary.base,
-    borderRadius: BorderRadius.md,
-  },
-  addLabelIcon: {
-    fontSize: 18,
-    marginRight: Spacing.sm,
-  },
-  addLabelText: {
-    fontSize: 14,
-    color: Colors.white,
-    fontWeight: '600',
   },
 });
 
