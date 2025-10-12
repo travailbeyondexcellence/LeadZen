@@ -462,7 +462,10 @@ const LeadDetail: React.FC = () => {
           {/* Bottom Row */}
           <View style={styles.actionRow}>
             <TouchableOpacity style={[styles.actionIconButton, styles.smsButton]} onPress={handleSMS}>
-              <Text style={styles.smsText}>SMS</Text>
+              <View style={styles.smsContent}>
+                <Icon name="message-text" size={16} color="#fff" />
+                <Text style={styles.smsText}>SMS</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionIconButton, styles.emailButton]} onPress={handleEmail}>
               <Icon name="email" size={24} color="#fff" />
@@ -623,21 +626,26 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   phoneButton: {
-    backgroundColor: '#4A5568',
+    backgroundColor: '#14B8A6',
   },
   whatsappButton: {
-    backgroundColor: '#1E88E5',
+    backgroundColor: '#25D366',
   },
   smsButton: {
-    backgroundColor: '#4A5568',
+    backgroundColor: '#059669',
   },
   emailButton: {
     backgroundColor: '#1E88E5',
   },
+  smsContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   smsText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#fff',
+    marginTop: 2,
   },
   tabs: {
     flexDirection: 'row',
@@ -691,12 +699,11 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     marginBottom: Spacing.md,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   infoIcon: {
     fontSize: 20,
     marginRight: Spacing.md,
-    marginTop: 2,
   },
   infoContent: {
     flex: 1,
