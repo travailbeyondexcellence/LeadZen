@@ -1,20 +1,25 @@
 import CallDetectorManager from 'react-native-call-detection';
 import PermissionService from './PermissionService';
 import OverlayService from './OverlayService';
+import PhoneMatchingService from './PhoneMatchingService';
+import PermissionManager from './PermissionManager';
 
 class CallDetectionService {
   constructor() {
     this.callDetector = null;
     this.isRunning = false;
     this.currentCall = null;
+    this.floatingCallManager = null;
+    this.callStartTime = null;
   }
 
   async start() {
     try {
       console.log('🚀 Starting call detection service...');
       
-      // Check if we have required permissions
-      if (!PermissionService.areRequiredPermissionsGranted()) {
+      // Check if we have required permissions using new PermissionManager
+      const hasPermissions = await PermissionManager.validatePermissions();
+      if (!hasPermissions) {
         console.warn('⚠️ Required permissions not granted, cannot start call detection');
         return false;
       }
@@ -99,27 +104,52 @@ class CallDetectionService {
     }
   }
 
-  handleIncomingCall(phoneNumber) {
-    console.log('📞 Incoming call from:', phoneNumber);
+  async handleIncomingCall(phoneNumber) {
+    console.log('[FLOATING_CALL] 📞 Incoming call from:', phoneNumber);
     
-    // Show call overlay with lead lookup
-    OverlayService.showCallOverlay(phoneNumber, 'incoming');
-    console.log('📋 Action: Showing lead overlay for incoming call');
+    try {
+      // Match phone number to lead
+      const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
+      console.log('[FLOATING_CALL] Match result:', matchResult);
+      
+      // Trigger floating call overlay
+      await this.showFloatingCallOverlay(phoneNumber, 'incoming', matchResult);
+      
+      // Legacy overlay for backward compatibility
+      OverlayService.showCallOverlay(phoneNumber, 'incoming');
+    } catch (error) {
+      console.error('[FLOATING_CALL] Error handling incoming call:', error);
+      // Fallback to legacy overlay
+      OverlayService.showCallOverlay(phoneNumber, 'incoming');
+    }
   }
 
-  handleOutgoingCall(phoneNumber) {
-    console.log('📱 Outgoing call to:', phoneNumber);
+  async handleOutgoingCall(phoneNumber) {
+    console.log('[FLOATING_CALL] 📱 Outgoing call to:', phoneNumber);
     
-    // Show call overlay with lead lookup
-    OverlayService.showCallOverlay(phoneNumber, 'outgoing');
-    console.log('📋 Action: Showing lead overlay for outgoing call');
+    try {
+      // Match phone number to lead
+      const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
+      console.log('[FLOATING_CALL] Match result:', matchResult);
+      
+      // Trigger floating call overlay
+      await this.showFloatingCallOverlay(phoneNumber, 'outgoing', matchResult);
+      
+      // Legacy overlay for backward compatibility
+      OverlayService.showCallOverlay(phoneNumber, 'outgoing');
+    } catch (error) {
+      console.error('[FLOATING_CALL] Error handling outgoing call:', error);
+      // Fallback to legacy overlay
+      OverlayService.showCallOverlay(phoneNumber, 'outgoing');
+    }
   }
 
   handleCallAnswered(phoneNumber) {
-    console.log('✅ Call answered with:', phoneNumber);
+    console.log('[FLOATING_CALL] ✅ Call answered with:', phoneNumber);
     
-    // TODO: Track call start time for duration calculation
-    console.log('📋 Action: Call is now active');
+    // Track call start time for duration calculation
+    this.callStartTime = Date.now();
+    console.log('[FLOATING_CALL] 📋 Action: Call is now active, tracking start time');
   }
 
   handleCallEnded(phoneNumber) {
@@ -171,12 +201,55 @@ class CallDetectionService {
     this.handleCallEvent(event, phoneNumber);
   }
 
+  // Show floating call overlay
+  async showFloatingCallOverlay(phoneNumber, callType, matchResult) {
+    try {
+      console.log('[FLOATING_CALL] Showing floating overlay for:', phoneNumber, callType);
+      
+      // Store call data for overlay
+      const callData = {
+        phoneNumber,
+        callType,
+        matchResult,
+        startTime: Date.now(),
+        callStartTime: this.callStartTime
+      };
+      
+      // TODO: Trigger FloatingCallManager to show overlay
+      // This will be implemented when we create the FloatingCallManager
+      if (this.floatingCallManager) {
+        await this.floatingCallManager.showCallOverlay(callData);
+      } else {
+        console.log('[FLOATING_CALL] FloatingCallManager not initialized yet');
+      }
+      
+      return callData;
+    } catch (error) {
+      console.error('[FLOATING_CALL] Error showing floating overlay:', error);
+      throw error;
+    }
+  }
+  
+  // Set floating call manager reference
+  setFloatingCallManager(manager) {
+    console.log('[FLOATING_CALL] Setting floating call manager');
+    this.floatingCallManager = manager;
+  }
+  
+  // Calculate call duration
+  getCallDuration() {
+    if (!this.callStartTime) return 0;
+    return Math.floor((Date.now() - this.callStartTime) / 1000);
+  }
+
   // Get service status for debugging
   getServiceStatus() {
     return {
       isRunning: this.isRunning,
       hasDetector: !!this.callDetector,
       currentCall: this.currentCall,
+      floatingCallManager: !!this.floatingCallManager,
+      callStartTime: this.callStartTime,
       permissions: PermissionService.areRequiredPermissionsGranted()
     };
   }

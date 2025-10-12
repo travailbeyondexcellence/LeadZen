@@ -10,6 +10,7 @@ import CallDetectionService from './src/services/CallDetectionService';
 import CallOverlay from './src/components/CallOverlay';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import PermissionOnboarding from './src/components/PermissionOnboarding';
+import { FloatingCallManager } from './src/components/FloatingCallManager';
 import { PerformanceMonitor } from './src/utils/performance';
 
 function App(): React.JSX.Element {
@@ -176,6 +177,9 @@ function App(): React.JSX.Element {
         
         {/* Call Overlay - Global overlay for call detection */}
         <CallOverlay />
+        
+        {/* Floating Call Manager - Modern floating overlay system */}
+        <FloatingCallManager />
       </ErrorBoundary>
     </GestureHandlerRootView>
   );
