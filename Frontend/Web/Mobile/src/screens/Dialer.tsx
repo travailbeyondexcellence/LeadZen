@@ -495,11 +495,12 @@ const Dialer: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
       
-      {renderTabs()}
-
       <View style={styles.content}>
         {renderContent()}
       </View>
+
+      {/* Moved tabs to bottom */}
+      {renderTabs()}
     </SafeAreaView>
   );
 };
@@ -512,21 +513,28 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8F9FA',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E1E5E9',
-    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E1E5E9',
+    paddingBottom: 8,
+    paddingTop: 12,
+    // Add shadow for bottom tabs
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 8,
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
+    borderTopWidth: 3,
+    borderTopColor: 'transparent',
     flexDirection: 'column',
     gap: 4,
   },
   activeTab: {
-    borderBottomColor: Colors.primary.base,
+    borderTopColor: Colors.primary.base,
     backgroundColor: '#FFFFFF',
   },
   tabText: {

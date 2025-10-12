@@ -89,7 +89,7 @@ export const getPriorityColor = (priority: LeadPriority): string => {
     case LeadPriority.MEDIUM:
       return '#F59E0B';
     case LeadPriority.HIGH:
-      return '#EF4444';
+      return '#8B5CF6';
     case LeadPriority.URGENT:
       return '#DC2626';
     default:

@@ -63,9 +63,6 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onW
         </View>
         <View style={styles.badges}>
           <StatusBadge status={lead.status} size="small" />
-          <View style={{ marginTop: 4 }}>
-            <PriorityBadge priority={lead.priority} size="small" />
-          </View>
         </View>
       </View>
 
@@ -144,12 +141,21 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onW
         </View>
       </View>
 
-      {lead.nextFollowUpAt && (
+      {(lead.nextFollowUpAt || lead.priority) && (
         <View style={styles.followUp}>
-          <Text style={styles.followUpIcon}>⏰</Text>
-          <Text style={styles.followUpText}>
-            Follow up: {formatDate(lead.nextFollowUpAt)}
-          </Text>
+          <View style={styles.followUpLeft}>
+            {lead.nextFollowUpAt && (
+              <>
+                <Text style={styles.followUpIcon}>⏰</Text>
+                <Text style={styles.followUpText}>
+                  Follow up: {formatDate(lead.nextFollowUpAt)}
+                </Text>
+              </>
+            )}
+          </View>
+          <View style={styles.followUpRight}>
+            <PriorityBadge priority={lead.priority} size="small" />
+          </View>
         </View>
       )}
     </MaterialPressable>
@@ -277,11 +283,20 @@ const styles = StyleSheet.create({
   },
   followUp: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
+  },
+  followUpLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  followUpRight: {
+    alignItems: 'flex-end',
   },
   followUpIcon: {
     fontSize: 14,

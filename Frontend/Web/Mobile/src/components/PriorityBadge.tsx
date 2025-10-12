@@ -37,15 +37,15 @@ const PriorityBadge: React.FC<PriorityBadgeProps> = ({
   const getIcon = (priority: LeadPriority): string => {
     switch (priority) {
       case LeadPriority.LOW:
-        return '🔽';
+        return '●';
       case LeadPriority.MEDIUM:
-        return '➡️';
+        return '●';
       case LeadPriority.HIGH:
-        return '🔼';
+        return '●';
       case LeadPriority.URGENT:
-        return '🔴';
+        return '●';
       default:
-        return '';
+        return '●';
     }
   };
 
@@ -67,7 +67,7 @@ const PriorityBadge: React.FC<PriorityBadgeProps> = ({
       ]}
     >
       <View style={styles.content}>
-        <Text style={styles.icon}>{getIcon(priority)}</Text>
+        <Text style={[styles.icon, { color: variant === 'filled' ? '#FFFFFF' : color }]}>{getIcon(priority)}</Text>
         <Text
           style={[
             styles.text,
