@@ -207,6 +207,8 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
         scrollEnabled={true}
         nestedScrollEnabled={true}
         keyboardShouldPersistTaps="handled"
+        bounces={false}
+        overScrollMode="never"
       >
         {leads.length === 0 ? (
           <View style={styles.emptyContainer}>

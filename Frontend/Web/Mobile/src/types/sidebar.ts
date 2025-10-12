@@ -16,14 +16,14 @@ export const sidebarList: SidebarListType[] = [
     navigate: 'Dialer',
   },
   {
-    name: 'Leads',
-    icon: 'account-group-outline',
-    navigate: 'Leads',
-  },
-  {
     name: 'Pipeline',
     icon: 'chart-line',
     navigate: 'Pipeline',
+  },
+  {
+    name: 'Leads',
+    icon: 'account-group-outline',
+    navigate: 'Leads',
   },
   {
     name: 'Tasks',
