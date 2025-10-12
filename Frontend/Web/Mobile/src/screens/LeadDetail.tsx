@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
@@ -67,6 +68,25 @@ const LeadDetail: React.FC = () => {
     if (lead?.email) {
       const emailUrl = `mailto:${lead.email}`;
       Linking.openURL(emailUrl);
+    }
+  };
+
+  const handleWhatsApp = () => {
+    if (lead?.phone) {
+      const cleanPhone = lead.phone.replace(/[^0-9+]/g, '');
+      const whatsappUrl = `whatsapp://send?phone=${cleanPhone}`;
+      Linking.openURL(whatsappUrl);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for WhatsApp.');
+    }
+  };
+
+  const handleSMS = () => {
+    if (lead?.phone) {
+      const smsUrl = `sms:${lead.phone}`;
+      Linking.openURL(smsUrl);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for SMS.');
     }
   };
   
@@ -305,48 +325,52 @@ const LeadDetail: React.FC = () => {
   
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.leadName}>{lead.name}</Text>
-          {lead.company && <Text style={styles.leadCompany}>{lead.company}</Text>}
-        </View>
-        <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-          <Text style={styles.deleteIcon}>🗑️</Text>
-        </TouchableOpacity>
-      </View>
-      
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-          </Text>
+        {/* Left Side - Contact Info */}
+        <View style={styles.contactInfo}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+            </Text>
+          </View>
+          <Text style={styles.profileName}>{lead.name}</Text>
+          {lead.position && <Text style={styles.profilePosition}>{lead.position}</Text>}
+          {lead.company && <Text style={styles.profileCompany}>{lead.company}</Text>}
+          
+          {/* Edit/Delete Buttons */}
+          <View style={styles.editDeleteButtons}>
+            <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+              <Text style={styles.editButtonText}>✏️ Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteIconButton} onPress={handleDelete}>
+              <Icon name="delete" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
-        <Text style={styles.profileName}>{lead.name}</Text>
-        {lead.position && <Text style={styles.profilePosition}>{lead.position}</Text>}
-        {lead.company && <Text style={styles.profileCompany}>{lead.company}</Text>}
-      </View>
-      
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleCall}>
-          <Text style={styles.actionIcon}>📞</Text>
-          <Text style={styles.actionText}>Call</Text>
-        </TouchableOpacity>
         
-        <TouchableOpacity style={styles.actionButton} onPress={handleEmail}>
-          <Text style={styles.actionIcon}>📧</Text>
-          <Text style={styles.actionText}>Email</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.actionButton} onPress={handleEdit}>
-          <Text style={styles.actionIcon}>✏️</Text>
-          <Text style={styles.actionText}>Edit</Text>
-        </TouchableOpacity>
+        {/* Right Side - Action Icons Grid */}
+        <View style={styles.actionIconsGrid}>
+          {/* Top Row */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.actionIconButton} onPress={handleCall}>
+              <Text style={styles.actionIconLarge}>📞</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionIconButton} onPress={handleWhatsApp}>
+              <Icon name="whatsapp" size={24} color="#25D366" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Bottom Row */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.actionIconButton} onPress={handleSMS}>
+              <Text style={styles.actionIconLarge}>📱</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionIconButton} onPress={handleEmail}>
+              <Text style={styles.actionIconLarge}>✉️</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
       
       {/* Tabs */}
@@ -426,94 +450,93 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     marginBottom: Spacing.lg,
   },
-  header: {
+  profileSection: {
     flexDirection: 'row',
-    alignItems: 'center',
     padding: Spacing.lg,
     backgroundColor: Colors.background.card,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border.light,
   },
-  backButton: {
-    padding: Spacing.sm,
-  },
-  backIcon: {
-    fontSize: 24,
-    color: Colors.text.primary,
-  },
-  headerContent: {
+  contactInfo: {
     flex: 1,
-    marginHorizontal: Spacing.md,
-  },
-  leadName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text.primary,
-  },
-  leadCompany: {
-    fontSize: 14,
-    color: Colors.text.secondary,
-    marginTop: 2,
-  },
-  deleteButton: {
-    padding: Spacing.sm,
-  },
-  deleteIcon: {
-    fontSize: 20,
-  },
-  profileSection: {
-    alignItems: 'center',
-    padding: Spacing.xl,
-    backgroundColor: Colors.background.card,
+    paddingRight: Spacing.lg,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     backgroundColor: Colors.primary.base + '20',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   avatarText: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: Colors.primary.base,
   },
   profileName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: Colors.text.primary,
-    marginBottom: Spacing.xs,
+    marginBottom: 4,
   },
   profilePosition: {
     fontSize: 14,
     color: Colors.text.secondary,
-    marginBottom: Spacing.xs,
+    marginBottom: 4,
   },
   profileCompany: {
     fontSize: 14,
     color: Colors.text.tertiary,
+    marginBottom: Spacing.md,
   },
-  actionButtons: {
+  editDeleteButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: Spacing.lg,
-    backgroundColor: Colors.background.card,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border.light,
-  },
-  actionButton: {
+    gap: Spacing.sm,
     alignItems: 'center',
-    padding: Spacing.sm,
   },
-  actionIcon: {
+  editButton: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Colors.primary.base,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  editButtonText: {
+    fontSize: 14,
+    color: Colors.white,
+    fontWeight: '600',
+  },
+  deleteIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.semantic.error,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionIconsGrid: {
+    width: 120,
+    justifyContent: 'center',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+  actionIconButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: Colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+  },
+  actionIconLarge: {
     fontSize: 24,
-    marginBottom: Spacing.xs,
-  },
-  actionText: {
-    fontSize: 12,
-    color: Colors.text.secondary,
   },
   tabs: {
     flexDirection: 'row',
