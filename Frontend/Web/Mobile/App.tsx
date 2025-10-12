@@ -1,8 +1,6 @@
-import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AppNavigator from './src/navigation/AppNavigator';
 import { initializeDatabase } from './src/utils/dbInit';
 import PermissionService from './src/services/PermissionService';
@@ -126,21 +124,17 @@ function App(): React.JSX.Element {
 
   if (dbError) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Error: {dbError}</Text>
-          <Text style={styles.subText}>Please restart the app</Text>
-        </View>
-      </GestureHandlerRootView>
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Error: {dbError}</Text>
+        <Text style={styles.subText}>Please restart the app</Text>
+      </View>
     );
   }
 
   // Show onboarding if needed and onboarding check is complete
   if (onboardingChecked && showOnboarding) {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <PermissionOnboarding onComplete={handleOnboardingComplete} />
-      </GestureHandlerRootView>
+      <PermissionOnboarding onComplete={handleOnboardingComplete} />
     );
   }
 
@@ -153,12 +147,10 @@ function App(): React.JSX.Element {
     }
       
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <ActivityIndicator size="large" color="#14B8A6" />
-          <Text style={styles.loadingText}>{loadingText}</Text>
-        </View>
-      </GestureHandlerRootView>
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#14B8A6" />
+        <Text style={styles.loadingText}>{loadingText}</Text>
+      </View>
     );
   }
 
@@ -169,19 +161,17 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ErrorBoundary onError={handleError}>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
-        
-        {/* Call Overlay - Global overlay for call detection */}
-        <CallOverlay />
-        
-        {/* Floating Call Manager - Modern floating overlay system */}
-        <FloatingCallManager />
-      </ErrorBoundary>
-    </GestureHandlerRootView>
+    <ErrorBoundary onError={handleError}>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+      
+      {/* Call Overlay - Global overlay for call detection */}
+      <CallOverlay />
+      
+      {/* Floating Call Manager - Modern floating overlay system */}
+      <FloatingCallManager />
+    </ErrorBoundary>
   );
 }
 

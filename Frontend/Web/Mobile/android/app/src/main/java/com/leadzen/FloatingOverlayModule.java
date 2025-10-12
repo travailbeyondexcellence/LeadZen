@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -18,30 +19,34 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
     public FloatingOverlayModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
-        android.util.Log.d("FloatingOverlay", "FloatingOverlayModule constructor called");
+        Log.d("FloatingOverlay", "FloatingOverlayModule constructor called");
         setupBroadcastReceiver();
     }
 
     @NonNull
     @Override
     public String getName() {
-        android.util.Log.d("FloatingOverlay", "getName() called - returning FloatingOverlayModule");
+        Log.d("FloatingOverlay", "getName() called - returning FloatingOverlayModule");
         return "FloatingOverlayModule";
     }
 
     private void setupBroadcastReceiver() {
-        overlayReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if ("FLOATING_OVERLAY_CLICKED".equals(intent.getAction())) {
-                    // Send event to React Native
-                    sendEvent("FloatingOverlayClicked", null);
+        try {
+            overlayReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if ("FLOATING_OVERLAY_CLICKED".equals(intent.getAction())) {
+                        sendEvent("FloatingOverlayClicked", null);
+                    }
                 }
-            }
-        };
+            };
 
-        IntentFilter filter = new IntentFilter("FLOATING_OVERLAY_CLICKED");
-        reactContext.registerReceiver(overlayReceiver, filter);
+            IntentFilter filter = new IntentFilter("FLOATING_OVERLAY_CLICKED");
+            reactContext.registerReceiver(overlayReceiver, filter);
+            Log.d("FloatingOverlay", "Broadcast receiver setup successfully");
+        } catch (Exception e) {
+            Log.e("FloatingOverlay", "Error setting up broadcast receiver: " + e.getMessage());
+        }
     }
 
     private void sendEvent(String eventName, Object data) {
@@ -52,7 +57,7 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
                     .emit(eventName, data);
             }
         } catch (Exception e) {
-            android.util.Log.e("FloatingOverlay", "Error sending event: " + e.getMessage());
+            Log.e("FloatingOverlay", "Error sending event: " + e.getMessage());
         }
     }
 

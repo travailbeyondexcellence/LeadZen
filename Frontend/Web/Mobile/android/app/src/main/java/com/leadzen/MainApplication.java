@@ -1,6 +1,7 @@
 package com.leadzen;
 
 import android.app.Application;
+import android.util.Log;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -28,9 +29,9 @@ public class MainApplication extends Application implements ReactApplication {
       // SQLite package should be auto-linked by React Native
       
       // Add FloatingOverlay package
-      android.util.Log.d("FloatingOverlay", "Adding FloatingOverlayPackage to packages");
+      Log.d("FloatingOverlay", "Adding FloatingOverlayPackage to packages");
       packages.add(new FloatingOverlayPackage());
-      android.util.Log.d("FloatingOverlay", "FloatingOverlayPackage added successfully");
+      Log.d("FloatingOverlay", "FloatingOverlayPackage added successfully");
       
       return packages;
     }

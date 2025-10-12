@@ -1,5 +1,6 @@
 package com.leadzen;
 
+import android.util.Log;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -18,10 +19,17 @@ public class FloatingOverlayPackage implements ReactPackage {
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        android.util.Log.d("FloatingOverlay", "createNativeModules called - creating FloatingOverlayModule");
+        Log.d("FloatingOverlay", "createNativeModules called");
         List<NativeModule> modules = new ArrayList<>();
+        
+        // Add simple test module first
+        modules.add(new SimpleFloatingModule(reactContext));
+        Log.d("FloatingOverlay", "SimpleFloatingModule added");
+        
+        // Add main floating overlay module
         modules.add(new FloatingOverlayModule(reactContext));
-        android.util.Log.d("FloatingOverlay", "FloatingOverlayModule added to modules list");
+        Log.d("FloatingOverlay", "FloatingOverlayModule added");
+        
         return modules;
     }
 }

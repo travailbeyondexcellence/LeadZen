@@ -8,8 +8,8 @@ import {
   SafeAreaView,
   StatusBar,
   Alert,
+  PanResponder,
 } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { Colors, Spacing } from '../theme';
 import { 
   REQUIRED_PERMISSIONS, 
@@ -148,27 +148,28 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
     }
   };
 
-  const handleSwipeGesture = (event: any) => {
-    const { translationX, state } = event.nativeEvent;
-    
-    console.log('🔄 Swipe gesture:', { translationX, state, currentStep });
-    
-    if (state === State.END) {
-      const swipeThreshold = 50; // minimum distance for swipe
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderRelease: (evt, gestureState) => {
+      const { dx } = gestureState;
+      const swipeThreshold = 50;
       
-      if (translationX > swipeThreshold) {
+      console.log('🔄 Swipe gesture:', { dx, currentStep });
+      
+      if (dx > swipeThreshold) {
         // Swipe right - go to previous step
         console.log('➡️ Swiping right - going to previous step');
         handlePrevious();
-      } else if (translationX < -swipeThreshold) {
+      } else if (dx < -swipeThreshold) {
         // Swipe left - go to next step
         console.log('⬅️ Swiping left - going to next step');
         if (currentStep < steps.length - 1) {
           setCurrentStep(currentStep + 1);
         }
       }
-    }
-  };
+    },
+  });
 
   const handleGrantIndividualPermission = async (permission: string) => {
     try {
@@ -370,18 +371,11 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
         </View>
       </View>
       
-      <PanGestureHandler 
-        onHandlerStateChange={handleSwipeGesture}
-        minPointers={1}
-        maxPointers={1}
-        shouldCancelWhenOutside={false}
-      >
-        <View style={styles.gestureContainer}>
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            {renderStep()}
-          </ScrollView>
-        </View>
-      </PanGestureHandler>
+      <View style={styles.gestureContainer} {...panResponder.panHandlers}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {renderStep()}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

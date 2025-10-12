@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainScreenContainer from './MainScreenContainer';
 import LeadDetail from '../screens/LeadDetail';
 import LeadForm from '../screens/LeadForm';
@@ -22,7 +22,7 @@ export type RootStackParamList = {
   MyProfile: undefined;
 };
 
-const Stack = createStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const MainWithSidebar: React.FC = () => {
   const { sidebarActive, animatedValue } = useSidebarContext();

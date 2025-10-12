@@ -6,7 +6,7 @@ interface FloatingOverlayModule {
   stopFloatingOverlay(): Promise<string>;
 }
 
-const { FloatingOverlayModule } = NativeModules;
+const { FloatingOverlayModule, SimpleFloatingModule } = NativeModules;
 
 class NativeFloatingOverlayService {
   private eventEmitter: NativeEventEmitter;
@@ -94,6 +94,21 @@ class NativeFloatingOverlayService {
    * Check if native module is available
    */
   isAvailable(): boolean {
+    console.log('[NATIVE_OVERLAY] Checking module availability...');
+    console.log('[NATIVE_OVERLAY] SimpleFloatingModule:', SimpleFloatingModule != null);
+    console.log('[NATIVE_OVERLAY] FloatingOverlayModule:', FloatingOverlayModule != null);
+    
+    // Test simple module first
+    if (SimpleFloatingModule) {
+      SimpleFloatingModule.testMethod()
+        .then((result: string) => {
+          console.log('[NATIVE_OVERLAY] Simple module test successful:', result);
+        })
+        .catch((error: any) => {
+          console.log('[NATIVE_OVERLAY] Simple module test failed:', error);
+        });
+    }
+    
     return FloatingOverlayModule != null;
   }
 }

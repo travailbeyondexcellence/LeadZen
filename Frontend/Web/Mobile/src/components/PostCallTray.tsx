@@ -9,8 +9,8 @@ import {
   Alert,
   Animated,
   Dimensions,
+  PanResponder,
 } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import AsyncStorageService from '../services/AsyncStorageService';
 import OverlayService from '../services/OverlayService';
 import { PhoneUtils } from '../utils/phoneUtils';
@@ -104,17 +104,17 @@ const PostCallTray: React.FC<Props> = ({
     Alert.alert('Follow-up', 'Follow-up scheduling will be implemented in a future update');
   };
 
-  const onGestureEvent = Animated.event(
-    [{ nativeEvent: { translationY: dragY } }],
-    { useNativeDriver: false }
-  );
-
-  const onHandlerStateChange = (event: any) => {
-    if (event.nativeEvent.oldState === State.ACTIVE) {
-      const { translationY, velocityY } = event.nativeEvent;
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: (evt, gestureState) => {
+      dragY.setValue(gestureState.dy);
+    },
+    onPanResponderRelease: (evt, gestureState) => {
+      const { dy, vy } = gestureState;
       
       // If dragged down significantly or with high velocity, close
-      if (translationY > 100 || velocityY > 1000) {
+      if (dy > 100 || vy > 1000) {
         onClose();
       } else {
         // Snap back to position
@@ -123,8 +123,8 @@ const PostCallTray: React.FC<Props> = ({
           useNativeDriver: false,
         }).start();
       }
-    }
-  };
+    },
+  });
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -271,21 +271,18 @@ const PostCallTray: React.FC<Props> = ({
   }
 
   return (
-    <PanGestureHandler
-      onGestureEvent={onGestureEvent}
-      onHandlerStateChange={onHandlerStateChange}
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          transform: [
+            { translateY },
+            { translateY: dragY },
+          ],
+        },
+      ]}
+      {...panResponder.panHandlers}
     >
-      <Animated.View
-        style={[
-          styles.container,
-          {
-            transform: [
-              { translateY },
-              { translateY: dragY },
-            ],
-          },
-        ]}
-      >
         <View style={styles.dragHandle} />
         
         <View style={styles.header}>
@@ -322,8 +319,7 @@ const PostCallTray: React.FC<Props> = ({
             <Text style={styles.saveButtonText}>💾 Save & Close</Text>
           </TouchableOpacity>
         </View>
-      </Animated.View>
-    </PanGestureHandler>
+    </Animated.View>
   );
 };
 
