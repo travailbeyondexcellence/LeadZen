@@ -5,7 +5,7 @@ import {
   PanResponder,
   Dimensions,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+// Removed react-native-linear-gradient dependency
 import DockIcon from '../components/DockIcon';
 import { Colors } from '../theme';
 
@@ -86,15 +86,13 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
     <View style={styles.container}>
       <View style={styles.dockWrapper}>
         {/* Gradient platform behind icons */}
-        <LinearGradient
-          colors={['#e3ffe7', '#d9e7ff']}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}
-          style={styles.platform}
-        >
+        <View style={[styles.platform, styles.gradientBackground]}>
+          {/* Native gradient background using multiple colored views */}
+          <View style={styles.gradientLeft} />
+          <View style={styles.gradientRight} />
           {/* Trapezium perspective overlay */}
           {/* <View style={styles.perspectiveOverlay} /> */}
-        </LinearGradient>
+        </View>
 
         <View
           style={styles.dock}
@@ -183,6 +181,27 @@ const styles = StyleSheet.create({
     zIndex: 1,
     justifyContent: 'space-evenly',
     alignItems: 'center',
+  },
+  // Native gradient styles to replace LinearGradient
+  gradientBackground: {
+    overflow: 'hidden',
+  },
+  gradientLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '50%',
+    backgroundColor: '#e3ffe7', // Light green
+  },
+  gradientRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '50%',
+    backgroundColor: '#d9e7ff', // Light blue
+    opacity: 0.7, // Blend the colors
   },
 });
 
