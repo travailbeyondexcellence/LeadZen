@@ -1,4 +1,4 @@
-package com.leadzen;
+package com.LeadZen;
 
 import android.app.Application;
 import com.facebook.react.ReactApplication;
