@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Vibration,
   Dimensions,
 } from 'react-native';
 
@@ -48,31 +47,17 @@ const DialerKeypad: React.FC<Props> = ({
   disabled = false,
 }) => {
   
-  const handleKeyPress = async (key: string) => {
+  const handleKeyPress = (key: string) => {
     if (disabled) return;
     
-    // Provide haptic feedback without permission check (vibrate is usually auto-granted)
-    try {
-      Vibration.vibrate(50);
-    } catch (error) {
-      console.log('Vibration not available:', error.message);
-    }
-    
-    // Call the callback
+    // Call the callback without vibration to avoid permission issues
     onKeyPress(key);
   };
 
-  const handleLongPress = async (key: string) => {
+  const handleLongPress = (key: string) => {
     if (disabled) return;
     
-    // Provide haptic feedback for long press without permission check
-    try {
-      Vibration.vibrate(100);
-    } catch (error) {
-      console.log('Vibration not available:', error.message);
-    }
-    
-    // Special handling for certain keys
+    // Special handling for certain keys without vibration
     if (key === '0' && onLongPress) {
       onLongPress('+'); // Long press 0 adds +
     } else if (onLongPress) {
