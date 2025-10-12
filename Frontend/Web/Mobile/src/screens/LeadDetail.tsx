@@ -249,9 +249,11 @@ const LeadDetail: React.FC = () => {
           <View style={styles.infoRow}>
             <Text style={styles.infoIcon}>🎯</Text>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Pipeline Stage</Text>
-              <View style={[styles.badge, { backgroundColor: getStatusColor(lead?.status) }]}>
-                <Text style={styles.badgeText}>{getStatusLabel(lead?.status)}</Text>
+              <View style={styles.infoRowHorizontal}>
+                <Text style={styles.infoLabel}>Pipeline Stage</Text>
+                <View style={[styles.badge, { backgroundColor: getStatusColor(lead?.status) }]}>
+                  <Text style={styles.badgeText}>{getStatusLabel(lead?.status)}</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -259,9 +261,11 @@ const LeadDetail: React.FC = () => {
           <View style={styles.infoRow}>
             <Text style={styles.infoIcon}>⚡</Text>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Priority</Text>
-              <View style={[styles.badge, { backgroundColor: getPriorityColor(lead?.priority) }]}>
-                <Text style={styles.badgeText}>{lead?.priority || 'Medium'}</Text>
+              <View style={styles.infoRowHorizontal}>
+                <Text style={styles.infoLabel}>Priority</Text>
+                <View style={[styles.badge, { backgroundColor: getPriorityColor(lead?.priority) }]}>
+                  <Text style={styles.badgeText}>{lead?.priority || 'Medium'}</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -269,20 +273,24 @@ const LeadDetail: React.FC = () => {
           <View style={styles.infoRow}>
             <Text style={styles.infoIcon}>💰</Text>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Value</Text>
-              <Text style={styles.infoValue}>
-                {lead?.value ? formatCurrency(lead.value) : 'Not set'}
-              </Text>
+              <View style={styles.infoRowHorizontal}>
+                <Text style={styles.infoLabel}>Value</Text>
+                <Text style={styles.infoValue}>
+                  {lead?.value ? formatCurrency(lead.value) : 'Not set'}
+                </Text>
+              </View>
             </View>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoIcon}>📅</Text>
             <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Created</Text>
-              <Text style={styles.infoValue}>
-                {lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : 'Unknown'}
-              </Text>
+              <View style={styles.infoRowHorizontal}>
+                <Text style={styles.infoLabel}>Created</Text>
+                <Text style={styles.infoValue}>
+                  {lead?.createdAt ? formatDateToReadable(lead.createdAt) : 'Unknown'}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -378,6 +386,26 @@ const LeadDetail: React.FC = () => {
       case LeadPriority.LOW: return Colors.semantic.success;
       default: return Colors.text.tertiary;
     }
+  };
+  
+  const formatDateToReadable = (date: Date | string): string => {
+    const dateObj = new Date(date);
+    const day = dateObj.getDate();
+    const month = dateObj.toLocaleString('default', { month: 'short' });
+    const year = dateObj.getFullYear();
+    
+    // Add ordinal suffix to day
+    const ordinalSuffix = (n: number) => {
+      if (n > 3 && n < 21) return 'th';
+      switch (n % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    return `${day}${ordinalSuffix(day)} ${month} ${year}`;
   };
   
   if (loading) {
@@ -646,7 +674,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   leftSection: {
-    flex: 1,
+    flex: 2,
   },
   rightSection: {
     flex: 1,
@@ -669,6 +697,11 @@ const styles = StyleSheet.create({
   },
   infoContent: {
     flex: 1,
+  },
+  infoRowHorizontal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
   },
   infoLabel: {
     fontSize: 12,
