@@ -372,38 +372,30 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
             <Text style={styles.avatarText}>{getInitials(lead.name || '')}</Text>
           </View>
           
+          <View style={styles.info}>
+            <Text style={styles.name} numberOfLines={1}>
+              {lead.name || 'Unknown'}
+            </Text>
+            
+            {lead.company ? (
+              <Text style={styles.company} numberOfLines={1}>
+                {lead.company}
+              </Text>
+            ) : null}
+          </View>
+          
           {lead.priority && (
             <View
               style={[
-                styles.priorityDot,
-                { backgroundColor: getPriorityColor(lead.priority) }
+                styles.priorityLabel,
+                { backgroundColor: getPriorityColor(lead.priority) + '20' }
               ]}
-            />
+            >
+              <Text style={[styles.priorityText, { color: getPriorityColor(lead.priority) }]}>
+                {lead.priority.charAt(0).toUpperCase() + lead.priority.slice(1)} Priority
+              </Text>
+            </View>
           )}
-        </View>
-        
-        <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
-            {lead.name || 'Unknown'}
-          </Text>
-          
-          {lead.company ? (
-            <Text style={styles.company} numberOfLines={1}>
-              {lead.company}
-            </Text>
-          ) : null}
-          
-          {lead.phone ? (
-            <Text style={styles.phone} numberOfLines={1}>
-              📞 {lead.phone}
-            </Text>
-          ) : null}
-          
-          {lead.value && lead.value > 0 ? (
-            <Text style={styles.value}>
-              {formatValue(lead.value)}
-            </Text>
-          ) : null}
         </View>
         
         {/* Action Icons */}
@@ -480,6 +472,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
     position: 'relative',
+    overflow: 'hidden', // Prevent content from spilling out
   },
   dragHandle: {
     height: 24,
@@ -501,7 +494,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: Spacing.sm,
   },
@@ -517,13 +510,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.primary.base,
   },
-  priorityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  priorityLabel: {
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  priorityText: {
+    fontSize: 10,
+    fontWeight: '600',
   },
   info: {
     flex: 1,
+    marginLeft: Spacing.sm,
+    marginRight: Spacing.xs,
   },
   name: {
     fontSize: 14,
@@ -535,17 +536,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.text.secondary,
     marginBottom: 4,
-  },
-  phone: {
-    fontSize: 11,
-    color: Colors.text.secondary,
-    marginBottom: 2,
-  },
-  value: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.semantic.success,
-    marginTop: 4,
   },
   actions: {
     flexDirection: 'row',

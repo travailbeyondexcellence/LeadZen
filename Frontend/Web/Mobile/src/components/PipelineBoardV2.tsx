@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Lead } from '../types/Lead';
 import { PipelineColumnV2 } from './PipelineColumnV2';
-import { Colors, Spacing } from '../theme';
+import { Colors, Spacing, BorderRadius } from '../theme';
 import { formatNumber } from '../utils/formatting';
 import AsyncStorageService from '../services/AsyncStorageService';
 import {
@@ -129,7 +129,13 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     
     // Use ref to check existence (immediate) and update state for rendering
     if (dragOverlayRef.current) {
-      const updatedOverlay = { ...dragOverlayRef.current, x, y };
+      // Constrain overlay position to screen bounds
+      const overlayWidth = 150;
+      const overlayHeight = 80;
+      const constrainedX = Math.max(overlayWidth / 2, Math.min(x, SCREEN_WIDTH - overlayWidth / 2));
+      const constrainedY = Math.max(overlayHeight / 2, Math.min(y, SCREEN_HEIGHT - overlayHeight / 2));
+      
+      const updatedOverlay = { ...dragOverlayRef.current, x: constrainedX, y: constrainedY };
       dragOverlayRef.current = updatedOverlay;
       setDragOverlay(updatedOverlay);
     }
@@ -373,21 +379,23 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
         )}
       </ScrollView>
       
-      {/* Global Drag Overlay - Rendered at top level */}
+      {/* Global Drag Overlay - Compact card with blue outline */}
       {dragOverlay && dragOverlay.visible && (
         <View
           style={{
             position: 'absolute',
-            left: dragOverlay.x - 50, // Center the card on finger
-            top: dragOverlay.y - 50,
+            left: dragOverlay.x - 75, // Center the card on finger
+            top: dragOverlay.y - 40,
             zIndex: 99999,
             elevation: 1000,
-            width: 100,
-            height: 100,
-            backgroundColor: '#FF0000',
-            borderRadius: 8,
+            width: 150,
+            height: 80,
+            backgroundColor: Colors.background.card,
+            borderRadius: BorderRadius.md,
+            borderWidth: 3,
+            borderColor: '#2563eb', // Blue outline
+            padding: Spacing.sm,
             justifyContent: 'center',
-            alignItems: 'center',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 10 },
             shadowOpacity: 0.5,
@@ -395,12 +403,60 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
             pointerEvents: 'none',
           }}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 10 }}>
-            {dragOverlay.lead.name}
-          </Text>
-          <Text style={{ color: 'white', fontSize: 8 }}>
-            {Math.round(dragOverlay.x)}, {Math.round(dragOverlay.y)}
-          </Text>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
+          }}>
+            {/* Profile Icon */}
+            <View style={{
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: Colors.primary.base + '20',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: Spacing.xs,
+            }}>
+              <Text style={{
+                fontSize: 10,
+                fontWeight: '600',
+                color: Colors.primary.base,
+              }}>
+                {dragOverlay.lead.name ? 
+                  dragOverlay.lead.name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2) 
+                  : '??'
+                }
+              </Text>
+            </View>
+            
+            {/* Name and Company */}
+            <View style={{ flex: 1 }}>
+              <Text 
+                style={{
+                  fontSize: 12,
+                  fontWeight: '600',
+                  color: Colors.text.primary,
+                  marginBottom: 2,
+                }}
+                numberOfLines={1}
+              >
+                {dragOverlay.lead.name || 'Unknown'}
+              </Text>
+              
+              {dragOverlay.lead.company && (
+                <Text 
+                  style={{
+                    fontSize: 10,
+                    color: Colors.text.secondary,
+                  }}
+                  numberOfLines={1}
+                >
+                  {dragOverlay.lead.company}
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
       )}
       
