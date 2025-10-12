@@ -33,6 +33,9 @@ interface PipelineColumnV2Props {
   onWhatsApp?: (lead: Lead) => void;
   onSMS?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
+  onDragOverlayStart?: (lead: Lead, x: number, y: number) => void;
+  onDragOverlayMove?: (x: number, y: number) => void;
+  onDragOverlayEnd?: () => void;
 }
 
 export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
@@ -54,6 +57,9 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   onWhatsApp,
   onSMS,
   onNotes,
+  onDragOverlayStart,
+  onDragOverlayMove,
+  onDragOverlayEnd,
 }) => {
   const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const highlightAnimation = useRef(new Animated.Value(0)).current;
@@ -66,7 +72,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
     if (columnRef.current) {
       columnRef.current.measureInWindow((x, y, width, height) => {
         const newLayout = { x, y, width, height };
-        console.log(`📐 Column ${stageId} layout measured:`, newLayout);
+        // console.log(`📐 Column ${stageId} layout measured:`, newLayout);
         setLayout(newLayout);
         onColumnLayout?.(stageId, newLayout);
       });
@@ -74,10 +80,10 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   };
 
   useEffect(() => {
-    // Use a longer delay to ensure layout is complete
+    // Only measure once on mount or when stageId changes
     const timeoutId = setTimeout(measureLayout, 300);
     return () => clearTimeout(timeoutId);
-  }, [stageId, onColumnLayout, leads]);
+  }, [stageId]);
   
   // Re-measure on layout changes
   const handleColumnLayoutEvent = () => {
@@ -171,6 +177,8 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
           borderColor: borderColor,
           backgroundColor: backgroundColor,
           borderLeftColor: color,
+          overflow: isDragging ? 'visible' : 'hidden',
+          borderRadius: isDragging ? 0 : BorderRadius.lg,
         }
       ]}
       onLayout={handleColumnLayoutEvent}
@@ -224,6 +232,9 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
               onWhatsApp={onWhatsApp}
               onSMS={onSMS}
               onNotes={onNotes}
+              onDragOverlayStart={onDragOverlayStart}
+              onDragOverlayMove={onDragOverlayMove}
+              onDragOverlayEnd={onDragOverlayEnd}
             />
           ))
         )}
@@ -245,12 +256,12 @@ const styles = StyleSheet.create({
   container: {
     width: COLUMN_WIDTH,
     backgroundColor: Colors.background.primary,
-    borderRadius: BorderRadius.lg,
     marginHorizontal: Spacing.sm,
     borderWidth: 2,
     borderLeftWidth: 4,
     overflow: 'visible',
-    maxHeight: '90%',
+    zIndex: 1,
+    elevation: 1,
   },
   header: {
     padding: Spacing.md,
@@ -288,9 +299,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    overflow: 'visible',
   },
   scrollContent: {
     padding: Spacing.sm,
+    overflow: 'visible',
   },
   emptyContainer: {
     padding: Spacing.xl,

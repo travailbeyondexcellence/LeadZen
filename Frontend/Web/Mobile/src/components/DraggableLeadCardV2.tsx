@@ -28,6 +28,10 @@ interface DraggableLeadCardV2Props {
   onWhatsApp?: (lead: Lead) => void;
   onSMS?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
+  // Global overlay handlers
+  onDragOverlayStart?: (lead: Lead, x: number, y: number) => void;
+  onDragOverlayMove?: (x: number, y: number) => void;
+  onDragOverlayEnd?: () => void;
 }
 
 export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
@@ -41,8 +45,14 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   onWhatsApp,
   onSMS,
   onNotes,
+  onDragOverlayStart,
+  onDragOverlayMove,
+  onDragOverlayEnd,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Throttle logging to 1 per second
+  const lastLogTime = useRef(0);
   
   // Animated values for position and visual feedback
   const pan = useRef(new Animated.ValueXY()).current;
@@ -52,60 +62,68 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   const dragHandlePanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
-        console.log('🎯 Drag Handle - Instant capture', lead.name);
+        console.log('[DRAG] Handle - Instant capture', lead.name);
         return true; // Immediately capture touch on drag handle
       },
       onMoveShouldSetPanResponder: () => true,
       onPanResponderTerminationRequest: () => false, // Don't allow termination
       
       onPanResponderGrant: (evt, gestureState) => {
-        console.log('🚀 Drag Handle - Starting drag immediately', lead.name);
+        console.log('[DRAG] Handle - Starting global overlay drag', lead.name);
         setIsDragging(true);
         onDragStart?.();
         
-        // Scale up slightly
+        // Start global overlay at touch position
+        const { pageX, pageY } = evt.nativeEvent;
+        console.log('[DRAG] Handle - Initial position:', pageX, pageY);
+        console.log('[DRAG] Handle - Calling onDragOverlayStart with:', lead.name, pageX, pageY);
+        if (onDragOverlayStart) {
+          onDragOverlayStart(lead, pageX, pageY);
+          console.log('[DRAG] Handle - onDragOverlayStart called successfully');
+        } else {
+          console.log('[DRAG] Handle - ERROR: onDragOverlayStart is undefined!');
+        }
+        
+        // Make original card invisible during drag
         Animated.spring(scale, {
-          toValue: 1.05,
+          toValue: 0.1, // Make it nearly invisible
           useNativeDriver: true,
         }).start();
-        
-        // Set current pan position
-        pan.setOffset({
-          x: pan.x._value,
-          y: pan.y._value,
-        });
-        pan.setValue({ x: 0, y: 0 });
       },
       
       onPanResponderMove: (evt, gestureState) => {
-        console.log('🏃 Drag Handle - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy, 'pageX:', evt.nativeEvent.pageX, 'pageY:', evt.nativeEvent.pageY);
-        pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+        // Update global overlay position
+        const { pageX, pageY } = evt.nativeEvent;
+        
+        // Throttled logging - only log once per second
+        const now = Date.now();
+        if (now - lastLogTime.current > 1000) {
+          console.log('[DRAG] Handle - Move to:', pageX, pageY, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
+          lastLogTime.current = now;
+        }
+        
+        onDragOverlayMove?.(pageX, pageY);
       },
       
       onPanResponderRelease: (evt, gestureState) => {
-        console.log('🏁 Drag Handle - Released', lead.name, 'Final position dx:', gestureState.dx, 'dy:', gestureState.dy);
+        console.log('[DRAG] Handle - Released', lead.name);
         
-        // Call global drop handler first (this does the actual drop logic)
+        // End global overlay
+        onDragOverlayEnd?.();
+        
+        // Call global drop handler for logic
         onGlobalDrop?.(lead, gestureState);
         
-        // Then call drag end (this just cleans up UI state)
+        // Then call drag end
         onDragEnd?.(lead, gestureState);
         setIsDragging(false);
         
-        // Reset everything with single animation
-        Animated.parallel([
-          Animated.spring(scale, {
-            toValue: 1,
-            useNativeDriver: true,
-          }),
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }),
-        ]).start(() => {
-          console.log('🔄 Drag Handle - Animation complete, card returned to origin');
+        // Restore original card visibility
+        Animated.spring(scale, {
+          toValue: 1,
+          useNativeDriver: true,
+        }).start(() => {
+          console.log('[DRAG] Handle - Original card restored');
         });
       },
       
@@ -149,6 +167,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       onPanResponderGrant: (evt, gestureState) => {
         console.log('🟡 Card - Starting drag after movement', lead.name);
         setIsDragging(true);
+        console.log('🔝 Z-index set to 9999 for drag');
         onDragStart?.();
         
         // Scale up slightly
@@ -323,16 +342,23 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   };
   
   const containerStyle = {
-    zIndex: isDragging ? 1000 : 1,
-    elevation: isDragging ? 10 : 2,
+    zIndex: isDragging ? 9999 : 1,
+    elevation: isDragging ? 999 : 2,
+    position: 'relative' as const,
+    overflow: 'visible',
+    ...(isDragging && {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+    }),
   };
   
   return (
     <Animated.View
       style={[styles.container, containerStyle, animatedStyle]}
-      {...panResponder.panHandlers}
     >
-      {/* Drag Handle Indicator */}
+      {/* Drag Handle Indicator - ONLY touch area for dragging */}
       <View style={styles.dragHandle} {...dragHandlePanResponder.panHandlers}>
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
@@ -453,6 +479,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
+    position: 'relative',
   },
   dragHandle: {
     height: 24,

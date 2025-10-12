@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -49,6 +49,17 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   const [targetStage, setTargetStage] = useState<string | null>(null);
   const [showInstructions, setShowInstructions] = useState(true);
   
+  // Global drag overlay state
+  const [dragOverlay, setDragOverlay] = useState<{
+    lead: Lead;
+    x: number;
+    y: number;
+    visible: boolean;
+  } | null>(null);
+  
+  // Throttle board move logging
+  const lastBoardLogTime = useRef(0);
+  
   // Group leads by pipeline stage
   const getLeadsByStage = (stageId: string): Lead[] => {
     return leads.filter(lead => statusToPipelineStage(lead.status) === stageId);
@@ -81,6 +92,45 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     setDraggedLead(lead);
   };
   
+  // Handle global drag overlay start
+  const handleDragOverlayStart = (lead: Lead, x: number, y: number) => {
+    console.log('[DRAG] Board - Starting overlay for', lead.name, 'at', x, y);
+    const newOverlay = {
+      lead,
+      x,
+      y,
+      visible: true
+    };
+    console.log('[DRAG] Board - Setting overlay state:', newOverlay);
+    setDragOverlay(newOverlay);
+    setIsDragging(true);
+    setDraggedLead(lead);
+  };
+  
+  // Handle global drag overlay move
+  const handleDragOverlayMove = (x: number, y: number) => {
+    // Throttled logging - only log once per second
+    const now = Date.now();
+    if (now - lastBoardLogTime.current > 1000) {
+      console.log('[DRAG] Board - Move overlay to:', x, y);
+      lastBoardLogTime.current = now;
+    }
+    
+    if (dragOverlay) {
+      setDragOverlay(prev => prev ? { ...prev, x, y } : null);
+    } else {
+      console.log('[DRAG] Board - No overlay to update');
+    }
+  };
+  
+  // Handle global drag overlay end
+  const handleDragOverlayEnd = () => {
+    console.log('[DRAG] Board - Ending overlay');
+    setDragOverlay(null);
+    setIsDragging(false);
+    setDraggedLead(null);
+  };
+  
   // Handle drag end
   const handleDragEnd = () => {
     console.log('🏁 Board: Drag ended');
@@ -101,7 +151,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   
   // Handle column layout updates
   const handleColumnLayout = (stageId: string, layout: any) => {
-    console.log('📐 Column layout updated for', stageId, ':', layout);
+    // console.log('📐 Column layout updated for', stageId, ':', layout);
     setColumnLayouts(prev => ({
       ...prev,
       [stageId]: layout
@@ -110,7 +160,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   
   // Re-measure layouts when scroll view layout changes
   const handleScrollViewLayout = () => {
-    console.log('📐 ScrollView layout changed, triggering re-measurement');
+    // console.log('📐 ScrollView layout changed, triggering re-measurement');
     // Trigger a re-measurement of all columns
     setTimeout(() => {
       setColumnLayouts({});
@@ -300,11 +350,69 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
                 onWhatsApp={onWhatsApp}
                 onSMS={onSMS}
                 onNotes={onNotes}
+                onDragOverlayStart={handleDragOverlayStart}
+                onDragOverlayMove={handleDragOverlayMove}
+                onDragOverlayEnd={handleDragOverlayEnd}
               />
             );
           })
         )}
       </ScrollView>
+      
+      {/* Global Drag Overlay - Rendered at top level */}
+      {dragOverlay && dragOverlay.visible && (
+        <View
+          style={{
+            position: 'absolute',
+            left: dragOverlay.x - 50, // Center the card on finger
+            top: dragOverlay.y - 50,
+            zIndex: 99999,
+            elevation: 1000,
+            width: 100,
+            height: 100,
+            backgroundColor: '#FF0000',
+            borderRadius: 8,
+            justifyContent: 'center',
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.5,
+            shadowRadius: 15,
+            pointerEvents: 'none',
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 10 }}>
+            {dragOverlay.lead.name}
+          </Text>
+          <Text style={{ color: 'white', fontSize: 8 }}>
+            {Math.round(dragOverlay.x)}, {Math.round(dragOverlay.y)}
+          </Text>
+        </View>
+      )}
+      
+      {/* Debug overlay info */}
+      {dragOverlay && (
+        <View style={{ 
+          position: 'absolute', 
+          top: 100, 
+          left: 10, 
+          backgroundColor: '#1e40af', // Dark blue
+          padding: 10,
+          borderRadius: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+          elevation: 5,
+        }}>
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
+            Overlay: {dragOverlay.visible ? 'visible' : 'hidden'}
+          </Text>
+          <Text style={{ color: 'white', fontSize: 12 }}>
+            Position: {Math.round(dragOverlay.x)}, {Math.round(dragOverlay.y)}
+          </Text>
+        </View>
+      )}
       
       {/* Instructions */}
       {!isLoading && leads.length > 0 && showInstructions && (
@@ -364,6 +472,8 @@ const styles = StyleSheet.create({
   boardContainer: {
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.sm,
+    zIndex: 0,
+    overflow: 'visible',
   },
   loadingContainer: {
     width: SCREEN_WIDTH,
