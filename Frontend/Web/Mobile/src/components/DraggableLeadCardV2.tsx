@@ -105,9 +105,9 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
             useNativeDriver: false,
           }).start();
         } else {
-          // This was a tap
-          console.log('👆 Tap detected', lead.name);
-          onPress?.();
+          // This was a tap - but we're disabling tap functionality
+          console.log('👆 Tap detected', lead.name, '- Tap functionality disabled');
+          // onPress?.(); // Completely disabled
         }
       },
       

@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  RefreshControl,
   ActivityIndicator,
   Alert,
   Dimensions,
@@ -171,13 +170,6 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.boardContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={() => loadLeads(true)}
-            colors={[Colors.primary.base]}
-          />
-        }
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
