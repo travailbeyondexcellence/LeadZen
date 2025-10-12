@@ -391,8 +391,11 @@ const LeadDetail: React.FC = () => {
   const formatDateToReadable = (date: Date | string): string => {
     const dateObj = new Date(date);
     const day = dateObj.getDate();
-    const month = dateObj.toLocaleString('default', { month: 'short' });
     const year = dateObj.getFullYear();
+    
+    // Month names array
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[dateObj.getMonth()];
     
     // Add ordinal suffix to day
     const ordinalSuffix = (n: number) => {
