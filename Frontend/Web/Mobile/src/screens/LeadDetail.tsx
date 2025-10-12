@@ -471,10 +471,7 @@ const LeadDetail: React.FC = () => {
           {/* Bottom Row */}
           <View style={styles.actionRow}>
             <TouchableOpacity style={[styles.actionIconButton, styles.smsButton]} onPress={handleSMS}>
-              <View style={styles.smsContent}>
-                <Icon name="message-text" size={16} color="#fff" />
-                <Text style={styles.smsText}>SMS</Text>
-              </View>
+              <Icon name="message-text" size={24} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity style={[styles.actionIconButton, styles.emailButton]} onPress={handleEmail}>
               <Icon name="email" size={24} color="#fff" />
@@ -624,7 +621,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   actionIconButton: {
-    width: 50,
+    width: 85,
     height: 50,
     borderRadius: 12,
     justifyContent: 'center',
@@ -650,16 +647,6 @@ const styles = StyleSheet.create({
   },
   emailButton: {
     backgroundColor: '#1E88E5',
-  },
-  smsContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  smsText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#fff',
-    marginTop: 2,
   },
   tabs: {
     flexDirection: 'row',
