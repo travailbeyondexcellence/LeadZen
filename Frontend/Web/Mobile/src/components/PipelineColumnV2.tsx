@@ -21,6 +21,8 @@ interface PipelineColumnV2Props {
   leads: Lead[];
   onLeadPress?: (lead: Lead) => void;
   onDropLead?: (lead: Lead, stageId: string) => void;
+  onGlobalDropLead?: (lead: Lead, gestureState: any, evt?: any) => void;
+  onColumnLayout?: (stageId: string, layout: any) => void;
   isDropTarget?: boolean;
   isDragging?: boolean;
   onDragStart?: (lead: Lead) => void;
@@ -40,6 +42,8 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   leads,
   onLeadPress,
   onDropLead,
+  onGlobalDropLead,
+  onColumnLayout,
   isDropTarget = false,
   isDragging = false,
   onDragStart,
@@ -57,15 +61,28 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   // Measure column position for drop detection
   const columnRef = useRef<View>(null);
   
-  useEffect(() => {
+  // Measure column layout
+  const measureLayout = () => {
     if (columnRef.current) {
-      setTimeout(() => {
-        columnRef.current?.measureInWindow((x, y, width, height) => {
-          setLayout({ x, y, width, height });
-        });
-      }, 100);
+      columnRef.current.measureInWindow((x, y, width, height) => {
+        const newLayout = { x, y, width, height };
+        console.log(`📐 Column ${stageId} layout measured:`, newLayout);
+        setLayout(newLayout);
+        onColumnLayout?.(stageId, newLayout);
+      });
     }
-  }, []);
+  };
+
+  useEffect(() => {
+    // Use a longer delay to ensure layout is complete
+    const timeoutId = setTimeout(measureLayout, 300);
+    return () => clearTimeout(timeoutId);
+  }, [stageId, onColumnLayout, leads]);
+  
+  // Re-measure on layout changes
+  const handleColumnLayoutEvent = () => {
+    setTimeout(measureLayout, 50);
+  };
   
   // Animate drop target highlight
   useEffect(() => {
@@ -85,18 +102,44 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   }, [isDropTarget]);
   
   const handleDragEnd = (lead: Lead, gestureState: any) => {
-    // Calculate the drop position
-    const dropX = gestureState.moveX;
-    const dropY = gestureState.moveY;
+    console.log('🎯 Column handleDragEnd called for:', stageId, 'lead:', lead.name);
+    console.log('📍 gestureState:', {
+      moveX: gestureState.moveX,
+      moveY: gestureState.moveY,
+      x0: gestureState.x0,
+      y0: gestureState.y0
+    });
+    console.log('📐 Column layout:', layout);
+    
+    // Use absolute coordinates from gestureState
+    const dropX = gestureState.moveX || gestureState.x0;
+    const dropY = gestureState.moveY || gestureState.y0;
     
     // Check if dropped within this column's bounds
-    if (
+    const isWithinBounds = (
       dropX >= layout.x &&
       dropX <= layout.x + layout.width &&
       dropY >= layout.y &&
       dropY <= layout.y + layout.height
-    ) {
+    );
+    
+    console.log('🎯 Drop detection:', {
+      dropX,
+      dropY,
+      columnBounds: {
+        left: layout.x,
+        right: layout.x + layout.width,
+        top: layout.y,
+        bottom: layout.y + layout.height
+      },
+      isWithinBounds
+    });
+    
+    if (isWithinBounds) {
+      console.log('✅ Dropping lead in column:', stageId);
       onDropLead?.(lead, stageId);
+    } else {
+      console.log('❌ Drop outside column bounds');
     }
     
     onDragEnd?.();
@@ -130,6 +173,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
           borderLeftColor: color,
         }
       ]}
+      onLayout={handleColumnLayoutEvent}
     >
       {/* Column Header */}
       <View style={[styles.header, { backgroundColor: color + '15' }]}>
@@ -172,6 +216,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
               onPress={() => onLeadPress?.(lead)}
               onDragStart={() => handleDragStart(lead)}
               onDragEnd={handleDragEnd}
+              onGlobalDrop={onGlobalDropLead}
               onCall={onCall}
               onEmail={onEmail}
               onWhatsApp={onWhatsApp}

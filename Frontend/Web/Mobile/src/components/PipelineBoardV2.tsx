@@ -96,17 +96,134 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     }
   };
   
-  // Handle lead drop on a stage
-  const handleDropLead = async (lead: Lead, newStageId: string) => {
+  // Store column layouts for global drop detection
+  const [columnLayouts, setColumnLayouts] = useState<{[key: string]: any}>({});
+  
+  // Handle column layout updates
+  const handleColumnLayout = (stageId: string, layout: any) => {
+    console.log('📐 Column layout updated for', stageId, ':', layout);
+    setColumnLayouts(prev => ({
+      ...prev,
+      [stageId]: layout
+    }));
+  };
+  
+  // Re-measure layouts when scroll view layout changes
+  const handleScrollViewLayout = () => {
+    console.log('📐 ScrollView layout changed, triggering re-measurement');
+    // Trigger a re-measurement of all columns
+    setTimeout(() => {
+      setColumnLayouts({});
+    }, 100);
+  };
+  
+  // Handle lead drop on a stage with global detection
+  const handleGlobalDropLead = async (lead: Lead, gestureState: any, evt?: any) => {
+    console.log('🌍 Global drop detection started for:', lead.name);
+    console.log('📍 Drop coordinates from gestureState:', {
+      moveX: gestureState.moveX,
+      moveY: gestureState.moveY,
+      x0: gestureState.x0,
+      y0: gestureState.y0,
+      dx: gestureState.dx,
+      dy: gestureState.dy
+    });
+    
+    if (evt?.nativeEvent) {
+      console.log('📍 Drop coordinates from event:', {
+        pageX: evt.nativeEvent.pageX,
+        pageY: evt.nativeEvent.pageY,
+        locationX: evt.nativeEvent.locationX,
+        locationY: evt.nativeEvent.locationY
+      });
+    }
+    
+    console.log('📐 Available column layouts:', columnLayouts);
+    
+    // Try multiple coordinate calculation methods
+    let dropX, dropY;
+    
+    // Method 1: Use event page coordinates if available (most reliable)
+    if (evt?.nativeEvent?.pageX !== undefined) {
+      dropX = evt.nativeEvent.pageX;
+      dropY = evt.nativeEvent.pageY;
+      console.log('🎯 Using event page coordinates:', { dropX, dropY });
+    }
+    // Method 2: Calculate from gestureState (fallback)
+    else {
+      dropX = gestureState.x0 + gestureState.dx;
+      dropY = gestureState.y0 + gestureState.dy;
+      console.log('🎯 Using calculated coordinates:', { dropX, dropY });
+    }
+    
+    // Find which column the drop happened in
+    let targetStageId = null;
+    let bestMatch = null;
+    let minDistance = Infinity;
+    
+    for (const [stageId, layout] of Object.entries(columnLayouts)) {
+      if (layout && layout.x !== undefined) {
+        const isWithinBounds = (
+          dropX >= layout.x &&
+          dropX <= layout.x + layout.width &&
+          dropY >= layout.y &&
+          dropY <= layout.y + layout.height
+        );
+        
+        // Calculate distance to center of column for best match fallback
+        const centerX = layout.x + layout.width / 2;
+        const centerY = layout.y + layout.height / 2;
+        const distance = Math.sqrt(Math.pow(dropX - centerX, 2) + Math.pow(dropY - centerY, 2));
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          bestMatch = stageId;
+        }
+        
+        console.log(`🎯 Checking stage ${stageId}:`, {
+          dropX,
+          dropY,
+          bounds: {
+            left: layout.x,
+            right: layout.x + layout.width,
+            top: layout.y,
+            bottom: layout.y + layout.height
+          },
+          isWithinBounds,
+          distance,
+          centerX,
+          centerY
+        });
+        
+        if (isWithinBounds) {
+          targetStageId = stageId;
+          console.log('✅ Found exact target stage:', stageId);
+          break;
+        }
+      }
+    }
+    
+    // If no exact match but we have a best match within reasonable distance, use it
+    if (!targetStageId && bestMatch && minDistance < 200) {
+      targetStageId = bestMatch;
+      console.log('🎯 Using closest stage as fallback:', bestMatch, 'distance:', minDistance);
+    }
+    
+    if (!targetStageId) {
+      console.log('❌ No target stage found');
+      return;
+    }
+    
     const currentStage = statusToPipelineStage(lead.status);
     
-    if (currentStage === newStageId) {
-      // Dropped on the same stage, no action needed
+    if (currentStage === targetStageId) {
+      console.log('📍 Dropped on same stage, no action needed');
       return;
     }
     
     try {
-      const newStatus = pipelineStageToStatus(newStageId);
+      const newStatus = pipelineStageToStatus(targetStageId);
+      console.log('🔄 Updating lead status from', lead.status, 'to', newStatus);
       
       // Update in database
       await AsyncStorageService.updateLead(lead.id, { status: newStatus });
@@ -121,7 +238,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
       // Show success feedback
       Alert.alert(
         'Success',
-        `${lead.name} moved to ${PIPELINE_STAGES.find(s => s.id === newStageId)?.title}`,
+        `${lead.name} moved to ${PIPELINE_STAGES.find(s => s.id === targetStageId)?.title}`,
         [{ text: 'OK' }],
         { cancelable: true }
       );
@@ -129,6 +246,40 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
       console.error('Failed to update lead stage:', error);
       Alert.alert('Error', 'Failed to move lead. Please try again.');
       // Reload to restore correct state
+      await loadLeads();
+    }
+  };
+
+  // Legacy handler for individual column drops (fallback)
+  const handleDropLead = async (lead: Lead, newStageId: string) => {
+    console.log('🎯 Legacy handleDropLead called for:', lead.name, 'to stage:', newStageId);
+    
+    const currentStage = statusToPipelineStage(lead.status);
+    
+    if (currentStage === newStageId) {
+      return;
+    }
+    
+    try {
+      const newStatus = pipelineStageToStatus(newStageId);
+      
+      await AsyncStorageService.updateLead(lead.id, { status: newStatus });
+      
+      setLeads(prevLeads =>
+        prevLeads.map(l =>
+          l.id === lead.id ? { ...l, status: newStatus } : l
+        )
+      );
+      
+      Alert.alert(
+        'Success',
+        `${lead.name} moved to ${PIPELINE_STAGES.find(s => s.id === newStageId)?.title}`,
+        [{ text: 'OK' }],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.error('Failed to update lead stage:', error);
+      Alert.alert('Error', 'Failed to move lead. Please try again.');
       await loadLeads();
     }
   };
@@ -170,6 +321,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.boardContainer}
+        onLayout={handleScrollViewLayout}
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -188,6 +340,8 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
                 leads={stageLeads}
                 onLeadPress={onLeadPress}
                 onDropLead={handleDropLead}
+                onGlobalDropLead={handleGlobalDropLead}
+                onColumnLayout={handleColumnLayout}
                 isDropTarget={isDragging && targetStage === stage.id}
                 isDragging={isDragging}
                 onDragStart={handleDragStart}

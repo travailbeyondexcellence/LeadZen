@@ -21,6 +21,7 @@ interface DraggableLeadCardV2Props {
   lead: Lead;
   onDragStart?: () => void;
   onDragEnd?: (lead: Lead, gestureState: any) => void;
+  onGlobalDrop?: (lead: Lead, gestureState: any, evt?: any) => void;
   onPress?: () => void;
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
@@ -33,6 +34,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   lead,
   onDragStart,
   onDragEnd,
+  onGlobalDrop,
   onPress,
   onCall,
   onEmail,
@@ -75,7 +77,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       },
       
       onPanResponderMove: (evt, gestureState) => {
-        console.log('🏃 Drag Handle - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
+        console.log('🏃 Drag Handle - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy, 'pageX:', evt.nativeEvent.pageX, 'pageY:', evt.nativeEvent.pageY);
         pan.setValue({ x: gestureState.dx, y: gestureState.dy });
       },
       
@@ -89,7 +91,10 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           useNativeDriver: false,
         }).start();
         
-        // Call drag end with position
+        // Call global drop handler first (this does the actual drop logic)
+        onGlobalDrop?.(lead, gestureState, evt);
+        
+        // Then call drag end (this just cleans up UI state)
         onDragEnd?.(lead, gestureState);
         setIsDragging(false);
         
@@ -151,7 +156,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       },
       
       onPanResponderMove: (evt, gestureState) => {
-        console.log('🟠 Card - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
+        console.log('🟠 Card - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy, 'pageX:', evt.nativeEvent.pageX, 'pageY:', evt.nativeEvent.pageY);
         pan.setValue({ x: gestureState.dx, y: gestureState.dy });
       },
       
@@ -166,7 +171,10 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         }).start();
         
         if (isDragging) {
-          // Call drag end with position
+          // Call global drop handler first (this does the actual drop logic)
+          onGlobalDrop?.(lead, gestureState, evt);
+          
+          // Then call drag end (this just cleans up UI state)
           onDragEnd?.(lead, gestureState);
           setIsDragging(false);
           
