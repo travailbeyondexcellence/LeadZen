@@ -34,7 +34,9 @@ export const FloatingCallIcon: React.FC<FloatingCallIconProps> = ({
   // Animate icon appearance
   useEffect(() => {
     if (isVisible) {
-      console.log('[FLOATING_ICON] Showing floating call icon');
+      console.log('[FLOATING_ICON] 🎯 SHOWING floating call icon - Should be visible on screen!');
+      console.log('[FLOATING_ICON] Position:', position);
+      console.log('[FLOATING_ICON] Lead data:', leadData?.name || 'No lead');
       
       // Scale in animation
       Animated.spring(scaleAnim, {
@@ -42,12 +44,14 @@ export const FloatingCallIcon: React.FC<FloatingCallIconProps> = ({
         useNativeDriver: true,
         tension: 150,
         friction: 8,
-      }).start();
+      }).start(() => {
+        console.log('[FLOATING_ICON] ✅ Animation complete - Icon should be fully visible!');
+      });
 
       // Start pulsing animation
       startPulseAnimation();
     } else {
-      console.log('[FLOATING_ICON] Hiding floating call icon');
+      console.log('[FLOATING_ICON] ❌ HIDING floating call icon');
       
       // Scale out animation
       Animated.spring(scaleAnim, {
@@ -114,7 +118,12 @@ export const FloatingCallIcon: React.FC<FloatingCallIconProps> = ({
     return '?';
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    console.log('[FLOATING_ICON] 🚫 Component not rendering - isVisible is false');
+    return null;
+  }
+  
+  console.log('[FLOATING_ICON] 🎨 RENDERING FloatingCallIcon component!');
 
   return (
     <Animated.View
@@ -189,6 +198,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 999999,
     elevation: 1000,
+    backgroundColor: 'transparent', // Ensure no background blocking
   },
   iconContainer: {
     alignItems: 'center',

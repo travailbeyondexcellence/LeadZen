@@ -11,6 +11,7 @@ class CallDetectionService {
     this.currentCall = null;
     this.floatingCallManager = null;
     this.callStartTime = null;
+    this.lastCallPhoneNumber = null; // Store phone number from Incoming/Outgoing events
   }
 
   async start() {
@@ -82,6 +83,12 @@ class CallDetectionService {
       phoneNumber,
       timestamp: Date.now()
     };
+    
+    // Store phone number for use in subsequent events (Offhook, Disconnected)
+    if (phoneNumber && phoneNumber.trim()) {
+      this.lastCallPhoneNumber = phoneNumber;
+      console.log('[FLOATING_CALL] Stored phone number for call:', phoneNumber);
+    }
 
     switch (event) {
       case 'Incoming':
@@ -108,12 +115,29 @@ class CallDetectionService {
     console.log('[FLOATING_CALL] 📞 Incoming call from:', phoneNumber);
     
     try {
-      // Match phone number to lead
-      const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
-      console.log('[FLOATING_CALL] Match result:', matchResult);
+      // Handle empty phone number case
+      const effectivePhoneNumber = phoneNumber || 'Unknown Number';
+      console.log('[FLOATING_CALL] Using phone number:', effectivePhoneNumber);
       
-      // Trigger floating call overlay
-      await this.showFloatingCallOverlay(phoneNumber, 'incoming', matchResult);
+      // Match phone number to lead (only if we have a real number)
+      let matchResult = {
+        phoneNumber: effectivePhoneNumber,
+        normalizedNumber: effectivePhoneNumber,
+        matchedLeads: [],
+        matchConfidence: 'none',
+        multipleMatches: false,
+        hasMatch: false
+      };
+      
+      if (phoneNumber && phoneNumber.trim()) {
+        matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
+        console.log('[FLOATING_CALL] Match result:', matchResult);
+      } else {
+        console.log('[FLOATING_CALL] No phone number provided, showing unknown contact');
+      }
+      
+      // Always trigger floating call overlay
+      await this.showFloatingCallOverlay(effectivePhoneNumber, 'incoming', matchResult);
       
       // Legacy overlay for backward compatibility
       OverlayService.showCallOverlay(phoneNumber, 'incoming');
@@ -128,12 +152,29 @@ class CallDetectionService {
     console.log('[FLOATING_CALL] 📱 Outgoing call to:', phoneNumber);
     
     try {
-      // Match phone number to lead
-      const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
-      console.log('[FLOATING_CALL] Match result:', matchResult);
+      // Handle empty phone number case
+      const effectivePhoneNumber = phoneNumber || 'Unknown Number';
+      console.log('[FLOATING_CALL] Using phone number:', effectivePhoneNumber);
       
-      // Trigger floating call overlay
-      await this.showFloatingCallOverlay(phoneNumber, 'outgoing', matchResult);
+      // Match phone number to lead (only if we have a real number)
+      let matchResult = {
+        phoneNumber: effectivePhoneNumber,
+        normalizedNumber: effectivePhoneNumber,
+        matchedLeads: [],
+        matchConfidence: 'none',
+        multipleMatches: false,
+        hasMatch: false
+      };
+      
+      if (phoneNumber && phoneNumber.trim()) {
+        matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
+        console.log('[FLOATING_CALL] Match result:', matchResult);
+      } else {
+        console.log('[FLOATING_CALL] No phone number provided, showing unknown contact');
+      }
+      
+      // Always trigger floating call overlay
+      await this.showFloatingCallOverlay(effectivePhoneNumber, 'outgoing', matchResult);
       
       // Legacy overlay for backward compatibility
       OverlayService.showCallOverlay(phoneNumber, 'outgoing');
@@ -151,27 +192,44 @@ class CallDetectionService {
     this.callStartTime = Date.now();
     console.log('[FLOATING_CALL] 📋 Action: Call is now active, tracking start time');
     
-    // If we don't have a floating overlay yet and we have a phone number, show it
-    if (phoneNumber && !this.currentCall?.hasFloatingOverlay) {
-      console.log('[FLOATING_CALL] 📱 Showing floating overlay on call answer');
-      try {
-        // Match phone number to lead
-        const matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
-        console.log('[FLOATING_CALL] Match result on answer:', matchResult);
+    // Use stored phone number if current one is empty (common for Offhook events)
+    const effectivePhoneNumber = phoneNumber || this.lastCallPhoneNumber || 'Unknown Number';
+    console.log('[FLOATING_CALL] 📱 Using phone number for overlay:', effectivePhoneNumber);
+    
+    // Always try to show floating overlay on call answer (for cases where Incoming/Outgoing events were missed)
+    try {
+      // If we don't already have a floating overlay active, show it
+      if (!this.currentCall?.hasFloatingOverlay) {
+        // Match phone number to lead (only if we have a real number)
+        let matchResult = {
+          phoneNumber: effectivePhoneNumber,
+          normalizedNumber: effectivePhoneNumber,
+          matchedLeads: [],
+          matchConfidence: 'none',
+          multipleMatches: false,
+          hasMatch: false
+        };
         
-        // Determine call type based on current call state
-        const callType = this.currentCall?.event === 'Incoming' ? 'incoming' : 'outgoing';
+        if (effectivePhoneNumber && effectivePhoneNumber !== 'Unknown Number') {
+          matchResult = await PhoneMatchingService.matchPhoneToLead(effectivePhoneNumber);
+          console.log('[FLOATING_CALL] Match result on answer:', matchResult);
+        }
+        
+        // Determine call type - default to incoming if unknown
+        const callType = this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming';
         
         // Trigger floating call overlay
-        await this.showFloatingCallOverlay(phoneNumber, callType, matchResult);
+        await this.showFloatingCallOverlay(effectivePhoneNumber, callType, matchResult);
         
         // Mark that we've shown the overlay for this call
         if (this.currentCall) {
           this.currentCall.hasFloatingOverlay = true;
         }
-      } catch (error) {
-        console.error('[FLOATING_CALL] Error handling call answer:', error);
+      } else {
+        console.log('[FLOATING_CALL] Floating overlay already active for this call');
       }
+    } catch (error) {
+      console.error('[FLOATING_CALL] Error handling call answer:', error);
     }
   }
 
@@ -183,7 +241,10 @@ class CallDetectionService {
     OverlayService.showPostCallTray(callDuration);
     console.log('📋 Action: Showing post-call tray with duration:', callDuration);
     
+    // Clear call state
     this.currentCall = null;
+    this.lastCallPhoneNumber = null;
+    this.callStartTime = null;
   }
 
   handleMissedCall(phoneNumber) {

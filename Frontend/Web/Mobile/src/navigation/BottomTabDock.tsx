@@ -87,9 +87,13 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
       <View style={styles.dockWrapper}>
         {/* Gradient platform behind icons */}
         <View style={[styles.platform, styles.gradientBackground]}>
-          {/* Native gradient background using multiple colored views */}
-          <View style={styles.gradientLeft} />
-          <View style={styles.gradientRight} />
+          {/* Proper gradient using multiple overlapping layers */}
+          <View style={styles.gradientBase} />
+          <View style={styles.gradientLayer1} />
+          <View style={styles.gradientLayer2} />
+          <View style={styles.gradientLayer3} />
+          <View style={styles.gradientLayer4} />
+          <View style={styles.gradientLayer5} />
           {/* Trapezium perspective overlay */}
           {/* <View style={styles.perspectiveOverlay} /> */}
         </View>
@@ -182,26 +186,62 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
   },
-  // Native gradient styles to replace LinearGradient
+  // Proper CSS-style gradient using overlapping layers
   gradientBackground: {
     overflow: 'hidden',
   },
-  gradientLeft: {
+  gradientBase: {
     position: 'absolute',
     left: 0,
     top: 0,
-    bottom: 0,
-    width: '50%',
-    backgroundColor: '#e3ffe7', // Light green
-  },
-  gradientRight: {
-    position: 'absolute',
     right: 0,
-    top: 0,
     bottom: 0,
-    width: '50%',
+    backgroundColor: '#e3ffe7', // Light green base
+  },
+  gradientLayer1: {
+    position: 'absolute',
+    left: '20%',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#e0f2ff', // Light green-blue
+    opacity: 0.3,
+  },
+  gradientLayer2: {
+    position: 'absolute',
+    left: '40%',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#ddeaff', // Light blue-green
+    opacity: 0.4,
+  },
+  gradientLayer3: {
+    position: 'absolute',
+    left: '60%',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#dae4ff', // More blue
+    opacity: 0.5,
+  },
+  gradientLayer4: {
+    position: 'absolute',
+    left: '80%',
+    top: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#d9e7ff', // Light blue
-    opacity: 0.7, // Blend the colors
+    opacity: 0.6,
+  },
+  gradientLayer5: {
+    position: 'absolute',
+    left: '90%',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#d9e7ff', // Full light blue
+    opacity: 0.8,
   },
 });
 

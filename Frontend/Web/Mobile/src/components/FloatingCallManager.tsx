@@ -44,12 +44,15 @@ export const FloatingCallManager: React.FC<FloatingCallManagerProps> = ({
   // Handle showing call overlay from CallDetectionService
   const handleShowCallOverlay = async (callData: CallData) => {
     try {
-      console.log('[FLOATING_MANAGER] Showing call overlay:', callData);
+      console.log('[FLOATING_MANAGER] 🎯 SHOWING call overlay:', callData);
+      console.log('[FLOATING_MANAGER] 📱 Setting states: iconVisible=true, overlayVisible=true, expanded=false');
       
       setCurrentCallData(callData);
       setIsIconVisible(true);
       setIsOverlayVisible(true);
       setIsOverlayExpanded(false); // Start with icon only
+      
+      console.log('[FLOATING_MANAGER] ✅ State updated - Icon should appear now!');
       
       return true;
     } catch (error) {

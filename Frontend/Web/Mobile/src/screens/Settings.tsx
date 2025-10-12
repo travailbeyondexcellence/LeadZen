@@ -242,6 +242,33 @@ const Settings: React.FC = () => {
       Alert.alert('Error', `Failed to simulate ${callType} call: ` + error.message);
     }
   };
+  
+  const handleForceShowIcon = () => {
+    Alert.alert(
+      'Permission Check',
+      'This will help debug if the floating overlay is working. Make sure you have enabled "Display over other apps" permission in Settings > Apps > LeadZen > Permissions.\n\nContinue with test?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Test Icon', 
+          onPress: async () => {
+            try {
+              console.log('[SETTINGS] 🔍 Force showing floating icon for debugging...');
+              const result = await CallDetectionService.testFloatingOverlay('+919876543210');
+              
+              Alert.alert(
+                'Debug Test',
+                'Test completed. Check your screen for the floating icon.\n\nIf you don\'t see it:\n1. Check "Display over other apps" permission\n2. Look at the Metro logs for error messages\n3. Try calling again',
+                [{ text: 'OK' }]
+              );
+            } catch (error) {
+              Alert.alert('Error', 'Test failed: ' + error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -432,6 +459,14 @@ const Settings: React.FC = () => {
             'phone-outgoing',
             () => handleSimulateCall('Outgoing'),
             Colors.semantic.info
+          )}
+          
+          {renderActionRow(
+            'Force Show Floating Icon',
+            'Force show the floating icon (bypass permissions)',
+            'eye',
+            handleForceShowIcon,
+            Colors.semantic.warning
           )}
         </View>
 
