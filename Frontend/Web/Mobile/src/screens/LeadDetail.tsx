@@ -9,6 +9,8 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  TextInput,
+  Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -31,6 +33,8 @@ const LeadDetail: React.FC = () => {
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'activity' | 'reminders'>('info');
+  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
+  const [newNote, setNewNote] = useState('');
   
   useEffect(() => {
     loadLead();
@@ -116,6 +120,38 @@ const LeadDetail: React.FC = () => {
         },
       ]
     );
+  };
+  
+  const handleAddNote = async () => {
+    if (!newNote.trim()) {
+      Alert.alert('Error', 'Please enter a note');
+      return;
+    }
+    
+    try {
+      const currentNotes = lead?.notes || '';
+      const timestamp = new Date().toLocaleString();
+      const noteWithTimestamp = `[${timestamp}] ${newNote.trim()}`;
+      const updatedNotes = currentNotes 
+        ? `${currentNotes}\n\n${noteWithTimestamp}`
+        : noteWithTimestamp;
+      
+      await AsyncStorageService.updateLead(leadId, {
+        notes: updatedNotes
+      });
+      
+      // Update local state
+      setLead(prev => prev ? { ...prev, notes: updatedNotes } : null);
+      
+      // Reset and close modal
+      setNewNote('');
+      setShowAddNoteModal(false);
+      
+      Alert.alert('Success', 'Note added successfully');
+    } catch (error) {
+      console.error('Failed to add note:', error);
+      Alert.alert('Error', 'Failed to add note');
+    }
   };
   
   const renderInfoTab = () => (
@@ -249,7 +285,7 @@ const LeadDetail: React.FC = () => {
         </Text>
       </View>
       
-      <TouchableOpacity style={styles.addNoteButton} onPress={handleEdit}>
+      <TouchableOpacity style={styles.addNoteButton} onPress={() => setShowAddNoteModal(true)}>
         <Text style={styles.addNoteIcon}>📝</Text>
         <Text style={styles.addNoteText}>Add Note</Text>
       </TouchableOpacity>
@@ -351,7 +387,10 @@ const LeadDetail: React.FC = () => {
           {/* Edit/Delete Buttons */}
           <View style={styles.editDeleteButtons}>
             <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-              <Text style={styles.editButtonText}>✏️ Edit</Text>
+              <View style={styles.editButtonContent}>
+                <Text style={styles.editButtonIcon}>✏️</Text>
+                <Text style={styles.editButtonText}>Edit</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteIconButton} onPress={handleDelete}>
               <Icon name="delete" size={20} color="#fff" />
@@ -429,6 +468,39 @@ const LeadDetail: React.FC = () => {
         {activeTab === 'activity' && renderActivityTab()}
         {activeTab === 'reminders' && renderRemindersTab()}
       </ScrollView>
+      
+      {/* Add Note Modal */}
+      <Modal
+        visible={showAddNoteModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAddNoteModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowAddNoteModal(false)}>
+              <Text style={styles.modalCancelButton}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Add Note</Text>
+            <TouchableOpacity onPress={handleAddNote}>
+              <Text style={styles.modalSaveButton}>Save</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.modalContent}>
+            <TextInput
+              style={styles.noteInput}
+              value={newNote}
+              onChangeText={setNewNote}
+              placeholder="Enter your note here..."
+              multiline
+              numberOfLines={8}
+              textAlignVertical="top"
+              autoFocus
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -513,6 +585,14 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     alignItems: 'center',
   },
+  editButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editButtonIcon: {
+    fontSize: 14,
+    marginRight: Spacing.xs,
+  },
   editButtonText: {
     fontSize: 14,
     color: Colors.white,
@@ -521,7 +601,7 @@ const styles = StyleSheet.create({
   deleteIconButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BorderRadius.sm,
     backgroundColor: Colors.semantic.error,
     justifyContent: 'center',
     alignItems: 'center',
@@ -697,6 +777,46 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.text.secondary,
     textAlign: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: Colors.background.primary,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border.light,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text.primary,
+  },
+  modalCancelButton: {
+    fontSize: 16,
+    color: Colors.text.secondary,
+  },
+  modalSaveButton: {
+    fontSize: 16,
+    color: Colors.primary.base,
+    fontWeight: '600',
+  },
+  modalContent: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  noteInput: {
+    flex: 1,
+    backgroundColor: Colors.background.secondary,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    fontSize: 16,
+    color: Colors.text.primary,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
   },
   labelsList: {
     flexDirection: 'row',
