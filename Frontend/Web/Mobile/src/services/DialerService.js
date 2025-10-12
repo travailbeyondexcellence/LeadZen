@@ -106,7 +106,7 @@ class DialerService {
       const lead = allLeads.find(l => l.phone === phoneNumber);
       
       const callLog = {
-        lead_id: lead ? lead.id : null,
+        lead_id: lead ? parseInt(lead.id) : null,
         phone_number: phoneNumber,
         call_type: 'outgoing',
         call_status: 'initiated',

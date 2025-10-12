@@ -3,7 +3,7 @@ import { demoLeads } from '../data/demoLeads';
 
 export interface CallLog {
   id?: number;
-  lead_id: number;
+  lead_id?: number | null;
   phone_number: string;
   call_type: 'incoming' | 'outgoing' | 'missed';
   call_status?: 'completed' | 'no_answer' | 'busy' | 'failed';
@@ -171,12 +171,14 @@ class MockDatabaseService {
       
       this.callLogs.push(newCallLog);
       
-      // Update lead's last contact date
-      const leadId = callLog.lead_id.toString();
-      const lead = this.leads.find(l => l.id === leadId);
-      if (lead) {
-        lead.lastContactedAt = callLog.started_at;
-        lead.updatedAt = new Date();
+      // Update lead's last contact date (only if lead_id exists)
+      if (callLog.lead_id !== null && callLog.lead_id !== undefined) {
+        const leadId = callLog.lead_id.toString();
+        const lead = this.leads.find(l => l.id === leadId);
+        if (lead) {
+          lead.lastContactedAt = callLog.started_at;
+          lead.updatedAt = new Date();
+        }
       }
       
       return newCallLog.id!;
