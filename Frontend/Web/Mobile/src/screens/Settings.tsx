@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 import CallDetectionService from '../services/CallDetectionService';
+import NativeFloatingOverlay from '../services/NativeFloatingOverlay';
 
 interface AppSettings {
   // App Preferences
@@ -269,6 +270,33 @@ const Settings: React.FC = () => {
       ]
     );
   };
+  
+  const handleTestNativeOverlay = async () => {
+    try {
+      console.log('[SETTINGS] Testing native overlay...');
+      
+      if (!NativeFloatingOverlay.isAvailable()) {
+        Alert.alert('Error', 'Native floating overlay module is not available. Make sure the app is rebuilt after adding native code.');
+        return;
+      }
+      
+      const result = await NativeFloatingOverlay.showFloatingOverlay('+919876543210', 'John Doe');
+      
+      if (result) {
+        Alert.alert(
+          'Native Overlay Test',
+          'Native overlay should now be visible over ANY app (including dialer).\n\nTry:\n1. Open phone dialer\n2. Look for floating overlay\n3. Tap it to expand\n\nThis will work during real calls!',
+          [
+            { text: 'Hide Overlay', onPress: () => NativeFloatingOverlay.hideFloatingOverlay() },
+            { text: 'Keep Testing', style: 'cancel' }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('[SETTINGS] Error testing native overlay:', error);
+      Alert.alert('Error', 'Failed to test native overlay: ' + error.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -467,6 +495,14 @@ const Settings: React.FC = () => {
             'eye',
             handleForceShowIcon,
             Colors.semantic.warning
+          )}
+          
+          {renderActionRow(
+            'Test Native Overlay (Over Dialer)',
+            'Test the native Android overlay over dialer',
+            'android',
+            handleTestNativeOverlay,
+            Colors.accent.amber
           )}
         </View>
 

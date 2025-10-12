@@ -41,5 +41,12 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      
+      <!-- Floating Overlay Service -->
+      <service
+        android:name=".FloatingOverlayService"
+        android:enabled="true"
+        android:exported="false" />
+        
     </application>
 </manifest>

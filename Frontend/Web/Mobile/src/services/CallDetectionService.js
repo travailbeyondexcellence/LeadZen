@@ -3,6 +3,7 @@ import PermissionService from './PermissionService';
 import OverlayService from './OverlayService';
 import PhoneMatchingService from './PhoneMatchingService';
 import PermissionManager from './PermissionManager';
+import NativeFloatingOverlay from './NativeFloatingOverlay';
 
 class CallDetectionService {
   constructor() {
@@ -12,11 +13,32 @@ class CallDetectionService {
     this.floatingCallManager = null;
     this.callStartTime = null;
     this.lastCallPhoneNumber = null; // Store phone number from Incoming/Outgoing events
+    this.nativeOverlayActive = false;
+    this.setupNativeOverlayListener();
+  }
+  
+  setupNativeOverlayListener() {
+    // Listen for native overlay clicks
+    this.overlayClickCleanup = NativeFloatingOverlay.onOverlayClick(() => {
+      console.log('[CALL_DETECTION] Native overlay clicked - expanding React Native overlay');
+      
+      // Show the React Native overlay when native overlay is clicked
+      if (this.floatingCallManager && this.lastCallPhoneNumber) {
+        this.showFloatingCallOverlay(
+          this.lastCallPhoneNumber,
+          this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming',
+          null // Will fetch match result again
+        );
+      }
+    });
   }
 
   async start() {
     try {
       console.log('🚀 Starting call detection service...');
+      
+      // Check native overlay availability
+      console.log('[CALL_DETECTION] Native overlay available:', NativeFloatingOverlay.isAvailable());
       
       // Check if we have required permissions using new PermissionManager
       const hasPermissions = await PermissionManager.validatePermissions();
@@ -129,15 +151,29 @@ class CallDetectionService {
         hasMatch: false
       };
       
+      let leadName = 'Unknown Contact';
       if (phoneNumber && phoneNumber.trim()) {
         matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
         console.log('[FLOATING_CALL] Match result:', matchResult);
+        
+        // Get lead name for native overlay
+        if (matchResult.hasMatch && matchResult.matchedLeads.length > 0) {
+          leadName = matchResult.matchedLeads[0].name || 'Unknown Contact';
+        }
       } else {
         console.log('[FLOATING_CALL] No phone number provided, showing unknown contact');
       }
       
-      // Always trigger floating call overlay
-      await this.showFloatingCallOverlay(effectivePhoneNumber, 'incoming', matchResult);
+      // Show NATIVE overlay over dialer
+      if (NativeFloatingOverlay.isAvailable()) {
+        console.log('[FLOATING_CALL] 🎯 Showing NATIVE overlay over dialer');
+        await NativeFloatingOverlay.showFloatingOverlay(effectivePhoneNumber, leadName);
+        this.nativeOverlayActive = true;
+      } else {
+        console.log('[FLOATING_CALL] Native overlay not available, using React Native overlay');
+        // Fallback to React Native overlay
+        await this.showFloatingCallOverlay(effectivePhoneNumber, 'incoming', matchResult);
+      }
       
       // Legacy overlay for backward compatibility
       OverlayService.showCallOverlay(phoneNumber, 'incoming');
@@ -166,15 +202,29 @@ class CallDetectionService {
         hasMatch: false
       };
       
+      let leadName = 'Unknown Contact';
       if (phoneNumber && phoneNumber.trim()) {
         matchResult = await PhoneMatchingService.matchPhoneToLead(phoneNumber);
         console.log('[FLOATING_CALL] Match result:', matchResult);
+        
+        // Get lead name for native overlay
+        if (matchResult.hasMatch && matchResult.matchedLeads.length > 0) {
+          leadName = matchResult.matchedLeads[0].name || 'Unknown Contact';
+        }
       } else {
         console.log('[FLOATING_CALL] No phone number provided, showing unknown contact');
       }
       
-      // Always trigger floating call overlay
-      await this.showFloatingCallOverlay(effectivePhoneNumber, 'outgoing', matchResult);
+      // Show NATIVE overlay over dialer
+      if (NativeFloatingOverlay.isAvailable()) {
+        console.log('[FLOATING_CALL] 🎯 Showing NATIVE overlay over dialer');
+        await NativeFloatingOverlay.showFloatingOverlay(effectivePhoneNumber, leadName);
+        this.nativeOverlayActive = true;
+      } else {
+        console.log('[FLOATING_CALL] Native overlay not available, using React Native overlay');
+        // Fallback to React Native overlay
+        await this.showFloatingCallOverlay(effectivePhoneNumber, 'outgoing', matchResult);
+      }
       
       // Legacy overlay for backward compatibility
       OverlayService.showCallOverlay(phoneNumber, 'outgoing');
@@ -210,16 +260,31 @@ class CallDetectionService {
           hasMatch: false
         };
         
+        let leadName = 'Unknown Contact';
         if (effectivePhoneNumber && effectivePhoneNumber !== 'Unknown Number') {
           matchResult = await PhoneMatchingService.matchPhoneToLead(effectivePhoneNumber);
           console.log('[FLOATING_CALL] Match result on answer:', matchResult);
+          
+          // Get lead name for native overlay
+          if (matchResult.hasMatch && matchResult.matchedLeads.length > 0) {
+            leadName = matchResult.matchedLeads[0].name || 'Unknown Contact';
+          }
         }
         
-        // Determine call type - default to incoming if unknown
-        const callType = this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming';
-        
-        // Trigger floating call overlay
-        await this.showFloatingCallOverlay(effectivePhoneNumber, callType, matchResult);
+        // Show NATIVE overlay over dialer FIRST
+        if (NativeFloatingOverlay.isAvailable()) {
+          console.log('[FLOATING_CALL] 🎯 Showing NATIVE overlay over dialer from handleCallAnswered');
+          await NativeFloatingOverlay.showFloatingOverlay(effectivePhoneNumber, leadName);
+          this.nativeOverlayActive = true;
+        } else {
+          console.log('[FLOATING_CALL] Native overlay not available, using React Native overlay');
+          
+          // Determine call type - default to incoming if unknown
+          const callType = this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming';
+          
+          // Fallback to React Native overlay
+          await this.showFloatingCallOverlay(effectivePhoneNumber, callType, matchResult);
+        }
         
         // Mark that we've shown the overlay for this call
         if (this.currentCall) {
@@ -235,6 +300,13 @@ class CallDetectionService {
 
   handleCallEnded(phoneNumber) {
     console.log('📴 Call ended with:', phoneNumber);
+    
+    // Hide native overlay
+    if (this.nativeOverlayActive && NativeFloatingOverlay.isAvailable()) {
+      console.log('[FLOATING_CALL] Hiding native overlay after call ended');
+      NativeFloatingOverlay.hideFloatingOverlay();
+      this.nativeOverlayActive = false;
+    }
     
     // Calculate call duration and show post-call tray
     const callDuration = OverlayService.getCallDuration();
