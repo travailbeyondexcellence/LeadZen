@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -45,6 +45,21 @@ const LeadDetail: React.FC = () => {
       loadNotes();
     }
   }, [leadId]);
+  
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', marginRight: 10 }}>
+          <TouchableOpacity onPress={handleEdit} style={{ marginRight: 15 }}>
+            <Icon name="account-edit" size={24} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete}>
+            <Icon name="delete" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [navigation, handleEdit, handleDelete]);
   
   const loadLead = async () => {
     try {
@@ -399,19 +414,6 @@ const LeadDetail: React.FC = () => {
           <Text style={styles.profileName}>{lead.name}</Text>
           {lead.position && <Text style={styles.profilePosition}>{lead.position}</Text>}
           {lead.company && <Text style={styles.profileCompany}>{lead.company}</Text>}
-          
-          {/* Edit/Delete Buttons */}
-          <View style={styles.editDeleteButtons}>
-            <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-              <View style={styles.editButtonContent}>
-                <Text style={styles.editButtonIcon}>✏️</Text>
-                <Text style={styles.editButtonText}>Edit</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteIconButton} onPress={handleDelete}>
-              <Icon name="delete" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
         </View>
         
         {/* Right Side - Action Icons Grid */}
@@ -526,13 +528,13 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     flexDirection: 'row',
+    justifyContent: 'space-evenly',
     padding: Spacing.lg,
     backgroundColor: Colors.background.card,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border.light,
   },
   contactInfo: {
-    flex: 1,
     paddingRight: Spacing.lg,
   },
   avatar: {
@@ -565,46 +567,12 @@ const styles = StyleSheet.create({
     color: Colors.text.tertiary,
     marginBottom: Spacing.md,
   },
-  editDeleteButtons: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    alignItems: 'center',
-  },
-  editButton: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    backgroundColor: Colors.primary.base,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  editButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  editButtonIcon: {
-    fontSize: 14,
-    marginRight: Spacing.xs,
-  },
-  editButtonText: {
-    fontSize: 14,
-    color: Colors.white,
-    fontWeight: '600',
-  },
-  deleteIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.sm,
-    backgroundColor: Colors.semantic.error,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   actionIconsGrid: {
-    width: 120,
-    justifyContent: 'center',
+    justifyContent: 'space-evenly',
   },
   actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     marginBottom: Spacing.sm,
   },
   actionIconButton: {
@@ -613,6 +581,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
