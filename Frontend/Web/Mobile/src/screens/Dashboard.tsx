@@ -420,7 +420,8 @@ const styles = StyleSheet.create({
   },
   pipelineOverview: {
     paddingHorizontal: 16,
-    marginBottom: 24,
+    marginBottom: 32,
+    zIndex: 10,
   },
   pipelineHeader: {
     flexDirection: 'row',
@@ -446,11 +447,13 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     borderTopWidth: 4,
-    elevation: 3,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
+    zIndex: 15,
+    marginBottom: 8,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -503,6 +506,7 @@ const styles = StyleSheet.create({
   quickActions: {
     paddingHorizontal: 16,
     paddingBottom: 20,
+    zIndex: 5,
   },
   sectionTitle: {
     fontSize: 20,

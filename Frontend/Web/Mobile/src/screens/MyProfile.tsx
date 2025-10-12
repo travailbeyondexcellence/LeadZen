@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   ActionSheetIOS,
   Platform,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary, launchCamera, MediaType } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,6 +35,7 @@ interface UserProfile {
 const STORAGE_KEY = '@leadzen_user_profile';
 
 const MyProfile: React.FC = () => {
+  const navigation = useNavigation();
   const [profile, setProfile] = useState<UserProfile>({
     fullName: '',
     jobTitle: '',
@@ -48,10 +50,21 @@ const MyProfile: React.FC = () => {
   const [errors, setErrors] = useState<Partial<UserProfile>>({});
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     loadProfile();
   }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => setIsEditing(!isEditing)} style={{ marginRight: 10 }}>
+          <Icon name={isEditing ? "check" : "account-edit"} size={24} color="#fff" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, isEditing]);
 
   const loadProfile = async () => {
     try {
@@ -91,6 +104,7 @@ const MyProfile: React.FC = () => {
       
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProfile));
       setProfile(updatedProfile);
+      setIsEditing(false);
       Alert.alert('Success', 'Profile saved successfully!');
     } catch (error) {
       console.error('Failed to save profile:', error);
@@ -210,7 +224,11 @@ const MyProfile: React.FC = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Profile Picture Section */}
         <View style={styles.avatarSection}>
-          <TouchableOpacity style={styles.avatarContainer} onPress={handleImagePicker}>
+          <TouchableOpacity 
+            style={styles.avatarContainer} 
+            onPress={isEditing ? handleImagePicker : undefined}
+            disabled={!isEditing}
+          >
             {profile.avatarUri ? (
               <Image source={{ uri: profile.avatarUri }} style={styles.avatar} />
             ) : (
@@ -220,70 +238,153 @@ const MyProfile: React.FC = () => {
                 </Text>
               </View>
             )}
-            <View style={styles.cameraIcon}>
-              <Icon name="camera" size={16} color={Colors.white} />
-            </View>
+            {isEditing && (
+              <View style={styles.cameraIcon}>
+                <Icon name="camera" size={16} color={Colors.white} />
+              </View>
+            )}
           </TouchableOpacity>
-          <Text style={styles.avatarHint}>Tap to change profile picture</Text>
+          {isEditing && <Text style={styles.avatarHint}>Tap to change profile picture</Text>}
         </View>
 
-        {/* Personal Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
-          
-          <Input
-            label="Full Name"
-            value={profile.fullName}
-            onChangeText={(value) => updateProfile('fullName', value)}
-            placeholder="Enter your full name"
-            error={errors.fullName}
-            required
-          />
-          
-          <Input
-            label="Job Title"
-            value={profile.jobTitle}
-            onChangeText={(value) => updateProfile('jobTitle', value)}
-            placeholder="e.g. Sales Manager, CEO"
-          />
-          
-          <Input
-            label="Company"
-            value={profile.company}
-            onChangeText={(value) => updateProfile('company', value)}
-            placeholder="Enter your company name"
-          />
-          
-          <Input
-            label="Email Address"
-            value={profile.email}
-            onChangeText={(value) => updateProfile('email', value)}
-            placeholder="Enter your email address"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-          />
-          
-          <Input
-            label="Phone Number"
-            value={profile.phone}
-            onChangeText={(value) => updateProfile('phone', value)}
-            placeholder="Enter your phone number"
-            keyboardType="phone-pad"
-          />
-          
-          <Input
-            label="Bio"
-            value={profile.bio}
-            onChangeText={(value) => updateProfile('bio', value)}
-            placeholder="Tell us about yourself..."
-            multiline
-            numberOfLines={3}
-            style={styles.bioInput}
-          />
-        </View>
+        {isEditing ? (
+          <>
+            {/* Personal Information Form */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
+              
+              <Input
+                label="Full Name"
+                value={profile.fullName}
+                onChangeText={(value) => updateProfile('fullName', value)}
+                placeholder="Enter your full name"
+                error={errors.fullName}
+                required
+              />
+              
+              <Input
+                label="Job Title"
+                value={profile.jobTitle}
+                onChangeText={(value) => updateProfile('jobTitle', value)}
+                placeholder="e.g. Sales Manager, CEO"
+              />
+              
+              <Input
+                label="Company"
+                value={profile.company}
+                onChangeText={(value) => updateProfile('company', value)}
+                placeholder="Enter your company name"
+              />
+              
+              <Input
+                label="Email Address"
+                value={profile.email}
+                onChangeText={(value) => updateProfile('email', value)}
+                placeholder="Enter your email address"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={errors.email}
+              />
+              
+              <Input
+                label="Phone Number"
+                value={profile.phone}
+                onChangeText={(value) => updateProfile('phone', value)}
+                placeholder="Enter your phone number"
+                keyboardType="phone-pad"
+              />
+              
+              <Input
+                label="Bio"
+                value={profile.bio}
+                onChangeText={(value) => updateProfile('bio', value)}
+                placeholder="Tell us about yourself..."
+                multiline
+                numberOfLines={3}
+                style={styles.bioInput}
+              />
+            </View>
 
-        {/* Account Information */}
+            {/* Save Button */}
+            <View style={styles.buttonContainer}>
+              <Button
+                title="Save Profile"
+                onPress={handleSave}
+                loading={loading}
+                fullWidth
+              />
+            </View>
+          </>
+        ) : (
+          <>
+            {/* Profile Display Card */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
+              
+              {profile.fullName ? (
+                <View style={styles.profileRow}>
+                  <Icon name="account" size={20} color={Colors.primary.base} />
+                  <View style={styles.profileContent}>
+                    <Text style={styles.profileLabel}>Full Name</Text>
+                    <Text style={styles.profileValue}>{profile.fullName}</Text>
+                  </View>
+                </View>
+              ) : null}
+              
+              {profile.jobTitle ? (
+                <View style={styles.profileRow}>
+                  <Icon name="briefcase" size={20} color={Colors.primary.base} />
+                  <View style={styles.profileContent}>
+                    <Text style={styles.profileLabel}>Job Title</Text>
+                    <Text style={styles.profileValue}>{profile.jobTitle}</Text>
+                  </View>
+                </View>
+              ) : null}
+              
+              {profile.company ? (
+                <View style={styles.profileRow}>
+                  <Icon name="domain" size={20} color={Colors.primary.base} />
+                  <View style={styles.profileContent}>
+                    <Text style={styles.profileLabel}>Company</Text>
+                    <Text style={styles.profileValue}>{profile.company}</Text>
+                  </View>
+                </View>
+              ) : null}
+              
+              {profile.email ? (
+                <View style={styles.profileRow}>
+                  <Icon name="email" size={20} color={Colors.primary.base} />
+                  <View style={styles.profileContent}>
+                    <Text style={styles.profileLabel}>Email</Text>
+                    <Text style={styles.profileValue}>{profile.email}</Text>
+                  </View>
+                </View>
+              ) : null}
+              
+              {profile.phone ? (
+                <View style={styles.profileRow}>
+                  <Icon name="phone" size={20} color={Colors.primary.base} />
+                  <View style={styles.profileContent}>
+                    <Text style={styles.profileLabel}>Phone</Text>
+                    <Text style={styles.profileValue}>{profile.phone}</Text>
+                  </View>
+                </View>
+              ) : null}
+              
+              {profile.bio ? (
+                <View style={styles.profileRow}>
+                  <Icon name="text" size={20} color={Colors.primary.base} />
+                  <View style={styles.profileContent}>
+                    <Text style={styles.profileLabel}>Bio</Text>
+                    <Text style={styles.profileValue}>{profile.bio}</Text>
+                  </View>
+                </View>
+              ) : null}
+            </View>
+          </>
+        )}
+
+        {/* Account Information - Always Visible */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account Information</Text>
           
@@ -310,16 +411,6 @@ const MyProfile: React.FC = () => {
               <Text style={[styles.infoValue, { color: Colors.semantic.success }]}>Active</Text>
             </View>
           </View>
-        </View>
-
-        {/* Save Button */}
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Save Profile"
-            onPress={handleSave}
-            loading={loading}
-            fullWidth
-          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -432,6 +523,28 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: Spacing.lg,
     marginBottom: Spacing['3xl'],
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border.light,
+    marginBottom: Spacing.sm,
+  },
+  profileContent: {
+    marginLeft: Spacing.md,
+    flex: 1,
+  },
+  profileLabel: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    marginBottom: 2,
+  },
+  profileValue: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.text.primary,
   },
 });
 
