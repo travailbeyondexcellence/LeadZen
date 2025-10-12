@@ -198,8 +198,8 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={!isDragging}
-        nestedScrollEnabled={false}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
         keyboardShouldPersistTaps="handled"
       >
         {leads.length === 0 ? (

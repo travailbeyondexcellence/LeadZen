@@ -130,14 +130,20 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
     })
   ).current;
 
-  // Main card PanResponder - immediate response
+  // Main card PanResponder - selective capture
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
-        console.log('🟢 Card - Immediate capture', lead.name);
-        return true; // Start drag immediately on touch
+        console.log('🟢 Card - Touch detected', lead.name);
+        return false; // Let movement decide
       },
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const { dx, dy } = gestureState;
+        // Only capture if horizontal movement is dominant (allows vertical scroll)
+        const isHorizontalDrag = Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 5;
+        console.log('🔵 Card - Movement check', lead.name, 'dx:', dx, 'dy:', dy, 'horizontal:', isHorizontalDrag);
+        return isHorizontalDrag;
+      },
       onPanResponderTerminationRequest: () => false, // Don't allow termination
       
       onPanResponderGrant: (evt, gestureState) => {

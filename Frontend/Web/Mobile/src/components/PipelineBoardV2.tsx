@@ -127,35 +127,34 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     const currentStage = statusToPipelineStage(lead.status);
     console.log('📍 Current stage:', currentStage);
     
+    // Get correct stage order from PIPELINE_STAGES
+    const stageIds = PIPELINE_STAGES.map(stage => stage.id);
+    const currentIndex = stageIds.findIndex(id => id === currentStage);
+    
+    console.log('📋 Pipeline order:', stageIds);
+    console.log('📍 Current index:', currentIndex);
+    
+    if (currentIndex === -1) {
+      console.log('❌ Current stage not found in pipeline stages');
+      return;
+    }
+    
     // Determine new stage based on direction
+    let newStageIndex = currentIndex;
     let newStage = currentStage;
     
     if (gestureState.dx > 50) {
       // Dragged RIGHT - move to next stage
-      switch (currentStage) {
-        case 'new_lead': newStage = 'contacted'; break;
-        case 'contacted': newStage = 'warm_leads'; break;
-        case 'warm_leads': newStage = 'quote'; break;
-        case 'quote': newStage = 'follow_up'; break;
-        case 'follow_up': newStage = 'closed_deal'; break;
-        case 'closed_deal': newStage = 'not_relevant'; break;
-        default: newStage = currentStage;
-      }
-      console.log('➡️ Moving RIGHT to:', newStage);
+      newStageIndex = Math.min(currentIndex + 1, stageIds.length - 1);
+      newStage = stageIds[newStageIndex];
+      console.log('➡️ Moving RIGHT from index', currentIndex, 'to index', newStageIndex, ':', newStage);
     } else if (gestureState.dx < -50) {
       // Dragged LEFT - move to previous stage
-      switch (currentStage) {
-        case 'not_relevant': newStage = 'closed_deal'; break;
-        case 'closed_deal': newStage = 'follow_up'; break;
-        case 'follow_up': newStage = 'quote'; break;
-        case 'quote': newStage = 'warm_leads'; break;
-        case 'warm_leads': newStage = 'contacted'; break;
-        case 'contacted': newStage = 'new_lead'; break;
-        default: newStage = currentStage;
-      }
-      console.log('⬅️ Moving LEFT to:', newStage);
+      newStageIndex = Math.max(currentIndex - 1, 0);
+      newStage = stageIds[newStageIndex];
+      console.log('⬅️ Moving LEFT from index', currentIndex, 'to index', newStageIndex, ':', newStage);
     } else {
-      console.log('🔄 Not enough movement, staying in:', currentStage);
+      console.log('🔄 Not enough movement (need 50+ pixels), staying in:', currentStage);
       return;
     }
     
@@ -269,8 +268,8 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.boardContainer}
         onLayout={handleScrollViewLayout}
-        scrollEnabled={!isDragging}
-        nestedScrollEnabled={false}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
