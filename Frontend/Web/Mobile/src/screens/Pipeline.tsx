@@ -13,11 +13,13 @@ import { PipelineBoardV2 } from '../components/PipelineBoardV2';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
+import { useSidebarContext } from '../context/SidebarContext';
 import PipelineSkeleton from '../components/LoadingStates/PipelineSkeleton';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Pipeline = () => {
   const navigation = useNavigation();
+  const { toggleSidebar } = useSidebarContext();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -97,6 +99,13 @@ export const Pipeline = () => {
       <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+          <View style={styles.hamburgerMenu}>
+            <View style={styles.hamburgerLineTop} />
+            <View style={styles.hamburgerLineMiddle} />
+            <View style={styles.hamburgerLineBottom} />
+          </View>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Pipeline Board</Text>
         <TouchableOpacity
           style={styles.refreshButton}
@@ -188,14 +197,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background.card,
+    backgroundColor: Colors.primary.base,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border.base,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  hamburgerMenu: {
+    width: 24,
+    height: 20,
+    justifyContent: 'space-between',
+  },
+  hamburgerLineTop: {
+    width: 18,
+    height: 3,
+    backgroundColor: Colors.text.inverse,
+    borderRadius: 1.5,
+  },
+  hamburgerLineMiddle: {
+    width: 24,
+    height: 3,
+    backgroundColor: Colors.text.inverse,
+    borderRadius: 1.5,
+  },
+  hamburgerLineBottom: {
+    width: 12,
+    height: 3,
+    backgroundColor: Colors.text.inverse,
+    borderRadius: 1.5,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700' as any,
-    color: Colors.text.primary,
+    color: Colors.text.inverse,
   },
   refreshButton: {
     paddingHorizontal: Spacing.md,

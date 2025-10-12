@@ -38,8 +38,11 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false, // Don't capture initial touches
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only capture if there's significant movement (hover effect)
+        return Math.abs(gestureState.dx) > 5 || Math.abs(gestureState.dy) > 5;
+      },
       onPanResponderGrant: (evt) => {
         const locationX = evt.nativeEvent.locationX;
         setTouchX(locationX);

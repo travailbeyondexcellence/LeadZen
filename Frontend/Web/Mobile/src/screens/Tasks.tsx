@@ -5,16 +5,28 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
+import { useSidebarContext } from '../context/SidebarContext';
 import { Colors, Spacing } from '../theme';
 
 const Tasks: React.FC = () => {
+  const { toggleSidebar } = useSidebarContext();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#14B8A6" />
       
       <View style={styles.header}>
+        <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+          <View style={styles.hamburgerMenu}>
+            <View style={styles.hamburgerLineTop} />
+            <View style={styles.hamburgerLineMiddle} />
+            <View style={styles.hamburgerLineBottom} />
+          </View>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Tasks</Text>
+        <View style={styles.placeholder} />
       </View>
       
       <View style={styles.content}>
@@ -37,13 +49,45 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#14B8A6',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 24,
     elevation: 4,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  hamburgerMenu: {
+    width: 24,
+    height: 20,
+    justifyContent: 'space-between',
+  },
+  hamburgerLineTop: {
+    width: 18,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
+  },
+  hamburgerLineMiddle: {
+    width: 24,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
+  },
+  hamburgerLineBottom: {
+    width: 12,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
+  },
+  placeholder: {
+    width: 40,
   },
   headerTitle: {
     fontSize: 24,

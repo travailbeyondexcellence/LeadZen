@@ -104,7 +104,10 @@ const DockIcon: React.FC<DockIconProps> = ({
   return (
     <View style={styles.iconContainer}>
       <TouchableOpacity
-        onPress={onSelect}
+        onPress={() => {
+          console.log('🎯 DockIcon pressed:', iconName);
+          onSelect();
+        }}
         activeOpacity={0.7}
         style={styles.touchable}
       >

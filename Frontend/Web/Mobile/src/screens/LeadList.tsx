@@ -12,6 +12,7 @@ import {
   Linking,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSidebarContext } from '../context/SidebarContext';
 import MaterialPressable from '../components/Pressable';
 import LeadCard from '../components/LeadCard';
 import SearchBar from '../components/SearchBar';
@@ -24,6 +25,7 @@ import { PerformanceMonitor } from '../utils/performance';
 
 const LeadList: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { toggleSidebar } = useSidebarContext();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,6 +118,13 @@ const LeadList: React.FC = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
+      <TouchableOpacity onPress={toggleSidebar} style={styles.menuButton}>
+        <View style={styles.hamburgerMenu}>
+          <View style={styles.hamburgerLineTop} />
+          <View style={styles.hamburgerLineMiddle} />
+          <View style={styles.hamburgerLineBottom} />
+        </View>
+      </TouchableOpacity>
       <Text style={styles.headerTitle}>Leads</Text>
       <MaterialPressable
         style={styles.addButton}
@@ -225,13 +234,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 24,
     elevation: 4,
+  },
+  menuButton: {
+    padding: 8,
+  },
+  hamburgerMenu: {
+    width: 24,
+    height: 20,
+    justifyContent: 'space-between',
+  },
+  hamburgerLineTop: {
+    width: 18,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
+  },
+  hamburgerLineMiddle: {
+    width: 24,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
+  },
+  hamburgerLineBottom: {
+    width: 12,
+    height: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
   },
   headerTitle: {
     fontSize: 24,

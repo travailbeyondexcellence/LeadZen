@@ -19,24 +19,34 @@ const MainScreenContainer: React.FC = () => {
   const [activeScreen, setActiveScreen] = useState<keyof TabParamList>('Dashboard');
 
   const renderActiveScreen = () => {
+    console.log('🖥️ Rendering screen for:', activeScreen);
     switch (activeScreen) {
       case 'Dashboard':
+        console.log('✅ Rendering Dashboard');
         return <Dashboard />;
       case 'Dialer':
+        console.log('✅ Rendering Dialer');
         return <Dialer />;
       case 'Pipeline':
+        console.log('✅ Rendering Pipeline');
         return <Pipeline />;
       case 'Leads':
+        console.log('✅ Rendering Leads');
         return <LeadList />;
       case 'Tasks':
+        console.log('✅ Rendering Tasks');
         return <Tasks />;
       default:
+        console.log('⚠️ Default case - rendering Dashboard');
         return <Dashboard />;
     }
   };
 
   const handleTabChange = (tabName: keyof TabParamList) => {
+    console.log('🔄 Tab change requested:', tabName);
+    console.log('🔄 Current active screen:', activeScreen);
     setActiveScreen(tabName);
+    console.log('✅ Active screen updated to:', tabName);
   };
 
   return (
