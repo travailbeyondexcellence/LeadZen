@@ -19,8 +19,9 @@ interface Props {
 }
 
 const { width } = Dimensions.get('window');
-const KEYPAD_WIDTH = Math.min(width - 40, 300);
-const KEY_SIZE = (KEYPAD_WIDTH - 40) / 3; // 3 keys per row with spacing
+const KEYPAD_WIDTH = Math.min(width - 32, 320);
+const KEY_WIDTH = (KEYPAD_WIDTH - 32) / 3; // 3 keys per row with spacing
+const KEY_HEIGHT = 60; // Fixed height for oval shape
 
 const KEYPAD_LAYOUT = [
   [
@@ -161,12 +162,12 @@ const styles = StyleSheet.create({
   keypadRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   keyButton: {
-    width: KEY_SIZE,
-    height: KEY_SIZE,
-    borderRadius: KEY_SIZE / 2,
+    width: KEY_WIDTH,
+    height: KEY_HEIGHT,
+    borderRadius: 20, // Oval/rounded rectangle shape
     backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     alignItems: 'center',
@@ -175,9 +176,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
     borderWidth: 1,
     borderColor: '#E1E5E9',
   },
@@ -186,8 +187,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   keyText: {
-    fontSize: 28,
-    fontWeight: '400',
+    fontSize: 24,
+    fontWeight: '500',
     color: '#333333',
     textAlign: 'center',
   },
@@ -195,12 +196,12 @@ const styles = StyleSheet.create({
     color: '#999999',
   },
   subText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '500',
     color: '#666666',
     textAlign: 'center',
-    marginTop: -2,
-    letterSpacing: 1,
+    marginTop: -1,
+    letterSpacing: 0.5,
   },
   subTextDisabled: {
     color: '#BBBBBB',

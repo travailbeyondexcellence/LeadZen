@@ -10,25 +10,40 @@ import {
   Dimensions,
   Alert,
   TextInput,
+  FlatList,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DialerKeypad from '../components/DialerKeypad';
 import T9Search from '../components/T9Search';
 import RecentCalls from '../components/RecentCalls';
+import SearchBar from '../components/SearchBar';
 import DialerService from '../services/DialerService';
+import AsyncStorageService from '../services/AsyncStorageService';
+import { useSidebarContext } from '../context/SidebarContext';
 import { Colors, Typography } from '../theme';
+import { Lead } from '../types/Lead';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-type TabType = 'dialer' | 'recent';
+type TabType = 'allcontacts' | 'recent' | 'keypad';
 
 const Dialer: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('dialer');
+  const { toggleSidebar } = useSidebarContext();
+  const [activeTab, setActiveTab] = useState<TabType>('allcontacts');
+  const [allContacts, setAllContacts] = useState<Lead[]>([]);
+  const [recentContacts, setRecentContacts] = useState<Lead[]>([]);
+  const [frequentContacts, setFrequentContacts] = useState<Lead[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   const searchAnimation = useRef(new Animated.Value(0)).current;
   const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    loadContacts();
+  }, []);
 
   useEffect(() => {
     // Show/hide search based on input
@@ -44,6 +59,32 @@ const Dialer: React.FC = () => {
       }).start();
     }
   }, [phoneInput, showSearch, searchAnimation]);
+
+  const loadContacts = async () => {
+    try {
+      // Load all contacts
+      const contacts = await AsyncStorageService.getLeads(100, 0);
+      setAllContacts(contacts);
+      
+      // Get recent contacts (contacts with recent calls)
+      const recentContactsList = contacts.filter(contact => 
+        contact.lastContactedAt && 
+        new Date(contact.lastContactedAt).getTime() > Date.now() - (7 * 24 * 60 * 60 * 1000) // Last 7 days
+      ).sort((a, b) => 
+        new Date(b.lastContactedAt!).getTime() - new Date(a.lastContactedAt!).getTime()
+      );
+      setRecentContacts(recentContactsList);
+      
+      // Get frequent contacts (contacts with multiple calls)
+      const frequentContactsList = contacts.filter(contact => 
+        contact.callCount && contact.callCount > 2
+      ).sort((a, b) => (b.callCount || 0) - (a.callCount || 0));
+      setFrequentContacts(frequentContactsList.slice(0, 10)); // Top 10 frequent
+      
+    } catch (error) {
+      console.error('Failed to load contacts:', error);
+    }
+  };
 
   const handleKeyPress = (key: string) => {
     console.log('🔤 Dialer key pressed:', key);
@@ -130,10 +171,105 @@ const Dialer: React.FC = () => {
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
-    if (tab === 'recent') {
+    if (tab !== 'keypad') {
       setPhoneInput('');
+      setSearchQuery('');
     }
   };
+
+  const getFilteredContacts = () => {
+    let contacts: Lead[] = [];
+    
+    switch (activeTab) {
+      case 'allcontacts':
+        contacts = allContacts;
+        break;
+      case 'recent':
+        contacts = recentContacts;
+        break;
+      default:
+        return [];
+    }
+
+    if (!searchQuery) return contacts;
+
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.phone?.includes(searchQuery) ||
+      contact.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
+  const handleContactPress = async (contact: Lead) => {
+    if (contact.phone) {
+      const result = await DialerService.makeCall(contact.phone);
+      if (result.success) {
+        setRefreshTrigger(prev => prev + 1);
+        loadContacts(); // Refresh contacts to update recent/frequent lists
+      }
+    } else {
+      Alert.alert('No Phone Number', 'This contact does not have a phone number.');
+    }
+  };
+
+  const renderSearchHeader = () => (
+    <View style={styles.searchHeader}>
+      <View style={styles.searchContainer}>
+        <TouchableOpacity onPress={toggleSidebar} style={styles.hamburgerButton}>
+          <View style={styles.hamburgerMenu}>
+            <View style={styles.hamburgerLineTop} />
+            <View style={styles.hamburgerLineMiddle} />
+            <View style={styles.hamburgerLineBottom} />
+          </View>
+        </TouchableOpacity>
+        <TextInput
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder={`Search ${activeTab === 'allcontacts' ? 'all contacts' : 'recent contacts'}...`}
+          placeholderTextColor="#999999"
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            style={styles.clearSearchButton}
+            onPress={() => setSearchQuery('')}
+          >
+            <Icon name="close" size={20} color="#666666" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+
+  const renderContactItem = ({ item }: { item: Lead }) => (
+    <TouchableOpacity
+      style={styles.contactItem}
+      onPress={() => handleContactPress(item)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.contactAvatar}>
+        <Text style={styles.contactAvatarText}>
+          {item.name.charAt(0).toUpperCase()}
+        </Text>
+      </View>
+      <View style={styles.contactInfo}>
+        <Text style={styles.contactName}>{item.name}</Text>
+        {item.company && (
+          <Text style={styles.contactCompany}>{item.company}</Text>
+        )}
+        <Text style={styles.contactPhone}>{item.phone || 'No phone'}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.callIconButton}
+        onPress={() => handleContactPress(item)}
+      >
+        <Icon name="phone" size={20} color={Colors.primary.base} />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
 
   const renderNumberDisplay = () => (
     <View style={styles.numberDisplay}>
@@ -194,17 +330,77 @@ const Dialer: React.FC = () => {
     </View>
   );
 
-  const renderDialerTab = () => (
-    <View style={styles.dialerContent}>
+  const renderAllContactsTab = () => (
+    <View style={styles.contactsContent}>
+      {renderSearchHeader()}
+      <FlatList
+        data={getFilteredContacts()}
+        renderItem={renderContactItem}
+        keyExtractor={(item) => item.id}
+        style={styles.contactsList}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>
+            <Icon name="account-group" size={64} color="#E1E5E9" />
+            <Text style={styles.emptyTitle}>No Contacts Found</Text>
+            <Text style={styles.emptySubtitle}>
+              {searchQuery ? 'Try a different search term' : 'No contacts available'}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+
+  const renderRecentTab = () => (
+    <View style={styles.contactsContent}>
+      {renderSearchHeader()}
+      <FlatList
+        data={getFilteredContacts()}
+        renderItem={renderContactItem}
+        keyExtractor={(item) => item.id}
+        style={styles.contactsList}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>
+            <Icon name="phone-clock" size={64} color="#E1E5E9" />
+            <Text style={styles.emptyTitle}>No Recent Contacts</Text>
+            <Text style={styles.emptySubtitle}>
+              {searchQuery ? 'Try a different search term' : 'Recent contacts will appear here'}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+
+  const renderKeypadTab = () => (
+    <View style={styles.keypadContent}>
+      {/* Frequent contacts section */}
+      {frequentContacts.length > 0 && (
+        <View style={styles.frequentSection}>
+          <Text style={styles.frequentTitle}>Frequently Dialed</Text>
+          <FlatList
+            data={frequentContacts}
+            renderItem={renderContactItem}
+            keyExtractor={(item) => item.id}
+            style={styles.frequentList}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      )}
+      
+      {/* Number display */}
       {renderNumberDisplay()}
       
+      {/* T9 Search when typing */}
       <Animated.View
         style={[
-          styles.searchContainer,
+          styles.t9SearchContainer,
           {
             height: searchAnimation.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, SCREEN_HEIGHT * 0.3],
+              outputRange: [0, SCREEN_HEIGHT * 0.2],
             }),
             opacity: searchAnimation,
           },
@@ -219,6 +415,7 @@ const Dialer: React.FC = () => {
         )}
       </Animated.View>
       
+      {/* Keypad */}
       <View style={styles.keypadContainer}>
         <DialerKeypad
           onKeyPress={handleKeyPress}
@@ -230,23 +427,19 @@ const Dialer: React.FC = () => {
     </View>
   );
 
-  const renderRecentTab = () => (
-    <View style={styles.recentContent}>
-      <RecentCalls
-        onCallPress={handleCallFromRecent}
-        refreshTrigger={refreshTrigger}
-      />
-    </View>
-  );
-
   const renderTabs = () => (
     <View style={styles.tabContainer}>
       <TouchableOpacity
-        style={[styles.tab, activeTab === 'dialer' && styles.activeTab]}
-        onPress={() => handleTabChange('dialer')}
+        style={[styles.tab, activeTab === 'allcontacts' && styles.activeTab]}
+        onPress={() => handleTabChange('allcontacts')}
       >
-        <Text style={[styles.tabText, activeTab === 'dialer' && styles.activeTabText]}>
-          📱 Dialer
+        <Icon 
+          name="account-group" 
+          size={20} 
+          color={activeTab === 'allcontacts' ? Colors.primary.base : '#666666'} 
+        />
+        <Text style={[styles.tabText, activeTab === 'allcontacts' && styles.activeTabText]}>
+          All Contacts
         </Text>
       </TouchableOpacity>
       
@@ -254,26 +447,53 @@ const Dialer: React.FC = () => {
         style={[styles.tab, activeTab === 'recent' && styles.activeTab]}
         onPress={() => handleTabChange('recent')}
       >
+        <Icon 
+          name="phone-clock" 
+          size={20} 
+          color={activeTab === 'recent' ? Colors.primary.base : '#666666'} 
+        />
         <Text style={[styles.tabText, activeTab === 'recent' && styles.activeTabText]}>
-          📞 Recent
+          Recent
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[styles.tab, activeTab === 'keypad' && styles.activeTab]}
+        onPress={() => handleTabChange('keypad')}
+      >
+        <Icon 
+          name="dialpad" 
+          size={20} 
+          color={activeTab === 'keypad' ? Colors.primary.base : '#666666'} 
+        />
+        <Text style={[styles.tabText, activeTab === 'keypad' && styles.activeTabText]}>
+          Keypad
         </Text>
       </TouchableOpacity>
     </View>
   );
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'allcontacts':
+        return renderAllContactsTab();
+      case 'recent':
+        return renderRecentTab();
+      case 'keypad':
+        return renderKeypadTab();
+      default:
+        return renderAllContactsTab();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
       
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>LeadZen Dialer</Text>
-        <Text style={styles.headerSubtitle}>Smart calling with lead integration</Text>
-      </View>
-
       {renderTabs()}
 
       <View style={styles.content}>
-        {activeTab === 'dialer' ? renderDialerTab() : renderRecentTab()}
+        {renderContent()}
       </View>
     </SafeAreaView>
   );
@@ -284,40 +504,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  header: {
-    backgroundColor: Colors.primary.base,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    ...Typography.h2,
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    ...Typography.body2,
-    color: Colors.primary.light,
-  },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8F9FA',
     borderBottomWidth: 1,
     borderBottomColor: '#E1E5E9',
+    paddingTop: 8,
   },
   tab: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 12,
     alignItems: 'center',
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
     borderBottomColor: 'transparent',
+    flexDirection: 'column',
+    gap: 4,
   },
   activeTab: {
     borderBottomColor: Colors.primary.base,
     backgroundColor: '#FFFFFF',
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '500',
     color: '#666666',
   },
@@ -328,11 +536,155 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  dialerContent: {
+  // Contact list styles
+  contactsContent: {
     flex: 1,
   },
-  recentContent: {
+  searchHeader: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1E5E9',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  hamburgerButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  hamburgerMenu: {
+    width: 20,
+    height: 16,
+    justifyContent: 'space-between',
+  },
+  hamburgerLineTop: {
+    width: 14,
+    height: 2,
+    backgroundColor: Colors.primary.base,
+    borderRadius: 1,
+  },
+  hamburgerLineMiddle: {
+    width: 20,
+    height: 2,
+    backgroundColor: Colors.primary.base,
+    borderRadius: 1,
+  },
+  hamburgerLineBottom: {
+    width: 10,
+    height: 2,
+    backgroundColor: Colors.primary.base,
+    borderRadius: 1,
+  },
+  searchInput: {
     flex: 1,
+    fontSize: 16,
+    color: '#333333',
+    paddingVertical: 4,
+  },
+  clearSearchButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  contactsList: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F3F4',
+  },
+  contactAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primary.base,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  contactAvatarText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  contactInfo: {
+    flex: 1,
+  },
+  contactName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 2,
+  },
+  contactCompany: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 2,
+  },
+  contactPhone: {
+    fontSize: 14,
+    color: '#999999',
+  },
+  callIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary.base + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333333',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  // Keypad styles
+  keypadContent: {
+    flex: 1,
+  },
+  frequentSection: {
+    maxHeight: SCREEN_HEIGHT * 0.25,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E1E5E9',
+  },
+  frequentTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  frequentList: {
+    paddingBottom: 8,
   },
   numberDisplay: {
     flexDirection: 'row',
@@ -365,7 +717,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666666',
   },
-  searchContainer: {
+  t9SearchContainer: {
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E1E5E9',
