@@ -149,7 +149,7 @@ const LeadDetail: React.FC = () => {
 
   const handleDeleteNote = async (noteId: string) => {
     try {
-      await NotesService.deleteNote(leadId, noteId);
+      await NotesService.deleteNote(noteId);
       await loadNotes(); // Reload notes after deletion
     } catch (error) {
       console.error('Failed to delete note:', error);
@@ -160,9 +160,11 @@ const LeadDetail: React.FC = () => {
   const handleSaveNote = async (noteData: Omit<Note, 'id' | 'createdAt'>) => {
     try {
       if (editingNote) {
-        await NotesService.updateNote(leadId, editingNote.id, noteData);
+        await NotesService.updateNote(editingNote.id, noteData);
       } else {
-        await NotesService.addNote(leadId, noteData);
+        // Add leadId to noteData for new notes
+        const noteWithLeadId = { ...noteData, leadId };
+        await NotesService.addNote(noteWithLeadId);
       }
       await loadNotes(); // Reload notes after save
       setNotesModalVisible(false);
