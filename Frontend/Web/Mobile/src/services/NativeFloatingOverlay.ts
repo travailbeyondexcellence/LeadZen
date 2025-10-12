@@ -4,6 +4,7 @@ interface FloatingOverlayModule {
   showFloatingOverlay(phoneNumber: string, leadName: string): Promise<string>;
   hideFloatingOverlay(): Promise<string>;
   stopFloatingOverlay(): Promise<string>;
+  testBroadcast(): Promise<string>;
 }
 
 const { FloatingOverlayModule, SimpleFloatingModule } = NativeModules;
@@ -88,6 +89,21 @@ class NativeFloatingOverlayService {
         console.log('[NATIVE_OVERLAY] Overlay click listener removed');
       }
     };
+  }
+
+  /**
+   * Test broadcast communication (for debugging)
+   */
+  async testBroadcast(): Promise<boolean> {
+    try {
+      console.log('[NATIVE_OVERLAY] Testing broadcast communication...');
+      const result = await FloatingOverlayModule.testBroadcast();
+      console.log('[NATIVE_OVERLAY] ✅ Test broadcast successful:', result);
+      return true;
+    } catch (error) {
+      console.error('[NATIVE_OVERLAY] ❌ Test broadcast failed:', error);
+      return false;
+    }
   }
 
   /**

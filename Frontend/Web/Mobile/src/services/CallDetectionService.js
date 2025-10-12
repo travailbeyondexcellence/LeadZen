@@ -13,6 +13,7 @@ class CallDetectionService {
     this.floatingCallManager = null;
     this.callStartTime = null;
     this.lastCallPhoneNumber = null; // Store phone number from Incoming/Outgoing events
+    this.lastMatchResult = null; // Store last match result
     this.nativeOverlayActive = false;
     this.setupNativeOverlayListener();
   }
@@ -20,15 +21,24 @@ class CallDetectionService {
   setupNativeOverlayListener() {
     // Listen for native overlay clicks
     this.overlayClickCleanup = NativeFloatingOverlay.onOverlayClick(() => {
-      console.log('[CALL_DETECTION] Native overlay clicked - expanding React Native overlay');
+      console.log('[CALL_DETECTION] 👆 Native overlay clicked - expanding React Native overlay');
       
       // Show the React Native overlay when native overlay is clicked
       if (this.floatingCallManager && this.lastCallPhoneNumber) {
+        console.log('[CALL_DETECTION] 🚀 Triggering React Native overlay expansion');
+        console.log('[CALL_DETECTION] Phone:', this.lastCallPhoneNumber);
+        console.log('[CALL_DETECTION] Match result:', this.lastMatchResult);
+        
+        // Show the React Native overlay
         this.showFloatingCallOverlay(
           this.lastCallPhoneNumber,
           this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming',
-          null // Will fetch match result again
+          this.lastMatchResult || null
         );
+      } else {
+        console.log('[CALL_DETECTION] ⚠️ Cannot expand overlay - missing manager or phone number');
+        console.log('[CALL_DETECTION] floatingCallManager:', !!this.floatingCallManager);
+        console.log('[CALL_DETECTION] lastCallPhoneNumber:', this.lastCallPhoneNumber);
       }
     });
   }
@@ -269,6 +279,9 @@ class CallDetectionService {
           if (matchResult.hasMatch && matchResult.matchedLeads.length > 0) {
             leadName = matchResult.matchedLeads[0].name || 'Unknown Contact';
           }
+          
+          // Store match result for click handling
+          this.lastMatchResult = matchResult;
         }
         
         // Show NATIVE overlay over dialer FIRST
@@ -427,6 +440,20 @@ class CallDetectionService {
       callStartTime: this.callStartTime,
       permissions: PermissionService.areRequiredPermissionsGranted()
     };
+  }
+  
+  // Test native overlay click communication
+  async testNativeOverlayClick() {
+    console.log('[CALL_DETECTION] 🧪 Testing native overlay click communication...');
+    try {
+      // Test the broadcast mechanism
+      const result = await NativeFloatingOverlay.testBroadcast();
+      console.log('[CALL_DETECTION] 🧪 Broadcast test result:', result);
+      return result;
+    } catch (error) {
+      console.error('[CALL_DETECTION] 🧪 Broadcast test failed:', error);
+      return false;
+    }
   }
 }
 

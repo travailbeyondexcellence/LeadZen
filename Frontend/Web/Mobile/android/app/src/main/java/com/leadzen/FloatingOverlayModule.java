@@ -9,10 +9,13 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import androidx.annotation.NonNull;
 
 public class FloatingOverlayModule extends ReactContextBaseJavaModule {
+    private static final String[] SUPPORTED_EVENTS = {"FloatingOverlayClicked"};
     private ReactApplicationContext reactContext;
     private BroadcastReceiver overlayReceiver;
 
@@ -35,7 +38,9 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
             overlayReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
+                    Log.d("FloatingOverlay", "Broadcast received: " + intent.getAction());
                     if ("FLOATING_OVERLAY_CLICKED".equals(intent.getAction())) {
+                        Log.d("FloatingOverlay", "Overlay click broadcast received! Sending to React Native...");
                         sendEvent("FloatingOverlayClicked", null);
                     }
                 }
@@ -97,6 +102,30 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
             promise.resolve("Overlay service stopped");
         } catch (Exception e) {
             promise.reject("ERROR", "Failed to stop overlay service: " + e.getMessage());
+        }
+    }
+    
+    @ReactMethod
+    public void addListener(String eventName) {
+        // Required for NativeEventEmitter - iOS only, but Android needs this to avoid warnings
+    }
+    
+    @ReactMethod
+    public void removeListeners(Integer count) {
+        // Required for NativeEventEmitter - iOS only, but Android needs this to avoid warnings
+    }
+    
+    @ReactMethod
+    public void testBroadcast(Promise promise) {
+        try {
+            Log.d("FloatingOverlay", "🧪 Manual test broadcast triggered");
+            Intent intent = new Intent("FLOATING_OVERLAY_CLICKED");
+            reactContext.sendBroadcast(intent);
+            Log.d("FloatingOverlay", "🧪 Test broadcast sent successfully");
+            promise.resolve("Test broadcast sent");
+        } catch (Exception e) {
+            Log.e("FloatingOverlay", "🧪 Test broadcast failed: " + e.getMessage());
+            promise.reject("ERROR", "Test broadcast failed: " + e.getMessage());
         }
     }
 

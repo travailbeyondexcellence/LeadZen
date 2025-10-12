@@ -29,10 +29,15 @@ public class FloatingOverlayService extends Service {
     }
 
     private void createFloatingView() {
-        // Create main container
+        // Create main container with larger clickable area
         LinearLayout container = new LinearLayout(this);
         container.setOrientation(LinearLayout.VERTICAL);
-        container.setPadding(24, 24, 24, 24);
+        container.setPadding(32, 32, 32, 32);
+        container.setMinimumWidth(120);
+        container.setMinimumHeight(120);
+        container.setClickable(true);
+        container.setFocusable(true);
+        android.util.Log.d("FloatingOverlay", "Container created with clickable: true, focusable: true");
         
         // Create background
         GradientDrawable background = new GradientDrawable();
@@ -45,8 +50,8 @@ public class FloatingOverlayService extends Service {
         // Create phone icon
         TextView phoneIcon = new TextView(this);
         phoneIcon.setText("📞");
-        phoneIcon.setTextSize(24);
-        phoneIcon.setPadding(16, 16, 16, 8);
+        phoneIcon.setTextSize(28);
+        phoneIcon.setPadding(20, 20, 20, 12);
         phoneIcon.setGravity(Gravity.CENTER);
         
         // Create lead name text
@@ -75,7 +80,8 @@ public class FloatingOverlayService extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 layoutType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | 
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
         );
 
@@ -85,43 +91,83 @@ public class FloatingOverlayService extends Service {
 
         // Add view to window manager
         windowManager.addView(floatingView, params);
+        android.util.Log.d("FloatingOverlay", "Floating view added to WindowManager successfully");
 
-        // Set up touch listener
+        // Set up touch listener with better click detection
         floatingView.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
+            private long touchStartTime;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                android.util.Log.d("FloatingOverlay", "Touch event: " + event.getAction());
+                
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                        android.util.Log.d("FloatingOverlay", "Touch DOWN detected");
                         initialX = params.x;
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+                        touchStartTime = System.currentTimeMillis();
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        windowManager.updateViewLayout(floatingView, params);
+                        // Only move if significant movement
+                        float deltaX = event.getRawX() - initialTouchX;
+                        float deltaY = event.getRawY() - initialTouchY;
+                        if (Math.abs(deltaX) > 20 || Math.abs(deltaY) > 20) {
+                            params.x = initialX + (int) deltaX;
+                            params.y = initialY + (int) deltaY;
+                            windowManager.updateViewLayout(floatingView, params);
+                            android.util.Log.d("FloatingOverlay", "Moving overlay to: " + params.x + ", " + params.y);
+                        }
                         return true;
 
                     case MotionEvent.ACTION_UP:
-                        if (Math.abs(event.getRawX() - initialTouchX) < 10 &&
-                            Math.abs(event.getRawY() - initialTouchY) < 10) {
+                        android.util.Log.d("FloatingOverlay", "Touch UP detected");
+                        long touchDuration = System.currentTimeMillis() - touchStartTime;
+                        float moveDistance = (float) Math.sqrt(
+                            Math.pow(event.getRawX() - initialTouchX, 2) + 
+                            Math.pow(event.getRawY() - initialTouchY, 2)
+                        );
+                        
+                        android.util.Log.d("FloatingOverlay", "Touch duration: " + touchDuration + "ms, Move distance: " + moveDistance + "px");
+                        
+                        // Consider it a click if: short duration AND minimal movement
+                        if (touchDuration < 500 && moveDistance < 30) {
+                            android.util.Log.d("FloatingOverlay", "Click detected! Triggering click handler...");
                             handleOverlayClick();
+                        } else {
+                            android.util.Log.d("FloatingOverlay", "Not a click - duration too long or moved too much");
                         }
                         return true;
                 }
                 return false;
             }
         });
+        
+        // Also add a simple click listener as backup
+        floatingView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                android.util.Log.d("FloatingOverlay", "✅ SIMPLE CLICK LISTENER TRIGGERED!");
+                android.util.Log.d("FloatingOverlay", "View clicked: " + v.toString());
+                android.util.Log.d("FloatingOverlay", "View clickable: " + v.isClickable());
+                android.util.Log.d("FloatingOverlay", "View enabled: " + v.isEnabled());
+                handleOverlayClick();
+            }
+        });
+        
+        android.util.Log.d("FloatingOverlay", "Touch and click listeners setup complete");
     }
 
     private void handleOverlayClick() {
+        android.util.Log.d("FloatingOverlay", "Native overlay clicked! Sending broadcast...");
         Intent intent = new Intent("FLOATING_OVERLAY_CLICKED");
         sendBroadcast(intent);
+        android.util.Log.d("FloatingOverlay", "Broadcast sent successfully");
     }
 
     public void updateOverlayData(String phoneNumber, String leadName) {
