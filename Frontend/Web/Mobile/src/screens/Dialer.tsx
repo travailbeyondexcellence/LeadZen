@@ -363,7 +363,7 @@ const Dialer: React.FC = () => {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Icon name="phone-clock" size={64} color="#E1E5E9" />
+            <Icon name="clock-outline" size={64} color="#E1E5E9" />
             <Text style={styles.emptyTitle}>No Recent Contacts</Text>
             <Text style={styles.emptySubtitle}>
               {searchQuery ? 'Try a different search term' : 'Recent contacts will appear here'}
@@ -448,7 +448,7 @@ const Dialer: React.FC = () => {
         onPress={() => handleTabChange('recent')}
       >
         <Icon 
-          name="phone-clock" 
+          name="clock-outline" 
           size={20} 
           color={activeTab === 'recent' ? Colors.primary.base : '#666666'} 
         />
