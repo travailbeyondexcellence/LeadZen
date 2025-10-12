@@ -418,21 +418,21 @@ const LeadDetail: React.FC = () => {
         <View style={styles.actionIconsGrid}>
           {/* Top Row */}
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.actionIconButton} onPress={handleCall}>
-              <Text style={styles.actionIconLarge}>📞</Text>
+            <TouchableOpacity style={[styles.actionIconButton, styles.phoneButton]} onPress={handleCall}>
+              <Icon name="phone" size={24} color="#fff" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionIconButton} onPress={handleWhatsApp}>
-              <Icon name="whatsapp" size={24} color="#25D366" />
+            <TouchableOpacity style={[styles.actionIconButton, styles.whatsappButton]} onPress={handleWhatsApp}>
+              <Icon name="whatsapp" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
           
           {/* Bottom Row */}
           <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.actionIconButton} onPress={handleSMS}>
-              <Text style={styles.actionIconLarge}>📱</Text>
+            <TouchableOpacity style={[styles.actionIconButton, styles.smsButton]} onPress={handleSMS}>
+              <Text style={styles.smsText}>SMS</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionIconButton} onPress={handleEmail}>
-              <Text style={styles.actionIconLarge}>✉️</Text>
+            <TouchableOpacity style={[styles.actionIconButton, styles.emailButton]} onPress={handleEmail}>
+              <Icon name="email" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -610,15 +610,34 @@ const styles = StyleSheet.create({
   actionIconButton: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: Colors.background.secondary,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border.light,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  actionIconLarge: {
-    fontSize: 24,
+  phoneButton: {
+    backgroundColor: '#4A5568',
+  },
+  whatsappButton: {
+    backgroundColor: '#1E88E5',
+  },
+  smsButton: {
+    backgroundColor: '#4A5568',
+  },
+  emailButton: {
+    backgroundColor: '#1E88E5',
+  },
+  smsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#10B981',
   },
   tabs: {
     flexDirection: 'row',
