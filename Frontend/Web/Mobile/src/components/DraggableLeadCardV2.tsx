@@ -46,22 +46,17 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   const pan = useRef(new Animated.ValueXY()).current;
   const scale = useRef(new Animated.Value(1)).current;
   
-  // Simple PanResponder without complex logic
-  const panResponder = useRef(
+  // Create separate PanResponder for drag handle - instant response
+  const dragHandlePanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
-        console.log('🟢 onStartShouldSetPanResponder', lead.name);
-        return false;
+        console.log('🎯 Drag Handle - Instant capture', lead.name);
+        return true; // Immediately capture touch on drag handle
       },
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        const { dx, dy } = gestureState;
-        const shouldMove = Math.abs(dx) > 5 || Math.abs(dy) > 5;
-        console.log('🔵 onMoveShouldSetPanResponder', lead.name, 'dx:', dx, 'dy:', dy, 'shouldMove:', shouldMove);
-        return shouldMove;
-      },
+      onMoveShouldSetPanResponder: () => true,
       
       onPanResponderGrant: (evt, gestureState) => {
-        console.log('🟡 onPanResponderGrant - Starting drag', lead.name);
+        console.log('🚀 Drag Handle - Starting drag immediately', lead.name);
         setIsDragging(true);
         onDragStart?.();
         
@@ -80,12 +75,88 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       },
       
       onPanResponderMove: (evt, gestureState) => {
-        console.log('🟠 onPanResponderMove', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
+        console.log('🏃 Drag Handle - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
         pan.setValue({ x: gestureState.dx, y: gestureState.dy });
       },
       
       onPanResponderRelease: (evt, gestureState) => {
-        console.log('🔴 onPanResponderRelease', lead.name, 'isDragging:', isDragging);
+        console.log('🏁 Drag Handle - Released', lead.name);
+        pan.flattenOffset();
+        
+        // Reset scale
+        Animated.spring(scale, {
+          toValue: 1,
+          useNativeDriver: false,
+        }).start();
+        
+        // Call drag end with position
+        onDragEnd?.(lead, gestureState);
+        setIsDragging(false);
+        
+        // Return to original position
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
+      },
+      
+      onPanResponderTerminate: () => {
+        console.log('❌ Drag Handle - Terminated', lead.name);
+        setIsDragging(false);
+        Animated.parallel([
+          Animated.spring(scale, {
+            toValue: 1,
+            useNativeDriver: false,
+          }),
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: false,
+          }),
+        ]).start();
+      },
+    })
+  ).current;
+
+  // Main card PanResponder - requires movement to start drag
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        console.log('🟢 Card - onStartShouldSetPanResponder', lead.name);
+        return false;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const { dx, dy } = gestureState;
+        const shouldMove = Math.abs(dx) > 5 || Math.abs(dy) > 5;
+        console.log('🔵 Card - onMoveShouldSetPanResponder', lead.name, 'dx:', dx, 'dy:', dy, 'shouldMove:', shouldMove);
+        return shouldMove;
+      },
+      
+      onPanResponderGrant: (evt, gestureState) => {
+        console.log('🟡 Card - Starting drag after movement', lead.name);
+        setIsDragging(true);
+        onDragStart?.();
+        
+        // Scale up slightly
+        Animated.spring(scale, {
+          toValue: 1.05,
+          useNativeDriver: false,
+        }).start();
+        
+        // Set current pan position
+        pan.setOffset({
+          x: pan.x._value,
+          y: pan.y._value,
+        });
+        pan.setValue({ x: 0, y: 0 });
+      },
+      
+      onPanResponderMove: (evt, gestureState) => {
+        console.log('🟠 Card - Moving', lead.name, 'dx:', gestureState.dx, 'dy:', gestureState.dy);
+        pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+      },
+      
+      onPanResponderRelease: (evt, gestureState) => {
+        console.log('🔴 Card - Released', lead.name, 'isDragging:', isDragging);
         pan.flattenOffset();
         
         // Reset scale
@@ -106,13 +177,13 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           }).start();
         } else {
           // This was a tap - but we're disabling tap functionality
-          console.log('👆 Tap detected', lead.name, '- Tap functionality disabled');
+          console.log('👆 Card - Tap detected', lead.name, '- Tap functionality disabled');
           // onPress?.(); // Completely disabled
         }
       },
       
       onPanResponderTerminate: () => {
-        console.log('❌ onPanResponderTerminate', lead.name);
+        console.log('❌ Card - Terminated', lead.name);
         setIsDragging(false);
         Animated.parallel([
           Animated.spring(scale, {
@@ -225,7 +296,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       {...panResponder.panHandlers}
     >
       {/* Drag Handle Indicator */}
-      <View style={styles.dragHandle}>
+      <View style={styles.dragHandle} {...dragHandlePanResponder.panHandlers}>
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
         <View style={styles.dragHandleLine} />
