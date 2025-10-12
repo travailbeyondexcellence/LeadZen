@@ -192,128 +192,132 @@ const LeadDetail: React.FC = () => {
   const renderInfoTab = () => (
     <View style={styles.tabContent}>
       {/* Contact Information Section */}
-      <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>Contact Information</Text>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>📞</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Phone</Text>
-            <TouchableOpacity onPress={handleCall}>
-              <Text style={[styles.infoValue, styles.linkText]}>
-                {lead?.phone ? formatPhoneNumber(lead.phone) : 'Not provided'}
+      <View style={styles.cardContainer}>
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>Contact Information</Text>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>📞</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Phone</Text>
+              <TouchableOpacity onPress={handleCall}>
+                <Text style={[styles.infoValue, styles.linkText]}>
+                  {lead?.phone ? formatPhoneNumber(lead.phone) : 'Not provided'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>📧</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Email</Text>
+              <TouchableOpacity onPress={handleEmail}>
+                <Text style={[styles.infoValue, lead?.email && styles.linkText]}>
+                  {lead?.email || 'Not provided'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>🏢</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Company</Text>
+              <Text style={styles.infoValue}>
+                {lead?.company || 'Not provided'}
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>📧</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <TouchableOpacity onPress={handleEmail}>
-              <Text style={[styles.infoValue, lead?.email && styles.linkText]}>
-                {lead?.email || 'Not provided'}
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>💼</Text>
+            <View style={styles.infoContent}>
+              <Text style={styles.infoLabel}>Position</Text>
+              <Text style={styles.infoValue}>
+                {lead?.position || 'Not provided'}
               </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>🏢</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Company</Text>
-            <Text style={styles.infoValue}>
-              {lead?.company || 'Not provided'}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.infoRow}>
-          <Text style={styles.infoIcon}>💼</Text>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>Position</Text>
-            <Text style={styles.infoValue}>
-              {lead?.position || 'Not provided'}
-            </Text>
+            </View>
           </View>
         </View>
       </View>
       
       {/* Lead Details and Labels Side by Side */}
-      <View style={styles.sideByySideContainer}>
-        {/* Left Side - Lead Details */}
-        <View style={styles.leftSection}>
-          <Text style={styles.sectionTitle}>Lead Details</Text>
-          
-          <View style={styles.infoRow}>
-            <Text style={styles.infoIcon}>🎯</Text>
-            <View style={styles.infoContent}>
-              <View style={styles.infoRowHorizontal}>
-                <Text style={styles.infoLabel}>Pipeline Stage</Text>
-                <View style={[styles.badge, { backgroundColor: getStatusColor(lead?.status) }]}>
-                  <Text style={styles.badgeText}>{getStatusLabel(lead?.status)}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-          
-          <View style={styles.infoRow}>
-            <Text style={styles.infoIcon}>⚡</Text>
-            <View style={styles.infoContent}>
-              <View style={styles.infoRowHorizontal}>
-                <Text style={styles.infoLabel}>Priority</Text>
-                <View style={[styles.badge, { backgroundColor: getPriorityColor(lead?.priority) }]}>
-                  <Text style={styles.badgeText}>{lead?.priority || 'Medium'}</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-          
-          <View style={styles.infoRow}>
-            <Text style={styles.infoIcon}>💰</Text>
-            <View style={styles.infoContent}>
-              <View style={styles.infoRowHorizontal}>
-                <Text style={styles.infoLabel}>Value</Text>
-                <Text style={styles.infoValue}>
-                  {lead?.value ? formatCurrency(lead.value) : 'Not set'}
-                </Text>
-              </View>
-            </View>
-          </View>
-          
-          <View style={styles.infoRow}>
-            <Text style={styles.infoIcon}>📅</Text>
-            <View style={styles.infoContent}>
-              <View style={styles.infoRowHorizontal}>
-                <Text style={styles.infoLabel}>Created</Text>
-                <Text style={styles.infoValue}>
-                  {lead?.createdAt ? formatDateToReadable(lead.createdAt) : 'Unknown'}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-        
-        {/* Right Side - Labels */}
-        <View style={styles.rightSection}>
-          <Text style={styles.sectionTitle}>Labels</Text>
-          
-          <View style={styles.labelsContainer}>
-            {lead?.tags && lead.tags.length > 0 ? (
-              <View style={styles.labelsList}>
-                {lead.tags.map((tag, index) => (
-                  <View key={index} style={styles.label}>
-                    <Text style={styles.labelText}>{tag}</Text>
+      <View style={styles.cardContainer}>
+        <View style={styles.sideByySideContainer}>
+          {/* Left Side - Lead Details */}
+          <View style={styles.leftSection}>
+            <Text style={styles.sectionTitle}>Lead Details</Text>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoIcon}>🎯</Text>
+              <View style={styles.infoContent}>
+                <View style={styles.infoRowHorizontal}>
+                  <Text style={styles.infoLabel}>Pipeline Stage</Text>
+                  <View style={[styles.badge, { backgroundColor: getStatusColor(lead?.status) }]}>
+                    <Text style={styles.badgeText}>{getStatusLabel(lead?.status)}</Text>
                   </View>
-                ))}
+                </View>
               </View>
-            ) : (
-              <View style={styles.emptyLabelsState}>
-                <Text style={styles.emptyLabelsIcon}>🏷️</Text>
-                <Text style={styles.emptyLabelsText}>No labels yet</Text>
+            </View>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoIcon}>⚡</Text>
+              <View style={styles.infoContent}>
+                <View style={styles.infoRowHorizontal}>
+                  <Text style={styles.infoLabel}>Priority</Text>
+                  <View style={[styles.badge, { backgroundColor: getPriorityColor(lead?.priority) }]}>
+                    <Text style={styles.badgeText}>{lead?.priority || 'Medium'}</Text>
+                  </View>
+                </View>
               </View>
-            )}
+            </View>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoIcon}>💰</Text>
+              <View style={styles.infoContent}>
+                <View style={styles.infoRowHorizontal}>
+                  <Text style={styles.infoLabel}>Value</Text>
+                  <Text style={styles.infoValue}>
+                    {lead?.value ? formatCurrency(lead.value) : 'Not set'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoIcon}>📅</Text>
+              <View style={styles.infoContent}>
+                <View style={styles.infoRowHorizontal}>
+                  <Text style={styles.infoLabel}>Created</Text>
+                  <Text style={styles.infoValue}>
+                    {lead?.createdAt ? formatDateToReadable(lead.createdAt) : 'Unknown'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          
+          {/* Right Side - Labels */}
+          <View style={styles.rightSection}>
+            <Text style={styles.sectionTitle}>Labels</Text>
+            
+            <View style={styles.labelsContainer}>
+              {lead?.tags && lead.tags.length > 0 ? (
+                <View style={styles.labelsList}>
+                  {lead.tags.map((tag, index) => (
+                    <View key={index} style={styles.label}>
+                      <Text style={styles.labelText}>{tag}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.emptyLabelsState}>
+                  <Text style={styles.emptyLabelsIcon}>🏷️</Text>
+                  <Text style={styles.emptyLabelsText}>No labels yet</Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -570,6 +574,7 @@ const styles = StyleSheet.create({
   },
   contactInfo: {
     paddingRight: Spacing.lg,
+    alignItems: 'center',
   },
   avatar: {
     width: 70,
@@ -677,8 +682,25 @@ const styles = StyleSheet.create({
   tabContent: {
     padding: Spacing.lg,
   },
+  cardContainer: {
+    backgroundColor: Colors.background.card,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+  },
   infoSection: {
-    marginBottom: Spacing.xl,
+    marginBottom: 0,
   },
   sideByySideContainer: {
     flexDirection: 'row',
