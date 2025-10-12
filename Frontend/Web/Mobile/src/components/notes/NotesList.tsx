@@ -22,17 +22,35 @@ const NotesList: React.FC<NotesListProps> = ({
   onDeleteNote,
 }) => {
   const formatDate = (date: Date) => {
-    const now = new Date();
     const noteDate = new Date(date);
-    const diffInHours = (now.getTime() - noteDate.getTime()) / (1000 * 60 * 60);
+    const day = noteDate.getDate();
+    const year = noteDate.getFullYear();
     
-    if (diffInHours < 24) {
-      return noteDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffInHours < 48) {
-      return 'Yesterday';
-    } else {
-      return noteDate.toLocaleDateString();
-    }
+    // Month names array
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[noteDate.getMonth()];
+    
+    // Add ordinal suffix to day
+    const ordinalSuffix = (n: number) => {
+      if (n > 3 && n < 21) return 'th';
+      switch (n % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    // Format time in AM/PM without seconds
+    const timeString = noteDate.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+    
+    const dateString = `${day}${ordinalSuffix(day)} ${month} ${year}`;
+    
+    return `${dateString}\n${timeString}`;
   };
 
   const renderNote = ({ item: note }: { item: Note }) => {
@@ -51,9 +69,11 @@ const NotesList: React.FC<NotesListProps> = ({
               {tagInfo.label}
             </Text>
           </View>
-          <Text style={styles.noteDate}>
-            {formatDate(note.createdAt)}
-          </Text>
+          <View style={styles.noteDateContainer}>
+            <Text style={styles.noteDate}>
+              {formatDate(note.createdAt)}
+            </Text>
+          </View>
         </View>
         
         <Text style={styles.noteContent} numberOfLines={3}>
@@ -189,9 +209,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  noteDateContainer: {
+    alignItems: 'flex-end',
+  },
   noteDate: {
     fontSize: 12,
     color: '#6B7280',
+    textAlign: 'right',
+    lineHeight: 16,
   },
   noteContent: {
     fontSize: 14,
