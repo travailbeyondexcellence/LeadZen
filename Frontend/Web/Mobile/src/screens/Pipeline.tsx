@@ -9,6 +9,7 @@ import {
   Modal,
   Linking,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { PipelineBoardV2 } from '../components/PipelineBoardV2';
 import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
@@ -108,10 +109,10 @@ export const Pipeline = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Pipeline Board</Text>
         <TouchableOpacity
-          style={styles.refreshButton}
+          style={styles.refreshIcon}
           onPress={handleRefresh}
         >
-          <Text style={styles.refreshButtonText}>🔄 Refresh</Text>
+          <Icon name="refresh" size={24} color={Colors.text.inverse} />
         </TouchableOpacity>
       </View>
 
@@ -232,16 +233,8 @@ const styles = StyleSheet.create({
     fontWeight: '700' as any,
     color: Colors.text.inverse,
   },
-  refreshButton: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.primary.base + '10',
-  },
-  refreshButtonText: {
-    fontSize: 14,
-    color: Colors.primary.base,
-    fontWeight: '600',
+  refreshIcon: {
+    padding: Spacing.sm,
   },
   modalOverlay: {
     flex: 1,
