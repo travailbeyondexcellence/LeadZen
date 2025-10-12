@@ -302,11 +302,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    overflow: 'visible',
+    overflow: 'hidden', // Clip content to prevent overflow above header
   },
   scrollContent: {
     padding: Spacing.sm,
-    overflow: 'visible',
+    overflow: 'hidden', // Ensure content stays within bounds
   },
   emptyContainer: {
     padding: Spacing.xl,

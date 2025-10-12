@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: 100,
     zIndex: 5,
   },
   sectionTitle: {
