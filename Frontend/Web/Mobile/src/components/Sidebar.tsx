@@ -26,9 +26,19 @@ const Sidebar: React.FC<SidebarProps> = ({ active, animatedValue }) => {
           <Text style={styles.textName}>LeadZen CRM</Text>
         </View>
         <View style={styles.containerItem}>
-          {sidebarList.map((item, index) => {
-            return <SidebarItem item={item} key={index} active={active} animatedValue={animatedValue} />;
-          })}
+          {/* Main navigation items */}
+          <View style={styles.mainNavigation}>
+            {sidebarList.slice(0, 5).map((item, index) => {
+              return <SidebarItem item={item} key={index} active={active} animatedValue={animatedValue} />;
+            })}
+          </View>
+          
+          {/* Profile and Settings items */}
+          <View style={styles.profileNavigation}>
+            {sidebarList.slice(5).map((item, index) => {
+              return <SidebarItem item={item} key={index + 5} active={active} animatedValue={animatedValue} />;
+            })}
+          </View>
         </View>
         <View style={styles.footer}>
           <Text style={styles.version}>v1.0.0 MVP</Text>
@@ -66,6 +76,14 @@ const styles = StyleSheet.create({
   containerItem: {
     marginTop: 10,
     flex: 1,
+    justifyContent: 'space-between',
+  },
+  mainNavigation: {
+    flex: 0,
+  },
+  profileNavigation: {
+    flex: 0,
+    marginBottom: 20,
   },
   footer: {
     paddingVertical: 20,
