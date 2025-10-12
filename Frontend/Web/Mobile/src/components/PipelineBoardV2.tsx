@@ -319,20 +319,14 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     <View style={styles.container}>
       {/* Statistics Bar */}
       <View style={styles.statsBar}>
-        <View style={styles.statsRow}>
+        <View style={styles.singleLineStats}>
           <Text style={styles.statsTitle}>Pipeline Overview</Text>
-          <View style={styles.statLabels}>
-            <View style={styles.statLabel}>
-              <Text style={styles.statValue}>{statistics.total}</Text>
-              <Text style={styles.statText}>leads</Text>
-            </View>
-            <View style={styles.statLabel}>
-              <Text style={styles.statValue}>
-                ₹{formatNumber(statistics.totalValue)}
-              </Text>
-              <Text style={styles.statText}>total</Text>
-            </View>
-          </View>
+          <Text style={styles.statItem}>
+            <Text style={styles.statValue}>{statistics.total}</Text> leads
+          </Text>
+          <Text style={styles.statItem}>
+            <Text style={styles.statValue}>₹{formatNumber(statistics.totalValue)}</Text>
+          </Text>
         </View>
       </View>
       
@@ -530,35 +524,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: Colors.text.primary,
-    flex: 1,
+    marginRight: Spacing.md,
   },
-  statsRow: {
+  singleLineStats: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  statLabels: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  statLabel: {
-    backgroundColor: Colors.background.secondary,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.sm,
-    alignItems: 'center',
-    minWidth: 60,
+  statItem: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    marginLeft: Spacing.md,
   },
   statValue: {
-    fontSize: 14,
     fontWeight: '700',
     color: Colors.primary.base,
-    marginBottom: 2,
-  },
-  statText: {
-    fontSize: 11,
-    color: Colors.text.secondary,
-    fontWeight: '500',
   },
   boardContainer: {
     paddingVertical: Spacing.md,
