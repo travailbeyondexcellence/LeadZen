@@ -24,6 +24,7 @@ interface DraggableLeadCardV2Props {
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
   onWhatsApp?: (lead: Lead) => void;
+  onSMS?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
 }
 
@@ -35,6 +36,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
   onCall,
   onEmail,
   onWhatsApp,
+  onSMS,
   onNotes,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -240,6 +242,17 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
     }
   };
 
+  const handleSMS = () => {
+    if (onSMS) {
+      onSMS(lead);
+    } else if (lead.phone) {
+      const cleanPhone = lead.phone.replace(/[^0-9+]/g, '');
+      Linking.openURL(`sms:${cleanPhone}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for SMS.');
+    }
+  };
+
   const handleNotes = () => {
     if (onNotes) {
       onNotes(lead);
@@ -316,10 +329,10 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         <View style={styles.actions}>
           <TouchableOpacity 
             style={[styles.actionButton, !lead.phone && styles.actionButtonDisabled]} 
-            onPress={handleCall}
+            onPress={handleSMS}
             disabled={!lead.phone}
           >
-            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>📞</Text>
+            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>💬</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -343,12 +356,29 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={handleNotes}
+            style={[styles.actionButton, !lead.phone && styles.actionButtonDisabled]} 
+            onPress={handleCall}
+            disabled={!lead.phone}
           >
-            <Text style={styles.actionIcon}>📝</Text>
+            <Text style={[styles.actionIcon, !lead.phone && styles.actionIconDisabled]}>📞</Text>
           </TouchableOpacity>
         </View>
+        
+        {/* Bottom section with notes button */}
+        {onNotes && (
+          <View style={styles.bottomSection}>
+            <View style={styles.bottomLeft}></View>
+            <View style={styles.bottomRight}>
+              <TouchableOpacity 
+                style={styles.notesButton}
+                onPress={handleNotes}
+              >
+                <Text style={styles.notesIcon}>📝</Text>
+                <Text style={styles.notesText}>Notes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     </Animated.View>
   );
@@ -463,5 +493,44 @@ const styles = StyleSheet.create({
   },
   actionIconDisabled: {
     opacity: 0.3,
+  },
+  bottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.base,
+    minHeight: 32,
+  },
+  bottomLeft: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  bottomRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  notesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background.secondary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    height: 24,
+  },
+  notesIcon: {
+    fontSize: 12,
+    marginRight: 4,
+    lineHeight: 12,
+  },
+  notesText: {
+    fontSize: 12,
+    color: Colors.text.secondary,
+    fontWeight: '500',
+    lineHeight: 12,
   },
 });

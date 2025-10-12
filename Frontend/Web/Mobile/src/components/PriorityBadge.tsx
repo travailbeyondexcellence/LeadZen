@@ -19,7 +19,7 @@ const PriorityBadge: React.FC<PriorityBadgeProps> = ({
   const sizeStyles = {
     small: {
       paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingVertical: 1,
       fontSize: 10,
     },
     medium: {
@@ -88,19 +88,25 @@ const styles = StyleSheet.create({
   badge: {
     borderRadius: 12,
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
+    minHeight: 18,
   },
   icon: {
     fontSize: 10,
+    lineHeight: 10,
   },
   text: {
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.3,
+    lineHeight: 12,
   },
 });
 

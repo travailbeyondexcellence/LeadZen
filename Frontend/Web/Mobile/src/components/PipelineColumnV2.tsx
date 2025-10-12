@@ -28,6 +28,7 @@ interface PipelineColumnV2Props {
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
   onWhatsApp?: (lead: Lead) => void;
+  onSMS?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
 }
 
@@ -45,6 +46,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
   onCall,
   onEmail,
   onWhatsApp,
+  onSMS,
   onNotes,
 }) => {
   const [layout, setLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -170,6 +172,7 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
               onCall={onCall}
               onEmail={onEmail}
               onWhatsApp={onWhatsApp}
+              onSMS={onSMS}
               onNotes={onNotes}
             />
           ))

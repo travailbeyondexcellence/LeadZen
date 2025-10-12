@@ -12,10 +12,11 @@ interface LeadCardProps {
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
   onWhatsApp?: (lead: Lead) => void;
+  onSMS?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
 }
 
-const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onWhatsApp, onNotes }) => {
+const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onWhatsApp, onSMS, onNotes }) => {
   const formatValue = (value?: number): string => {
     if (!value) return '';
     // Manual currency formatting for JSC compatibility
@@ -102,13 +103,13 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onW
         </View>
         
         <View style={styles.actions}>
-          {lead.phone && onCall && (
+          {lead.phone && onSMS && (
             <MaterialPressable
               style={styles.actionButton}
-              onPress={() => onCall(lead)}
+              onPress={() => onSMS(lead)}
               rippleColor="rgba(20, 184, 166, 0.2)"
             >
-              <Text style={styles.actionIcon}>📞</Text>
+              <Text style={styles.actionIcon}>💬</Text>
             </MaterialPressable>
           )}
           {lead.email && onEmail && (
@@ -129,19 +130,19 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onW
               <Icon name="whatsapp" size={16} color="#25D366" />
             </MaterialPressable>
           )}
-          {onNotes && (
+          {lead.phone && onCall && (
             <MaterialPressable
               style={styles.actionButton}
-              onPress={() => onNotes(lead)}
+              onPress={() => onCall(lead)}
               rippleColor="rgba(20, 184, 166, 0.2)"
             >
-              <Text style={styles.actionIcon}>📝</Text>
+              <Text style={styles.actionIcon}>📞</Text>
             </MaterialPressable>
           )}
         </View>
       </View>
 
-      {(lead.nextFollowUpAt || lead.priority) && (
+      {(lead.nextFollowUpAt || lead.priority || onNotes) && (
         <View style={styles.followUp}>
           <View style={styles.followUpLeft}>
             {lead.nextFollowUpAt && (
@@ -154,6 +155,16 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onPress, onCall, onEmail, onW
             )}
           </View>
           <View style={styles.followUpRight}>
+            {onNotes && (
+              <MaterialPressable
+                style={styles.notesButton}
+                onPress={() => onNotes(lead)}
+                rippleColor="rgba(20, 184, 166, 0.2)"
+              >
+                <Text style={styles.notesIcon}>📝</Text>
+                <Text style={styles.notesText}>Notes</Text>
+              </MaterialPressable>
+            )}
             <PriorityBadge priority={lead.priority} size="small" />
           </View>
         </View>
@@ -289,23 +300,50 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
+    minHeight: 32,
   },
   followUpLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    justifyContent: 'flex-start',
   },
   followUpRight: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  notesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    height: 24,
+  },
+  notesIcon: {
+    fontSize: 12,
+    marginRight: 4,
+    lineHeight: 12,
+  },
+  notesText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    lineHeight: 12,
   },
   followUpIcon: {
     fontSize: 14,
     marginRight: 8,
+    lineHeight: 14,
   },
   followUpText: {
     fontSize: 12,
     color: '#F59E0B',
     fontWeight: '500',
+    lineHeight: 14,
   },
 });
 

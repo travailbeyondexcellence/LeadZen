@@ -29,6 +29,7 @@ interface PipelineBoardV2Props {
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
   onWhatsApp?: (lead: Lead) => void;
+  onSMS?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
 }
 
@@ -38,6 +39,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
   onCall,
   onEmail,
   onWhatsApp,
+  onSMS,
   onNotes,
 }) => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -199,6 +201,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
                 onCall={onCall}
                 onEmail={onEmail}
                 onWhatsApp={onWhatsApp}
+                onSMS={onSMS}
                 onNotes={onNotes}
               />
             );

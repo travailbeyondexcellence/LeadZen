@@ -62,6 +62,15 @@ export const Pipeline = () => {
     }
   }, []);
 
+  const handleSMS = useCallback((lead: Lead) => {
+    if (lead.phone) {
+      const cleanPhone = lead.phone.replace(/[^0-9+]/g, '');
+      Linking.openURL(`sms:${cleanPhone}`);
+    } else {
+      Alert.alert('No Phone Number', 'This lead does not have a phone number for SMS.');
+    }
+  }, []);
+
   const handleNotes = useCallback((lead: Lead) => {
     navigation.navigate('LeadNotes' as never, { 
       leadId: lead.id 
@@ -123,6 +132,7 @@ export const Pipeline = () => {
         onCall={handleCall}
         onEmail={handleEmail}
         onWhatsApp={handleWhatsApp}
+        onSMS={handleSMS}
         onNotes={handleNotes}
       />
 
