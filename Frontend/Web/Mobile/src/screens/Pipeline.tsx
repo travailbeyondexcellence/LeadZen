@@ -63,7 +63,7 @@ export const Pipeline = () => {
   }, []);
 
   const handleNotes = useCallback((lead: Lead) => {
-    navigation.navigate('LeadForm' as never, { 
+    navigation.navigate('LeadNotes' as never, { 
       leadId: lead.id 
     } as never);
   }, [navigation]);

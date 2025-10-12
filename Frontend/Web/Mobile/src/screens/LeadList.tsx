@@ -109,7 +109,7 @@ const LeadList: React.FC = () => {
   };
 
   const handleNotes = (lead: Lead) => {
-    navigation.navigate('LeadForm', { leadId: lead.id });
+    navigation.navigate('LeadNotes', { leadId: lead.id });
   };
 
   const handleAddLead = () => {
