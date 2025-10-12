@@ -57,6 +57,14 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     visible: boolean;
   } | null>(null);
   
+  // Keep immediate ref for overlay state to avoid async state issues
+  const dragOverlayRef = useRef<{
+    lead: Lead;
+    x: number;
+    y: number;
+    visible: boolean;
+  } | null>(null);
+  
   // Throttle board move logging
   const lastBoardLogTime = useRef(0);
   
@@ -102,6 +110,9 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
       visible: true
     };
     console.log('[DRAG] Board - Setting overlay state:', newOverlay);
+    
+    // Update both state and ref immediately
+    dragOverlayRef.current = newOverlay;
     setDragOverlay(newOverlay);
     setIsDragging(true);
     setDraggedLead(lead);
@@ -112,20 +123,23 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
     // Throttled logging - only log once per second
     const now = Date.now();
     if (now - lastBoardLogTime.current > 1000) {
-      console.log('[DRAG] Board - Move overlay to:', x, y);
+      console.log('[DRAG] Board - Move overlay to:', x, y, 'ref exists:', !!dragOverlayRef.current, 'state exists:', !!dragOverlay);
       lastBoardLogTime.current = now;
     }
     
-    if (dragOverlay) {
-      setDragOverlay(prev => prev ? { ...prev, x, y } : null);
-    } else {
-      console.log('[DRAG] Board - No overlay to update');
+    // Use ref to check existence (immediate) and update state for rendering
+    if (dragOverlayRef.current) {
+      const updatedOverlay = { ...dragOverlayRef.current, x, y };
+      dragOverlayRef.current = updatedOverlay;
+      setDragOverlay(updatedOverlay);
     }
+    // Removed excessive "No overlay to update" logs to reduce Metro clutter
   };
   
   // Handle global drag overlay end
   const handleDragOverlayEnd = () => {
     console.log('[DRAG] Board - Ending overlay');
+    dragOverlayRef.current = null;
     setDragOverlay(null);
     setIsDragging(false);
     setDraggedLead(null);
@@ -390,7 +404,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
         </View>
       )}
       
-      {/* Debug overlay info */}
+      {/* Debug overlay info - Keep commented for future debugging
       {dragOverlay && (
         <View style={{ 
           position: 'absolute', 
@@ -413,6 +427,7 @@ export const PipelineBoardV2: React.FC<PipelineBoardV2Props> = ({
           </Text>
         </View>
       )}
+      */}
       
       {/* Instructions */}
       {!isLoading && leads.length > 0 && showInstructions && (
