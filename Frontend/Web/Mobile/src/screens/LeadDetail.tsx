@@ -298,6 +298,9 @@ const LeadDetail: React.FC = () => {
             </View>
           </View>
           
+          {/* Vertical Separator */}
+          <View style={styles.verticalSeparator} />
+          
           {/* Right Side - Labels */}
           <View style={styles.rightSection}>
             <Text style={styles.sectionTitle}>Labels</Text>
@@ -440,15 +443,17 @@ const LeadDetail: React.FC = () => {
       {/* Profile Section */}
       <View style={styles.profileSection}>
         {/* Left Side - Contact Info */}
-        <View style={styles.contactInfo}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-            </Text>
+        <View style={styles.cardContainer}>
+          <View style={styles.contactInfo}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {lead.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </Text>
+            </View>
+            <Text style={styles.profileName}>{lead.name}</Text>
+            {lead.position && <Text style={styles.profilePosition}>{lead.position}</Text>}
+            {lead.company && <Text style={styles.profileCompany}>{lead.company}</Text>}
           </View>
-          <Text style={styles.profileName}>{lead.name}</Text>
-          {lead.position && <Text style={styles.profilePosition}>{lead.position}</Text>}
-          {lead.company && <Text style={styles.profileCompany}>{lead.company}</Text>}
         </View>
         
         {/* Right Side - Action Icons Grid */}
@@ -566,15 +571,19 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     padding: Spacing.lg,
     backgroundColor: Colors.background.card,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border.light,
   },
   contactInfo: {
-    paddingRight: Spacing.lg,
     alignItems: 'center',
+  },
+  verticalSeparator: {
+    width: 1,
+    backgroundColor: Colors.border.light,
+    marginHorizontal: Spacing.md,
   },
   avatar: {
     width: 70,
@@ -684,7 +693,7 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     backgroundColor: Colors.background.card,
-    marginHorizontal: Spacing.lg,
+    marginHorizontal: Spacing.sm,
     marginBottom: Spacing.lg,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,

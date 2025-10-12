@@ -50,12 +50,19 @@ const MainScreenContainer: React.FC = () => {
     console.log('✅ Active screen updated to:', tabName);
   };
 
+  // Define screens where dock should be hidden
+  const screensWithoutDock = ['Dialer'];
+  const shouldShowDock = !screensWithoutDock.includes(activeScreen);
+
   return (
     <View style={styles.container}>
       <View style={styles.screenContainer}>
         {renderActiveScreen()}
       </View>
-      <BottomTabDock activeScreen={activeScreen} onTabChange={handleTabChange} />
+      {/* Conditionally render BottomTabDock - hide on Dialer page */}
+      {shouldShowDock && (
+        <BottomTabDock activeScreen={activeScreen} onTabChange={handleTabChange} />
+      )}
     </View>
   );
 };
