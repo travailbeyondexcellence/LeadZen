@@ -42,11 +42,14 @@ const NotesList: React.FC<NotesListProps> = ({
     };
     
     // Format time in AM/PM without seconds
-    const timeString = noteDate.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    let hours = noteDate.getHours();
+    const minutes = noteDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    
+    const timeString = `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
     
     const dateString = `${day}${ordinalSuffix(day)} ${month} ${year}`;
     
