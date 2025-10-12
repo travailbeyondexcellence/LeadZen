@@ -5,10 +5,10 @@ apply plugin: "com.facebook.react"
 android {
     ndkVersion rootProject.ext.ndkVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
-    namespace "com.LeadZen"
+    namespace "com.leadzen"
     
     defaultConfig {
-        applicationId "com.LeadZen"
+        applicationId "com.leadzen"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -44,7 +44,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            applicationIdSuffix ".debug"
             debuggable true
         }
         release {

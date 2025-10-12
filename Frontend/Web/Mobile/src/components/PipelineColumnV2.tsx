@@ -21,7 +21,7 @@ interface PipelineColumnV2Props {
   leads: Lead[];
   onLeadPress?: (lead: Lead) => void;
   onDropLead?: (lead: Lead, stageId: string) => void;
-  onGlobalDropLead?: (lead: Lead, gestureState: any, evt?: any) => void;
+  onGlobalDropLead?: (lead: Lead, gestureState: any) => void;
   onColumnLayout?: (stageId: string, layout: any) => void;
   isDropTarget?: boolean;
   isDragging?: boolean;
@@ -199,6 +199,8 @@ export const PipelineColumnV2: React.FC<PipelineColumnV2Props> = ({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isDragging}
+        nestedScrollEnabled={false}
+        keyboardShouldPersistTaps="handled"
       >
         {leads.length === 0 ? (
           <View style={styles.emptyContainer}>

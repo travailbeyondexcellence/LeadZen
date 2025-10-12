@@ -1,4 +1,4 @@
-package com.LeadZen;
+package com.leadzen;
 
 import com.facebook.react.ReactActivity;
 

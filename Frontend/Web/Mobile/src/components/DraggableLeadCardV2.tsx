@@ -21,7 +21,7 @@ interface DraggableLeadCardV2Props {
   lead: Lead;
   onDragStart?: () => void;
   onDragEnd?: (lead: Lead, gestureState: any) => void;
-  onGlobalDrop?: (lead: Lead, gestureState: any, evt?: any) => void;
+  onGlobalDrop?: (lead: Lead, gestureState: any) => void;
   onPress?: () => void;
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
@@ -56,6 +56,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         return true; // Immediately capture touch on drag handle
       },
       onMoveShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false, // Don't allow termination
       
       onPanResponderGrant: (evt, gestureState) => {
         console.log('🚀 Drag Handle - Starting drag immediately', lead.name);
@@ -65,7 +66,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         // Scale up slightly
         Animated.spring(scale, {
           toValue: 1.05,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }).start();
         
         // Set current pan position
@@ -88,20 +89,23 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         // Reset scale
         Animated.spring(scale, {
           toValue: 1,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }).start();
         
         // Call global drop handler first (this does the actual drop logic)
-        onGlobalDrop?.(lead, gestureState, evt);
+        onGlobalDrop?.(lead, gestureState);
         
         // Then call drag end (this just cleans up UI state)
         onDragEnd?.(lead, gestureState);
         setIsDragging(false);
         
-        // Return to original position
+        // Force return to original position with better animation
+        pan.flattenOffset();
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
+          useNativeDriver: true,
+          tension: 150,
+          friction: 8,
         }).start();
       },
       
@@ -111,30 +115,28 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         Animated.parallel([
           Animated.spring(scale, {
             toValue: 1,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
+            useNativeDriver: true,
+            tension: 150,
+            friction: 8,
           }),
         ]).start();
       },
     })
   ).current;
 
-  // Main card PanResponder - requires movement to start drag
+  // Main card PanResponder - immediate response
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
-        console.log('🟢 Card - onStartShouldSetPanResponder', lead.name);
-        return false;
+        console.log('🟢 Card - Immediate capture', lead.name);
+        return true; // Start drag immediately on touch
       },
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        const { dx, dy } = gestureState;
-        const shouldMove = Math.abs(dx) > 5 || Math.abs(dy) > 5;
-        console.log('🔵 Card - onMoveShouldSetPanResponder', lead.name, 'dx:', dx, 'dy:', dy, 'shouldMove:', shouldMove);
-        return shouldMove;
-      },
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderTerminationRequest: () => false, // Don't allow termination
       
       onPanResponderGrant: (evt, gestureState) => {
         console.log('🟡 Card - Starting drag after movement', lead.name);
@@ -144,7 +146,7 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         // Scale up slightly
         Animated.spring(scale, {
           toValue: 1.05,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }).start();
         
         // Set current pan position
@@ -167,21 +169,24 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         // Reset scale
         Animated.spring(scale, {
           toValue: 1,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }).start();
         
         if (isDragging) {
           // Call global drop handler first (this does the actual drop logic)
-          onGlobalDrop?.(lead, gestureState, evt);
+          onGlobalDrop?.(lead, gestureState);
           
           // Then call drag end (this just cleans up UI state)
           onDragEnd?.(lead, gestureState);
           setIsDragging(false);
           
-          // Return to original position
+          // Force return to original position with better animation
+          pan.flattenOffset();
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
+            useNativeDriver: true,
+            tension: 150,
+            friction: 8,
           }).start();
         } else {
           // This was a tap - but we're disabling tap functionality
@@ -196,11 +201,13 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
         Animated.parallel([
           Animated.spring(scale, {
             toValue: 1,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
+            useNativeDriver: true,
+            tension: 150,
+            friction: 8,
           }),
         ]).start();
       },
@@ -294,13 +301,16 @@ export const DraggableLeadCardV2: React.FC<DraggableLeadCardV2Props> = ({
       { translateY: pan.y },
       { scale: scale },
     ],
+  };
+  
+  const containerStyle = {
     zIndex: isDragging ? 1000 : 1,
     elevation: isDragging ? 10 : 2,
   };
   
   return (
     <Animated.View
-      style={[styles.container, animatedStyle]}
+      style={[styles.container, containerStyle, animatedStyle]}
       {...panResponder.panHandlers}
     >
       {/* Drag Handle Indicator */}
