@@ -2,12 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import EmptyState from './EmptyState';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useTabNavigation } from '../../context/TabNavigationContext';
 
 const NoCallsEmpty: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
+  const { navigateToTab } = useTabNavigation();
 
   const handleMakeCall = () => {
-    navigation.navigate('Dialer' as never);
+    navigateToTab('Dialer');
   };
 
   const illustration = (

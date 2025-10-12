@@ -87,11 +87,14 @@ const BottomTabDock: React.FC<BottomTabDockProps> = ({ activeScreen, onTabChange
       <View style={styles.dockWrapper}>
         {/* Wooden table platform with background image */}
         <ImageBackground
-          source={require('../../Dev_Images/UI_Refs/DockBG.png')}
+          source={require('../assets/images/DockBG.png')}
           style={styles.platform}
           imageStyle={styles.platformImage}
           resizeMode="cover"
-        />
+        >
+          {/* Trapezium perspective overlay */}
+          <View style={styles.perspectiveOverlay} />
+        </ImageBackground>
 
         <View
           style={styles.dock}
@@ -132,37 +135,56 @@ const styles = StyleSheet.create({
   dockWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',             // Ensure wrapper takes full width
+    position: 'relative',
   },
   platform: {
     position: 'absolute',
     bottom: 0,
-    width: SCREEN_WIDTH * 0.9,
-    maxWidth: 420,
-    height: 80,
-    // Remove background color - will use image
-    borderRadius: 16,
-    borderBottomLeftRadius: 0,  // Sharp bottom corners to touch screen edge
-    borderBottomRightRadius: 0,
-    // 3D tilt effect - perspective view of table
+    left: 0,
+    right: 0,
+    width: SCREEN_WIDTH,        // Full screen width - edge to edge
+    height: 90,
+    // Remove rounded corners for full width
+    borderRadius: 0,
+    // Enhanced 3D trapezium perspective
     transform: [
-      { perspective: 1000 },
-      { rotateX: '8deg' },      // Tilt to show table depth
-      { scaleX: 0.95 },         // Slightly narrow at bottom for perspective
+      { perspective: 1200 },
+      { rotateX: '12deg' },       // Stronger tilt for more dramatic perspective
+      { scaleY: 0.8 },           // Compress height for depth
+      { translateY: 15 },        // Lift slightly for better perspective
     ],
-    // Enhanced shadows for 3D table effect
-    shadowColor: '#8B4513',     // Brown shadow to match wood
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 15,
+    // Enhanced shadows for deeper 3D effect
+    shadowColor: '#5D4037',     // Darker brown shadow
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.5,
+    shadowRadius: 25,
+    elevation: 20,
     // Wood table background
-    backgroundColor: '#D2B48C',  // Fallback wood color
+    backgroundColor: '#8D6E63',  // Darker fallback wood color
+    overflow: 'hidden',         // Ensure clean edges
   },
   platformImage: {
-    borderRadius: 16,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    opacity: 0.9,  // Slightly transparent to blend with shadows
+    borderRadius: 0,           // No rounded corners for full width
+    opacity: 0.85,            // Slightly more transparent for depth
+    transform: [
+      { scaleX: 1.1 },         // Stretch image horizontally to fill
+    ],
+  },
+  perspectiveOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',  // Subtle shadow overlay
+    // Create trapezium shape using transform
+    transform: [
+      { perspective: 1000 },
+      { rotateX: '15deg' },               // More aggressive tilt
+      { scaleX: 0.85 },                  // Narrow the top significantly
+      { translateY: -10 },               // Push up for better perspective
+    ],
   },
   dock: {
     flexDirection: 'row',

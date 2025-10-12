@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useSidebarContext } from '../context/SidebarContext';
+import { useTabNavigation } from '../context/TabNavigationContext';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../theme';
 import AsyncStorageService from '../services/AsyncStorageService';
 import { Lead, LeadStatus } from '../types/Lead';
@@ -23,6 +24,7 @@ import CallDetectionService from '../services/CallDetectionService';
 const Dashboard: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { toggleSidebar } = useSidebarContext();
+  const { navigateToTab } = useTabNavigation();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -172,7 +174,7 @@ const Dashboard: React.FC = () => {
             <View style={styles.pipelineOverview}>
               <View style={styles.pipelineHeader}>
                 <Text style={styles.sectionTitle}>Pipeline Overview</Text>
-                <TouchableOpacity onPress={() => navigation?.navigate('Pipeline' as never)}>
+                <TouchableOpacity onPress={() => navigateToTab('Pipeline')}>
                   <Text style={styles.viewAllText}>View Board →</Text>
                 </TouchableOpacity>
               </View>
@@ -192,7 +194,7 @@ const Dashboard: React.FC = () => {
                     <TouchableOpacity 
                       key={stage.id} 
                       style={[styles.pipelineCard, { borderTopColor: stage.color }]}
-                      onPress={() => navigation?.navigate('Pipeline' as never, { focusStage: stage.id } as never)}
+                      onPress={() => navigateToTab('Pipeline')}
                       activeOpacity={0.7}
                     >
                       <View style={styles.cardHeader}>
@@ -236,7 +238,7 @@ const Dashboard: React.FC = () => {
               
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={() => navigation.navigate('Dialer' as never)}
+                onPress={() => navigateToTab('Dialer')}
               >
                 <Text style={styles.actionIcon}>📞</Text>
                 <Text style={styles.actionText}>Make Call</Text>
@@ -244,7 +246,7 @@ const Dashboard: React.FC = () => {
               
               <TouchableOpacity 
                 style={styles.actionButton}
-                onPress={() => navigation?.navigate('Pipeline' as never)}
+                onPress={() => navigateToTab('Pipeline')}
               >
                 <Text style={styles.actionIcon}>📊</Text>
                 <Text style={styles.actionText}>View Pipeline</Text>
@@ -260,7 +262,7 @@ const Dashboard: React.FC = () => {
               
               <TouchableOpacity 
                 style={[styles.actionButton, styles.dialerTestButton]}
-                onPress={() => navigation.navigate('Dialer' as never)}
+                onPress={() => navigateToTab('Dialer')}
               >
                 <Text style={styles.actionIcon}>📱</Text>
                 <Text style={styles.actionText}>Test Dialer & T9</Text>

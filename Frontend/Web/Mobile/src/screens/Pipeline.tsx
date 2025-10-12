@@ -14,12 +14,14 @@ import { Lead } from '../types/Lead';
 import { Colors, Spacing, BorderRadius } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { useSidebarContext } from '../context/SidebarContext';
+import { useTabNavigation } from '../context/TabNavigationContext';
 import PipelineSkeleton from '../components/LoadingStates/PipelineSkeleton';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export const Pipeline = () => {
   const navigation = useNavigation();
   const { toggleSidebar } = useSidebarContext();
+  const { navigateToTab } = useTabNavigation();
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -78,9 +80,7 @@ export const Pipeline = () => {
         break;
       case 'call':
         // Navigate to dialer with lead's phone
-        navigation.navigate('Dialer' as never, { 
-          phoneNumber: selectedLead?.phone 
-        } as never);
+        navigateToTab('Dialer');
         break;
       case 'edit':
         if (selectedLead) {
