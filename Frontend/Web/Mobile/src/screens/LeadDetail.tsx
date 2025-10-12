@@ -9,10 +9,12 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
-  TextInput,
-  Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import NotesList from '../components/notes/NotesList';
+import NotesModal from '../components/notes/NotesModal';
+import NotesService from '../services/NotesService';
+import { Note } from '../types/notes';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Colors, Spacing, BorderRadius, Shadows } from '../theme';
 import { Lead, LeadStatus, LeadPriority } from '../types/Lead';
@@ -33,11 +35,15 @@ const LeadDetail: React.FC = () => {
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'info' | 'notes' | 'activity' | 'reminders'>('info');
-  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
-  const [newNote, setNewNote] = useState('');
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [notesModalVisible, setNotesModalVisible] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | undefined>(undefined);
   
   useEffect(() => {
     loadLead();
+    if (leadId) {
+      loadNotes();
+    }
   }, [leadId]);
   
   const loadLead = async () => {
@@ -50,6 +56,15 @@ const LeadDetail: React.FC = () => {
       Alert.alert('Error', 'Failed to load lead details');
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const loadNotes = async () => {
+    try {
+      const notesData = await NotesService.getNotesForLead(leadId);
+      setNotes(notesData);
+    } catch (error) {
+      console.error('Failed to load notes:', error);
     }
   };
   
@@ -122,35 +137,38 @@ const LeadDetail: React.FC = () => {
     );
   };
   
-  const handleAddNote = async () => {
-    if (!newNote.trim()) {
-      Alert.alert('Error', 'Please enter a note');
-      return;
-    }
-    
+  const handleAddNote = () => {
+    setEditingNote(undefined);
+    setNotesModalVisible(true);
+  };
+
+  const handleEditNote = (note: Note) => {
+    setEditingNote(note);
+    setNotesModalVisible(true);
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
     try {
-      const currentNotes = lead?.notes || '';
-      const timestamp = new Date().toLocaleString();
-      const noteWithTimestamp = `[${timestamp}] ${newNote.trim()}`;
-      const updatedNotes = currentNotes 
-        ? `${currentNotes}\n\n${noteWithTimestamp}`
-        : noteWithTimestamp;
-      
-      await AsyncStorageService.updateLead(leadId, {
-        notes: updatedNotes
-      });
-      
-      // Update local state
-      setLead(prev => prev ? { ...prev, notes: updatedNotes } : null);
-      
-      // Reset and close modal
-      setNewNote('');
-      setShowAddNoteModal(false);
-      
-      Alert.alert('Success', 'Note added successfully');
+      await NotesService.deleteNote(leadId, noteId);
+      await loadNotes(); // Reload notes after deletion
     } catch (error) {
-      console.error('Failed to add note:', error);
-      Alert.alert('Error', 'Failed to add note');
+      console.error('Failed to delete note:', error);
+      Alert.alert('Error', 'Failed to delete note');
+    }
+  };
+
+  const handleSaveNote = async (noteData: Omit<Note, 'id' | 'createdAt'>) => {
+    try {
+      if (editingNote) {
+        await NotesService.updateNote(leadId, editingNote.id, noteData);
+      } else {
+        await NotesService.addNote(leadId, noteData);
+      }
+      await loadNotes(); // Reload notes after save
+      setNotesModalVisible(false);
+    } catch (error) {
+      console.error('Failed to save note:', error);
+      Alert.alert('Error', 'Failed to save note');
     }
   };
   
@@ -279,16 +297,12 @@ const LeadDetail: React.FC = () => {
   
   const renderNotesTab = () => (
     <View style={styles.tabContent}>
-      <View style={styles.notesContainer}>
-        <Text style={styles.notesText}>
-          {lead?.notes || 'No notes available for this lead.'}
-        </Text>
-      </View>
-      
-      <TouchableOpacity style={styles.addNoteButton} onPress={() => setShowAddNoteModal(true)}>
-        <Text style={styles.addNoteIcon}>📝</Text>
-        <Text style={styles.addNoteText}>Add Note</Text>
-      </TouchableOpacity>
+      <NotesList
+        notes={notes}
+        onAddNote={handleAddNote}
+        onEditNote={handleEditNote}
+        onDeleteNote={handleDeleteNote}
+      />
     </View>
   );
   
@@ -469,38 +483,14 @@ const LeadDetail: React.FC = () => {
         {activeTab === 'reminders' && renderRemindersTab()}
       </ScrollView>
       
-      {/* Add Note Modal */}
-      <Modal
-        visible={showAddNoteModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowAddNoteModal(false)}
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowAddNoteModal(false)}>
-              <Text style={styles.modalCancelButton}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add Note</Text>
-            <TouchableOpacity onPress={handleAddNote}>
-              <Text style={styles.modalSaveButton}>Save</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.modalContent}>
-            <TextInput
-              style={styles.noteInput}
-              value={newNote}
-              onChangeText={setNewNote}
-              placeholder="Enter your note here..."
-              multiline
-              numberOfLines={8}
-              textAlignVertical="top"
-              autoFocus
-            />
-          </View>
-        </SafeAreaView>
-      </Modal>
+      {/* Notes Modal - Reusing Existing System */}
+      <NotesModal
+        visible={notesModalVisible}
+        leadId={leadId}
+        existingNote={editingNote}
+        onClose={() => setNotesModalVisible(false)}
+        onSave={handleSaveNote}
+      />
     </SafeAreaView>
   );
 };
@@ -714,35 +704,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: '600',
   },
-  notesContainer: {
-    backgroundColor: Colors.background.secondary,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    minHeight: 100,
-  },
-  notesText: {
-    fontSize: 14,
-    color: Colors.text.primary,
-    lineHeight: 20,
-  },
-  addNoteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.md,
-    marginTop: Spacing.lg,
-    backgroundColor: Colors.primary.base,
-    borderRadius: BorderRadius.md,
-  },
-  addNoteIcon: {
-    fontSize: 18,
-    marginRight: Spacing.sm,
-  },
-  addNoteText: {
-    fontSize: 14,
-    color: Colors.white,
-    fontWeight: '600',
-  },
   emptyState: {
     alignItems: 'center',
     paddingVertical: Spacing.xl * 2,
@@ -777,46 +738,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.text.secondary,
     textAlign: 'center',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: Colors.background.primary,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border.light,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.text.primary,
-  },
-  modalCancelButton: {
-    fontSize: 16,
-    color: Colors.text.secondary,
-  },
-  modalSaveButton: {
-    fontSize: 16,
-    color: Colors.primary.base,
-    fontWeight: '600',
-  },
-  modalContent: {
-    flex: 1,
-    padding: Spacing.lg,
-  },
-  noteInput: {
-    flex: 1,
-    backgroundColor: Colors.background.secondary,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    fontSize: 16,
-    color: Colors.text.primary,
-    borderWidth: 1,
-    borderColor: Colors.border.light,
   },
   labelsList: {
     flexDirection: 'row',
