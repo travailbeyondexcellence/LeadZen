@@ -57,9 +57,9 @@ android {
         release {
             signingConfig signingConfigs.release
             debuggable false
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            minifyEnabled false          // Disable JS minification (fixes button issues)
+            shrinkResources false        // Disable resource shrinking (keeps all resources)
+            // proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"  // Disabled ProGuard
             
             // Temporarily disable resource verification to fix Windows runtime issue
             crunchPngs false
