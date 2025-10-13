@@ -166,7 +166,11 @@ public class FloatingOverlayService extends Service {
     }
 
     private void handleOverlayClick() {
-        android.util.Log.d("FloatingOverlay", "🚀 NATIVE OVERLAY CLICKED! Sending broadcast...");
+        android.util.Log.d("FloatingOverlay", "🎯 FLOATING ICON CLICKED! User tapped the floating icon!");
+        android.util.Log.d("FloatingOverlay", "🎯 ==========================================");
+        android.util.Log.d("FloatingOverlay", "🎯 FLOATING ICON CLICK DETECTED");
+        android.util.Log.d("FloatingOverlay", "🎯 Now sending broadcast to trigger overlay expansion...");
+        android.util.Log.d("FloatingOverlay", "🎯 ==========================================");
         
         // Send both local and system broadcast to ensure one works
         try {
@@ -181,6 +185,20 @@ public class FloatingOverlayService extends Service {
             packageIntent.setPackage(getPackageName());
             sendBroadcast(packageIntent);
             android.util.Log.d("FloatingOverlay", "✅ Package-targeted broadcast sent successfully");
+            
+            // Add a delay and try one more broadcast
+            new android.os.Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Intent retryIntent = new Intent("FLOATING_OVERLAY_CLICKED");
+                        sendBroadcast(retryIntent);
+                        android.util.Log.d("FloatingOverlay", "✅ Retry broadcast sent after delay");
+                    } catch (Exception e) {
+                        android.util.Log.e("FloatingOverlay", "❌ Retry broadcast failed: " + e.getMessage());
+                    }
+                }
+            }, 100);
             
         } catch (Exception e) {
             android.util.Log.e("FloatingOverlay", "❌ Error sending broadcasts: " + e.getMessage());

@@ -30,18 +30,33 @@ class CallDetectionService {
       console.log('[CALL_DETECTION] lastMatchResult:', this.lastMatchResult);
       
       // Show the React Native overlay when native overlay is clicked
-      if (this.floatingCallManager && this.lastCallPhoneNumber) {
-        console.log('[CALL_DETECTION] ✅ All requirements met - showing React Native overlay');
+      if (this.floatingCallManager) {
+        console.log('[CALL_DETECTION] ✅ FloatingCallManager available - proceeding with overlay expansion');
         
         try {
-          // Show the React Native overlay
+          // Use stored phone number or fallback to current call or default
+          const phoneNumber = this.lastCallPhoneNumber || 
+                             this.currentCall?.phoneNumber || 
+                             'Unknown Number';
+          
           const callType = this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming';
+          console.log('[CALL_DETECTION] Using phone number:', phoneNumber);
           console.log('[CALL_DETECTION] Call type determined:', callType);
           
+          // Create a match result if we don't have one
+          const matchResult = this.lastMatchResult || {
+            phoneNumber: phoneNumber,
+            normalizedNumber: phoneNumber,
+            matchedLeads: [],
+            matchConfidence: 'none',
+            multipleMatches: false,
+            hasMatch: false
+          };
+          
           this.showFloatingCallOverlay(
-            this.lastCallPhoneNumber,
+            phoneNumber,
             callType,
-            this.lastMatchResult || null
+            matchResult
           );
           
           console.log('[CALL_DETECTION] 🚀 React Native overlay show request sent successfully');
@@ -49,7 +64,7 @@ class CallDetectionService {
           console.error('[CALL_DETECTION] ❌ Error showing React Native overlay:', error);
         }
       } else {
-        console.log('[CALL_DETECTION] ❌ Cannot expand overlay - requirements not met:');
+        console.log('[CALL_DETECTION] ❌ Cannot expand overlay - FloatingCallManager not available');
         console.log('[CALL_DETECTION] - floatingCallManager:', !!this.floatingCallManager);
         console.log('[CALL_DETECTION] - lastCallPhoneNumber:', this.lastCallPhoneNumber);
         console.log('[CALL_DETECTION] - currentCall:', this.currentCall);

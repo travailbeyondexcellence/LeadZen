@@ -103,6 +103,29 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const testNativeBroadcast = async () => {
+    console.log('🧪 ========================================');
+    console.log('🧪 COMPREHENSIVE NATIVE BROADCAST TEST');
+    console.log('🧪 This tests the native floating icon → React Native communication');
+    console.log('🧪 ========================================');
+    
+    try {
+      // Test the native overlay click communication
+      const result = await CallDetectionService.testNativeOverlayClick();
+      console.log('🧪 Native broadcast test result:', result);
+      
+      if (result) {
+        console.log('🧪 ✅ SUCCESS: Native broadcast communication is working!');
+        console.log('🧪 ✅ This means clicking the floating icon should work during real calls.');
+      } else {
+        console.log('🧪 ❌ FAILED: Native broadcast communication is not working.');
+        console.log('🧪 ❌ This explains why clicking the floating icon doesn\'t trigger overlay expansion.');
+      }
+    } catch (error) {
+      console.error('🧪 ❌ Native broadcast test error:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
@@ -276,6 +299,14 @@ const Dashboard: React.FC = () => {
               >
                 <Text style={styles.actionIcon}>🎯</Text>
                 <Text style={styles.actionText}>Test Floating Expand</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.broadcastTestButton]}
+                onPress={testNativeBroadcast}
+              >
+                <Text style={styles.actionIcon}>📡</Text>
+                <Text style={styles.actionText}>Test Native Broadcast</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -566,6 +597,10 @@ const styles = StyleSheet.create({
   floatingTestButton: {
     backgroundColor: '#10B981',
     borderColor: '#10B981',
+  },
+  broadcastTestButton: {
+    backgroundColor: '#8B5CF6',
+    borderColor: '#8B5CF6',
   },
   dialerTestButton: {
     backgroundColor: '#007AFF',

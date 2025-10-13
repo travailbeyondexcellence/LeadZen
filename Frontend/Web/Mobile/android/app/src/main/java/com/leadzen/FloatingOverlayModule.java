@@ -47,7 +47,11 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
             overlayReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    Log.d("FloatingOverlay", "🎯 BROADCAST RECEIVED! Action: " + intent.getAction());
+                    Log.d("FloatingOverlay", "🎯 ========================================");
+                    Log.d("FloatingOverlay", "🎯 BROADCAST RECEIVED IN REACT NATIVE MODULE!");
+                    Log.d("FloatingOverlay", "🎯 This means the floating icon click was detected!");
+                    Log.d("FloatingOverlay", "🎯 ========================================");
+                    Log.d("FloatingOverlay", "📻 Action: " + intent.getAction());
                     Log.d("FloatingOverlay", "📻 Context: " + context.getClass().getSimpleName());
                     Log.d("FloatingOverlay", "📻 Intent details: " + intent.toString());
                     Log.d("FloatingOverlay", "📻 Intent package: " + intent.getPackage());
@@ -55,12 +59,14 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
                     Log.d("FloatingOverlay", "📻 React context active: " + (reactContext != null && reactContext.hasActiveCatalystInstance()));
                     
                     if ("FLOATING_OVERLAY_CLICKED".equals(intent.getAction())) {
-                        Log.d("FloatingOverlay", "🚀 OVERLAY CLICK BROADCAST RECEIVED! Sending to React Native...");
+                        Log.d("FloatingOverlay", "🚀 CORRECT ACTION RECEIVED! Now sending to React Native...");
+                        Log.d("FloatingOverlay", "🚀 This should trigger the overlay expansion...");
                         try {
                             sendEvent("FloatingOverlayClicked", null);
-                            Log.d("FloatingOverlay", "✅ Event sent to React Native: FloatingOverlayClicked");
+                            Log.d("FloatingOverlay", "✅ ✅ ✅ Event sent to React Native: FloatingOverlayClicked");
+                            Log.d("FloatingOverlay", "✅ React Native should now show the expanded overlay!");
                         } catch (Exception e) {
-                            Log.e("FloatingOverlay", "❌ Error sending event to React Native: " + e.getMessage());
+                            Log.e("FloatingOverlay", "❌ ERROR sending event to React Native: " + e.getMessage());
                             e.printStackTrace();
                         }
                     } else {
@@ -71,7 +77,15 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
 
             IntentFilter filter = new IntentFilter("FLOATING_OVERLAY_CLICKED");
             filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-            reactContext.registerReceiver(overlayReceiver, filter);
+            
+            // Android 14+ requires explicit export flag for broadcast receivers
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                reactContext.registerReceiver(overlayReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED);
+                Log.d("FloatingOverlay", "✅ Broadcast receiver registered with RECEIVER_NOT_EXPORTED flag");
+            } else {
+                reactContext.registerReceiver(overlayReceiver, filter);
+                Log.d("FloatingOverlay", "✅ Broadcast receiver registered (legacy method)");
+            }
             Log.d("FloatingOverlay", "✅ Broadcast receiver registered successfully for action: FLOATING_OVERLAY_CLICKED");
             Log.d("FloatingOverlay", "✅ Filter priority set to HIGH for better reception");
         } catch (Exception e) {
@@ -144,10 +158,38 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void testBroadcast(Promise promise) {
         try {
-            Log.d("FloatingOverlay", "🧪 Manual test broadcast triggered");
+            Log.d("FloatingOverlay", "🧪 ========================================");
+            Log.d("FloatingOverlay", "🧪 MANUAL TEST BROADCAST TRIGGERED");
+            Log.d("FloatingOverlay", "🧪 This should trigger the same flow as clicking floating icon");
+            Log.d("FloatingOverlay", "🧪 ========================================");
+            
+            Log.d("FloatingOverlay", "🧪 Checking broadcast receiver setup:");
+            Log.d("FloatingOverlay", "🧪 - Receiver object: " + (overlayReceiver != null ? "EXISTS" : "NULL"));
+            Log.d("FloatingOverlay", "🧪 - React context: " + (reactContext != null ? "EXISTS" : "NULL"));
+            Log.d("FloatingOverlay", "🧪 - Context active: " + (reactContext != null && reactContext.hasActiveCatalystInstance()));
+            
+            Log.d("FloatingOverlay", "🧪 Sending broadcast with action: FLOATING_OVERLAY_CLICKED");
             Intent intent = new Intent("FLOATING_OVERLAY_CLICKED");
+            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             reactContext.sendBroadcast(intent);
-            Log.d("FloatingOverlay", "🧪 Test broadcast sent successfully");
+            Log.d("FloatingOverlay", "🧪 Test broadcast sent successfully - now waiting for receiver...");
+            
+            // Add a small delay and try again with different approach
+            new android.os.Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Log.d("FloatingOverlay", "🧪 Sending retry broadcast with package targeting...");
+                        Intent retryIntent = new Intent("FLOATING_OVERLAY_CLICKED");
+                        retryIntent.setPackage(reactContext.getPackageName());
+                        reactContext.sendBroadcast(retryIntent);
+                        Log.d("FloatingOverlay", "🧪 Retry broadcast sent");
+                    } catch (Exception e) {
+                        Log.e("FloatingOverlay", "🧪 Retry broadcast failed: " + e.getMessage());
+                    }
+                }
+            }, 100);
+            
             promise.resolve("Test broadcast sent");
         } catch (Exception e) {
             Log.e("FloatingOverlay", "🧪 Test broadcast failed: " + e.getMessage());
