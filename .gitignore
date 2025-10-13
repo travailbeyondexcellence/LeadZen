@@ -44,6 +44,7 @@ coverage/
 # Build outputs
 dist/
 build/
+!Frontend/Web/Mobile/android/app/build/outputs/apk/release/
 *.tgz
 *.tar.gz
 

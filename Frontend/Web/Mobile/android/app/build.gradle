@@ -29,6 +29,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (project.hasProperty('LEADZEN_UPLOAD_STORE_FILE')) {
+                storeFile file(LEADZEN_UPLOAD_STORE_FILE)
+                storePassword LEADZEN_UPLOAD_STORE_PASSWORD
+                keyAlias LEADZEN_UPLOAD_KEY_ALIAS
+                keyPassword LEADZEN_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     
     // Split APKs by architecture for smaller downloads
@@ -47,11 +55,14 @@ android {
             debuggable true
         }
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             debuggable false
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            
+            // Temporarily disable resource verification to fix Windows runtime issue
+            crunchPngs false
             
             // Crash reporting and optimization
             buildConfigField("String", "BUILD_TYPE", "\"release\"")
