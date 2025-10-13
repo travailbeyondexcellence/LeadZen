@@ -13,6 +13,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.FrameLayout;
+import android.animation.ObjectAnimator;
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import androidx.annotation.Nullable;
 
 public class FloatingOverlayService extends Service {
@@ -34,44 +38,128 @@ public class FloatingOverlayService extends Service {
     }
 
     private void createFloatingView() {
-        // Create main container with larger clickable area
-        LinearLayout container = new LinearLayout(this);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.setPadding(32, 32, 32, 32);
-        container.setMinimumWidth(120);
-        container.setMinimumHeight(120);
+        // Create beautiful circular floating icon exactly like React Native version
+        FrameLayout container = new FrameLayout(this);
         container.setClickable(true);
         container.setFocusable(true);
-        android.util.Log.d("FloatingOverlay", "Container created with clickable: true, focusable: true");
+        android.util.Log.d("FloatingOverlay", "Creating beautiful circular floating icon...");
         
-        // Create background
-        GradientDrawable background = new GradientDrawable();
-        background.setShape(GradientDrawable.RECTANGLE);
-        background.setColor(Color.parseColor("#E614B8A6"));
-        background.setCornerRadius(24);
-        background.setStroke(4, Color.parseColor("#14B8A6"));
-        container.setBackground(background);
+        // Outer pulse ring (blinking effect)
+        TextView pulseRing = new TextView(this);
+        GradientDrawable pulseBackground = new GradientDrawable();
+        pulseBackground.setShape(GradientDrawable.OVAL);
+        pulseBackground.setColor(Color.parseColor("#4014B8A6")); // 25% opacity teal
+        pulseRing.setBackground(pulseBackground);
+        FrameLayout.LayoutParams pulseParams = new FrameLayout.LayoutParams(dpToPx(70), dpToPx(70));
+        pulseParams.gravity = Gravity.CENTER;
+        pulseRing.setLayoutParams(pulseParams);
         
-        // Create phone icon
+        // Main circular icon background
+        TextView iconBackground = new TextView(this);
+        GradientDrawable mainBackground = new GradientDrawable();
+        mainBackground.setShape(GradientDrawable.OVAL);
+        mainBackground.setColor(Color.parseColor("#14B8A6")); // Teal primary color
+        mainBackground.setStroke(dpToPx(3), Color.parseColor("#FFFFFF")); // White border
+        iconBackground.setBackground(mainBackground);
+        
+        // Add shadow effect for elevation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            iconBackground.setElevation(dpToPx(8));
+        }
+        
+        FrameLayout.LayoutParams iconParams = new FrameLayout.LayoutParams(dpToPx(56), dpToPx(56));
+        iconParams.gravity = Gravity.CENTER;
+        iconBackground.setLayoutParams(iconParams);
+        
+        // Phone icon (using Unicode phone symbol)
         TextView phoneIcon = new TextView(this);
         phoneIcon.setText("📞");
-        phoneIcon.setTextSize(28);
-        phoneIcon.setPadding(20, 20, 20, 12);
+        phoneIcon.setTextSize(24);
         phoneIcon.setGravity(Gravity.CENTER);
+        FrameLayout.LayoutParams phoneParams = new FrameLayout.LayoutParams(dpToPx(56), dpToPx(56));
+        phoneParams.gravity = Gravity.CENTER;
+        phoneIcon.setLayoutParams(phoneParams);
         
-        // Create lead name text
+        // Call type indicator (small icon in top-right)
+        TextView callTypeIndicator = new TextView(this);
+        callTypeIndicator.setText("📞");
+        callTypeIndicator.setTextSize(10);
+        callTypeIndicator.setGravity(Gravity.CENTER);
+        
+        GradientDrawable indicatorBg = new GradientDrawable();
+        indicatorBg.setShape(GradientDrawable.OVAL);
+        indicatorBg.setColor(Color.parseColor("#FFFFFF"));
+        indicatorBg.setStroke(dpToPx(1), Color.parseColor("#E5E7EB"));
+        callTypeIndicator.setBackground(indicatorBg);
+        
+        FrameLayout.LayoutParams indicatorParams = new FrameLayout.LayoutParams(dpToPx(20), dpToPx(20));
+        indicatorParams.gravity = Gravity.TOP | Gravity.END;
+        indicatorParams.setMargins(0, dpToPx(5), dpToPx(5), 0);
+        callTypeIndicator.setLayoutParams(indicatorParams);
+        
+        // Lead name label (below icon)
         leadNameView = new TextView(this);
         leadNameView.setText("Unknown");
-        leadNameView.setTextColor(Color.WHITE);
-        leadNameView.setTextSize(12);
+        leadNameView.setTextColor(Color.parseColor("#1F2937"));
+        leadNameView.setTextSize(10);
         leadNameView.setGravity(Gravity.CENTER);
-        leadNameView.setPadding(8, 0, 8, 4);
+        leadNameView.setTypeface(null, android.graphics.Typeface.BOLD);
+        leadNameView.setPadding(dpToPx(6), dpToPx(2), dpToPx(6), dpToPx(2));
+        leadNameView.setMaxWidth(dpToPx(80));
+        leadNameView.setSingleLine(true);
         
-        // Add views to container
-        container.addView(phoneIcon);
-        container.addView(leadNameView);
+        // Name background
+        GradientDrawable nameBg = new GradientDrawable();
+        nameBg.setShape(GradientDrawable.RECTANGLE);
+        nameBg.setColor(Color.parseColor("#FFFFFF"));
+        nameBg.setCornerRadius(dpToPx(6));
+        nameBg.setStroke(dpToPx(1), Color.parseColor("#E5E7EB"));
+        leadNameView.setBackground(nameBg);
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            leadNameView.setElevation(dpToPx(4));
+        }
+        
+        FrameLayout.LayoutParams nameParams = new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        nameParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+        nameParams.setMargins(0, 0, 0, -dpToPx(10));
+        leadNameView.setLayoutParams(nameParams);
+        
+        // Assemble the floating icon
+        container.addView(pulseRing);      // Pulse background
+        container.addView(iconBackground); // Main circular background
+        container.addView(phoneIcon);      // Phone icon
+        container.addView(callTypeIndicator); // Call type indicator
+        container.addView(leadNameView);   // Lead name
         
         floatingView = container;
+        
+        // Start pulse animation
+        startPulseAnimation(pulseRing);
+        
+        android.util.Log.d("FloatingOverlay", "✅ Beautiful circular floating icon created successfully!");
+    }
+    
+    // Pulse animation for the blinking outer ring
+    private void startPulseAnimation(View pulseRing) {
+        android.animation.ObjectAnimator scaleXAnimator = android.animation.ObjectAnimator.ofFloat(pulseRing, "scaleX", 1f, 1.3f, 1f);
+        android.animation.ObjectAnimator scaleYAnimator = android.animation.ObjectAnimator.ofFloat(pulseRing, "scaleY", 1f, 1.3f, 1f);
+        android.animation.ObjectAnimator alphaAnimator = android.animation.ObjectAnimator.ofFloat(pulseRing, "alpha", 0.7f, 0.3f, 0.7f);
+        
+        android.animation.AnimatorSet pulseSet = new android.animation.AnimatorSet();
+        pulseSet.playTogether(scaleXAnimator, scaleYAnimator, alphaAnimator);
+        pulseSet.setDuration(1200); // 1.2 second pulse
+        // AnimatorSet doesn't have repeat methods, so we'll use individual animators
+        scaleXAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        scaleXAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        scaleYAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        scaleYAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        alphaAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        alphaAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        
+        pulseSet.start();
+        android.util.Log.d("FloatingOverlay", "✅ Pulse animation started - outer ring should be blinking!");
 
         // Set up window parameters
         int layoutType;
@@ -91,67 +179,93 @@ public class FloatingOverlayService extends Service {
                 PixelFormat.TRANSLUCENT
         );
 
-        params.gravity = Gravity.TOP | Gravity.RIGHT;
-        params.x = 50;
-        params.y = 200;
+        // No gravity - use absolute positioning for completely free movement
+        params.gravity = Gravity.NO_GRAVITY;
+        params.x = 300; // Absolute position from left
+        params.y = 400; // Absolute position from top
 
         // Add view to window manager
         windowManager.addView(floatingView, params);
         android.util.Log.d("FloatingOverlay", "Floating view added to WindowManager successfully");
 
-        // Set up touch listener with better click detection
+        // Enhanced touch listener for smooth dragging and reliable click detection
         floatingView.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
             private long touchStartTime;
+            private boolean isDragging = false;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                android.util.Log.d("FloatingOverlay", "Touch event: " + event.getAction());
-                
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        android.util.Log.d("FloatingOverlay", "Touch DOWN detected");
+                        // Store initial positions
                         initialX = params.x;
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
                         touchStartTime = System.currentTimeMillis();
+                        isDragging = false;
+                        
+                        // Add visual feedback - slightly scale down
+                        floatingView.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).start();
+                        
+                        android.util.Log.d("FloatingOverlay", "👆 Touch DOWN - Ready for drag or click");
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        // Only move if significant movement
                         float deltaX = event.getRawX() - initialTouchX;
                         float deltaY = event.getRawY() - initialTouchY;
-                        if (Math.abs(deltaX) > 20 || Math.abs(deltaY) > 20) {
-                            params.x = initialX + (int) deltaX;
-                            params.y = initialY + (int) deltaY;
+                        float moveDistance = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        
+                        // Start dragging if moved more than threshold
+                        if (moveDistance > 15 && !isDragging) {
+                            isDragging = true;
+                            android.util.Log.d("FloatingOverlay", "🚀 Started dragging - smooth movement enabled");
+                        }
+                        
+                        if (isDragging) {
+                            // Completely free dragging with NO_GRAVITY - direct absolute positioning
+                            params.x = initialX + (int) deltaX; // Add deltaX for absolute positioning
+                            params.y = initialY + (int) deltaY; // Add deltaY for absolute positioning
+                            
                             windowManager.updateViewLayout(floatingView, params);
-                            android.util.Log.d("FloatingOverlay", "Moving overlay to: " + params.x + ", " + params.y);
+                            android.util.Log.d("FloatingOverlay", "📍 Free dragging to: x=" + params.x + ", y=" + params.y);
                         }
                         return true;
 
                     case MotionEvent.ACTION_UP:
-                        android.util.Log.d("FloatingOverlay", "Touch UP detected");
+                        // Restore visual feedback
+                        floatingView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start();
+                        
                         long touchDuration = System.currentTimeMillis() - touchStartTime;
-                        float moveDistance = (float) Math.sqrt(
+                        float finalMoveDistance = (float) Math.sqrt(
                             Math.pow(event.getRawX() - initialTouchX, 2) + 
                             Math.pow(event.getRawY() - initialTouchY, 2)
                         );
                         
-                        android.util.Log.d("FloatingOverlay", "Touch duration: " + touchDuration + "ms, Move distance: " + moveDistance + "px");
+                        android.util.Log.d("FloatingOverlay", "👆 Touch UP - Duration: " + touchDuration + "ms, Distance: " + finalMoveDistance + "px");
                         
-                        // More lenient click detection: longer duration OR more movement allowed
-                        if (touchDuration < 1000 && moveDistance < 50) {
-                            android.util.Log.d("FloatingOverlay", "🎯 CLICK DETECTED! Triggering click handler...");
-                            android.util.Log.d("FloatingOverlay", "📊 Click stats - Duration: " + touchDuration + "ms, Distance: " + moveDistance + "px");
+                        if (!isDragging && touchDuration < 500 && finalMoveDistance < 20) {
+                            // This is a click, not a drag
+                            android.util.Log.d("FloatingOverlay", "🎯 CLICK DETECTED! Expanding overlay...");
                             handleOverlayClick();
-                        } else {
-                            android.util.Log.d("FloatingOverlay", "❌ Not a click - duration: " + touchDuration + "ms, distance: " + moveDistance + "px");
                         }
+                        // Removed snap to edge - free dragging everywhere!
+                        
+                        isDragging = false;
                         return true;
                 }
                 return false;
+            }
+        });
+        
+        // Backup click listener for additional reliability
+        floatingView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                android.util.Log.d("FloatingOverlay", "🎯 Backup click listener triggered!");
+                handleOverlayClick();
             }
         });
         
@@ -167,8 +281,10 @@ public class FloatingOverlayService extends Service {
             }
         });
         
-        android.util.Log.d("FloatingOverlay", "Touch and click listeners setup complete");
+        android.util.Log.d("FloatingOverlay", "✅ Enhanced floating icon with dragging and click detection setup complete");
     }
+    
+    // Removed snapToEdge method - now allows completely free dragging
 
     private void createExpandedOverlay() {
         android.util.Log.d("FloatingOverlay", "Creating enhanced expanded overlay...");
