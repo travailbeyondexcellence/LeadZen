@@ -289,28 +289,32 @@ public class FloatingOverlayService extends Service {
     // Removed snapToEdge method - now allows completely free dragging
 
     private void createExpandedOverlay() {
-        android.util.Log.d("FloatingOverlay", "Creating professional expanded overlay matching reference design...");
+        android.util.Log.d("FloatingOverlay", "Creating professional overlay with proper transparency and icon connection...");
         
-        // Main container - full screen modal overlay
-        LinearLayout mainContainer = new LinearLayout(this);
-        mainContainer.setOrientation(LinearLayout.VERTICAL);
+        // Main container with semi-transparent background (like reference image)
+        FrameLayout mainContainer = new FrameLayout(this);
         mainContainer.setClickable(true);
         mainContainer.setFocusable(true);
-        mainContainer.setBackgroundColor(Color.parseColor("#F5F5F5")); // Light gray background
+        // Semi-transparent dark overlay background (50% opacity)
+        mainContainer.setBackgroundColor(Color.parseColor("#80000000")); // 50% black overlay
         
-        // Professional overlay background with shadow
-        LinearLayout overlayContainer = new LinearLayout(this);
-        overlayContainer.setOrientation(LinearLayout.VERTICAL);
-        overlayContainer.setPadding(dpToPx(20), dpToPx(24), dpToPx(20), dpToPx(20));
+        // Create a new circular icon for the top of overlay (don't move the original)
+        View overlayIcon = createOverlayTopIcon();
         
-        GradientDrawable overlayBg = new GradientDrawable();
-        overlayBg.setShape(GradientDrawable.RECTANGLE);
-        overlayBg.setColor(Color.parseColor("#FFFFFF"));
-        overlayBg.setCornerRadius(dpToPx(20));
-        overlayContainer.setBackground(overlayBg);
+        // Professional overlay card (positioned below the icon)
+        LinearLayout overlayCard = new LinearLayout(this);
+        overlayCard.setOrientation(LinearLayout.VERTICAL);
+        overlayCard.setPadding(dpToPx(20), dpToPx(60), dpToPx(20), dpToPx(20)); // Top padding for icon space
+        
+        // White card background with rounded corners
+        GradientDrawable cardBg = new GradientDrawable();
+        cardBg.setShape(GradientDrawable.RECTANGLE);
+        cardBg.setColor(Color.parseColor("#FFFFFF"));
+        cardBg.setCornerRadius(dpToPx(16));
+        overlayCard.setBackground(cardBg);
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            overlayContainer.setElevation(dpToPx(16));
+            overlayCard.setElevation(dpToPx(16));
         }
         
         // PHASE 1: Professional Header with Contact Info
@@ -329,20 +333,30 @@ public class FloatingOverlayService extends Service {
         LinearLayout bottomActionBar = createBottomActionBar();
         
         // Assemble all sections
-        overlayContainer.addView(headerSection);
-        overlayContainer.addView(quickActionsSection);
-        overlayContainer.addView(tabNavigationSection);
-        overlayContainer.addView(labelSection);
-        overlayContainer.addView(bottomActionBar);
+        overlayCard.addView(headerSection);
+        overlayCard.addView(quickActionsSection);
+        overlayCard.addView(tabNavigationSection);
+        overlayCard.addView(labelSection);
+        overlayCard.addView(bottomActionBar);
         
-        // Center the overlay container
-        LinearLayout.LayoutParams overlayParams = new LinearLayout.LayoutParams(
-            dpToPx(350), LinearLayout.LayoutParams.WRAP_CONTENT);
-        overlayParams.gravity = Gravity.CENTER;
-        overlayParams.setMargins(dpToPx(20), dpToPx(100), dpToPx(20), dpToPx(100));
-        overlayContainer.setLayoutParams(overlayParams);
+        // Position the overlay card (takes ~50% of screen height, connected to icon)
+        FrameLayout.LayoutParams cardParams = new FrameLayout.LayoutParams(
+            dpToPx(340), FrameLayout.LayoutParams.WRAP_CONTENT);
+        cardParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
+        cardParams.setMargins(dpToPx(20), dpToPx(120), dpToPx(20), dpToPx(50)); // Position below icon
+        overlayCard.setLayoutParams(cardParams);
         
-        mainContainer.addView(overlayContainer);
+        // Position the overlay icon at the top center
+        FrameLayout.LayoutParams iconParams = new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        iconParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
+        iconParams.setMargins(0, dpToPx(60), 0, 0); // Top margin for icon
+        overlayIcon.setLayoutParams(iconParams);
+        
+        // Add both card and icon to main container
+        mainContainer.addView(overlayCard);
+        mainContainer.addView(overlayIcon);
+        
         expandedView = mainContainer;
         
         // Set up window parameters
@@ -702,6 +716,56 @@ public class FloatingOverlayService extends Service {
         return buttonContainer;
     }
     
+    // Create the circular icon that appears at top of overlay (connected to main card)
+    private View createOverlayTopIcon() {
+        FrameLayout container = new FrameLayout(this);
+        
+        // Outer pulse ring (same as floating icon)
+        TextView pulseRing = new TextView(this);
+        GradientDrawable pulseBackground = new GradientDrawable();
+        pulseBackground.setShape(GradientDrawable.OVAL);
+        pulseBackground.setColor(Color.parseColor("#4014B8A6")); // 25% opacity teal
+        pulseRing.setBackground(pulseBackground);
+        FrameLayout.LayoutParams pulseParams = new FrameLayout.LayoutParams(dpToPx(70), dpToPx(70));
+        pulseParams.gravity = Gravity.CENTER;
+        pulseRing.setLayoutParams(pulseParams);
+        
+        // Main circular icon background
+        TextView iconBackground = new TextView(this);
+        GradientDrawable mainBackground = new GradientDrawable();
+        mainBackground.setShape(GradientDrawable.OVAL);
+        mainBackground.setColor(Color.parseColor("#14B8A6")); // Teal primary color
+        mainBackground.setStroke(dpToPx(3), Color.parseColor("#FFFFFF")); // White border
+        iconBackground.setBackground(mainBackground);
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            iconBackground.setElevation(dpToPx(8));
+        }
+        
+        FrameLayout.LayoutParams iconParams = new FrameLayout.LayoutParams(dpToPx(56), dpToPx(56));
+        iconParams.gravity = Gravity.CENTER;
+        iconBackground.setLayoutParams(iconParams);
+        
+        // Phone icon
+        TextView phoneIcon = new TextView(this);
+        phoneIcon.setText("📞");
+        phoneIcon.setTextSize(24);
+        phoneIcon.setGravity(Gravity.CENTER);
+        FrameLayout.LayoutParams phoneParams = new FrameLayout.LayoutParams(dpToPx(56), dpToPx(56));
+        phoneParams.gravity = Gravity.CENTER;
+        phoneIcon.setLayoutParams(phoneParams);
+        
+        // Assemble the icon
+        container.addView(pulseRing);
+        container.addView(iconBackground);
+        container.addView(phoneIcon);
+        
+        // Start pulse animation
+        startPulseAnimation(pulseRing);
+        
+        return container;
+    }
+    
     private TextView createModernActionButton(String icon, String label, String colorHex) {
         LinearLayout buttonContainer = new LinearLayout(this);
         buttonContainer.setOrientation(LinearLayout.VERTICAL);
@@ -801,11 +865,9 @@ public class FloatingOverlayService extends Service {
                 createExpandedOverlay();
             }
             
-            // Hide the small floating icon
-            if (floatingView != null) {
-                floatingView.setVisibility(View.GONE);
-                android.util.Log.d("FloatingOverlay", "✅ Hidden small floating icon");
-            }
+            // Keep the original floating icon visible - don't hide it
+            // The overlay has its own connected icon at the top
+            android.util.Log.d("FloatingOverlay", "✅ Keeping original floating icon visible and adding connected overlay");
             
             // Show the expanded overlay
             windowManager.addView(expandedView, expandedParams);
@@ -845,11 +907,8 @@ public class FloatingOverlayService extends Service {
             windowManager.removeView(expandedView);
             isExpanded = false;
             
-            // Show the small floating icon again
-            if (floatingView != null) {
-                floatingView.setVisibility(View.VISIBLE);
-                android.util.Log.d("FloatingOverlay", "✅ Restored small floating icon");
-            }
+            // Original floating icon stays visible - no need to restore
+            android.util.Log.d("FloatingOverlay", "✅ Original floating icon remains visible");
             
             android.util.Log.d("FloatingOverlay", "✅ NATIVE EXPANDED OVERLAY HIDDEN SUCCESSFULLY!");
             
