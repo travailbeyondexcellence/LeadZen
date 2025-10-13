@@ -25,6 +25,7 @@ export const FloatingCallManager: React.FC<FloatingCallManagerProps> = ({
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isOverlayExpanded, setIsOverlayExpanded] = useState(false);
   const [currentCallData, setCurrentCallData] = useState<CallData | null>(null);
+  const [expandedAt, setExpandedAt] = useState<number | null>(null);
 
   useEffect(() => {
     // Register this manager with CallDetectionService
@@ -59,6 +60,7 @@ export const FloatingCallManager: React.FC<FloatingCallManagerProps> = ({
       setIsIconVisible(false);        // Hide icon since we're going straight to expanded
       setIsOverlayVisible(true);      // Show overlay
       setIsOverlayExpanded(true);     // Start with EXPANDED overlay
+      setExpandedAt(Date.now());      // Track when overlay was expanded
       
       console.log('[FLOATING_MANAGER] ✅ State updated - EXPANDED overlay should appear now!');
       console.log('[FLOATING_MANAGER] States set:');
@@ -76,12 +78,35 @@ export const FloatingCallManager: React.FC<FloatingCallManagerProps> = ({
 
   // Handle hiding call overlay
   const handleHideCallOverlay = () => {
-    console.log('[FLOATING_MANAGER] Hiding call overlay');
+    console.log('[FLOATING_MANAGER] Hiding call overlay request received');
     
+    // If overlay was recently expanded (within last 5 seconds), keep it visible
+    const timeSinceExpanded = expandedAt ? Date.now() - expandedAt : 999999;
+    const minDisplayTime = 5000; // 5 seconds
+    
+    if (timeSinceExpanded < minDisplayTime) {
+      console.log('[FLOATING_MANAGER] 🕒 Overlay recently expanded, keeping visible for', 
+                   Math.round((minDisplayTime - timeSinceExpanded) / 1000), 'more seconds');
+      
+      // Schedule hiding after the minimum display time
+      setTimeout(() => {
+        console.log('[FLOATING_MANAGER] ⏰ Minimum display time elapsed, hiding overlay now');
+        setIsIconVisible(false);
+        setIsOverlayVisible(false);
+        setIsOverlayExpanded(false);
+        setCurrentCallData(null);
+        setExpandedAt(null);
+      }, minDisplayTime - timeSinceExpanded);
+      
+      return;
+    }
+    
+    console.log('[FLOATING_MANAGER] Hiding call overlay immediately');
     setIsIconVisible(false);
     setIsOverlayVisible(false);
     setIsOverlayExpanded(false);
     setCurrentCallData(null);
+    setExpandedAt(null);
   };
 
   // Handle icon press - expand to full overlay

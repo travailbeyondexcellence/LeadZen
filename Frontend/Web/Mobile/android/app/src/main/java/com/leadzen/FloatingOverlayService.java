@@ -18,8 +18,13 @@ import androidx.annotation.Nullable;
 public class FloatingOverlayService extends Service {
     private WindowManager windowManager;
     private View floatingView;
+    private View expandedView;
     private WindowManager.LayoutParams params;
+    private WindowManager.LayoutParams expandedParams;
     private TextView leadNameView;
+    private boolean isExpanded = false;
+    private String currentPhoneNumber;
+    private String currentLeadName;
 
     @Override
     public void onCreate() {
@@ -165,51 +170,234 @@ public class FloatingOverlayService extends Service {
         android.util.Log.d("FloatingOverlay", "Touch and click listeners setup complete");
     }
 
+    private void createExpandedOverlay() {
+        android.util.Log.d("FloatingOverlay", "Creating expanded overlay...");
+        
+        // Create main expanded container
+        LinearLayout expandedContainer = new LinearLayout(this);
+        expandedContainer.setOrientation(LinearLayout.VERTICAL);
+        expandedContainer.setPadding(24, 24, 24, 24);
+        expandedContainer.setClickable(true);
+        expandedContainer.setFocusable(true);
+        
+        // Create background for expanded overlay
+        GradientDrawable expandedBackground = new GradientDrawable();
+        expandedBackground.setShape(GradientDrawable.RECTANGLE);
+        expandedBackground.setColor(Color.parseColor("#F0FFFFFF")); // Semi-transparent white
+        expandedBackground.setCornerRadius(16);
+        expandedBackground.setStroke(2, Color.parseColor("#14B8A6"));
+        expandedContainer.setBackground(expandedBackground);
+        
+        // Header section
+        LinearLayout headerSection = new LinearLayout(this);
+        headerSection.setOrientation(LinearLayout.HORIZONTAL);
+        headerSection.setPadding(0, 0, 0, 16);
+        
+        // Phone icon in header
+        TextView phoneIconHeader = new TextView(this);
+        phoneIconHeader.setText("📞");
+        phoneIconHeader.setTextSize(24);
+        phoneIconHeader.setPadding(0, 0, 12, 0);
+        
+        // Call info text
+        TextView callInfoText = new TextView(this);
+        callInfoText.setText("Incoming Call");
+        callInfoText.setTextColor(Color.parseColor("#1F2937"));
+        callInfoText.setTextSize(18);
+        callInfoText.setTypeface(null, android.graphics.Typeface.BOLD);
+        
+        // Close button
+        TextView closeButton = new TextView(this);
+        closeButton.setText("✕");
+        closeButton.setTextColor(Color.parseColor("#EF4444"));
+        closeButton.setTextSize(20);
+        closeButton.setPadding(16, 8, 8, 8);
+        closeButton.setClickable(true);
+        closeButton.setOnClickListener(v -> hideExpandedOverlay());
+        
+        // Add to header
+        headerSection.addView(phoneIconHeader);
+        headerSection.addView(callInfoText);
+        
+        // Contact info section
+        LinearLayout contactSection = new LinearLayout(this);
+        contactSection.setOrientation(LinearLayout.VERTICAL);
+        contactSection.setPadding(0, 0, 0, 16);
+        
+        // Phone number display
+        TextView phoneNumberDisplay = new TextView(this);
+        phoneNumberDisplay.setText(currentPhoneNumber != null ? currentPhoneNumber : "Unknown Number");
+        phoneNumberDisplay.setTextColor(Color.parseColor("#374151"));
+        phoneNumberDisplay.setTextSize(16);
+        phoneNumberDisplay.setTypeface(null, android.graphics.Typeface.BOLD);
+        
+        // Lead name display
+        TextView leadNameDisplay = new TextView(this);
+        leadNameDisplay.setText(currentLeadName != null ? currentLeadName : "Unknown Contact");
+        leadNameDisplay.setTextColor(Color.parseColor("#6B7280"));
+        leadNameDisplay.setTextSize(14);
+        
+        contactSection.addView(phoneNumberDisplay);
+        contactSection.addView(leadNameDisplay);
+        
+        // Quick actions section
+        LinearLayout actionsSection = new LinearLayout(this);
+        actionsSection.setOrientation(LinearLayout.HORIZONTAL);
+        actionsSection.setPadding(0, 8, 0, 0);
+        
+        // Notes button
+        TextView notesButton = createActionButton("📝 Notes", "#3B82F6");
+        // Lead details button  
+        TextView detailsButton = createActionButton("👤 Details", "#10B981");
+        // Minimize button
+        TextView minimizeButton = createActionButton("⬇️ Minimize", "#6B7280");
+        minimizeButton.setOnClickListener(v -> hideExpandedOverlay());
+        
+        actionsSection.addView(notesButton);
+        actionsSection.addView(detailsButton);
+        actionsSection.addView(minimizeButton);
+        
+        // Assemble the expanded overlay
+        expandedContainer.addView(headerSection);
+        expandedContainer.addView(closeButton);
+        expandedContainer.addView(contactSection);
+        expandedContainer.addView(actionsSection);
+        
+        expandedView = expandedContainer;
+        
+        // Set up window parameters for expanded overlay
+        int layoutType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            layoutType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            layoutType = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
+        expandedParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                layoutType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | 
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | 
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                PixelFormat.TRANSLUCENT
+        );
+
+        expandedParams.gravity = Gravity.CENTER;
+        expandedParams.x = 0;
+        expandedParams.y = -100;
+        
+        android.util.Log.d("FloatingOverlay", "Expanded overlay created successfully");
+    }
+    
+    private TextView createActionButton(String text, String colorHex) {
+        TextView button = new TextView(this);
+        button.setText(text);
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(12);
+        button.setPadding(16, 8, 16, 8);
+        button.setClickable(true);
+        
+        // Create button background
+        GradientDrawable buttonBg = new GradientDrawable();
+        buttonBg.setShape(GradientDrawable.RECTANGLE);
+        buttonBg.setColor(Color.parseColor(colorHex));
+        buttonBg.setCornerRadius(8);
+        button.setBackground(buttonBg);
+        
+        // Add margin
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        layoutParams.setMargins(0, 0, 8, 0);
+        button.setLayoutParams(layoutParams);
+        
+        return button;
+    }
+
     private void handleOverlayClick() {
         android.util.Log.d("FloatingOverlay", "🎯 FLOATING ICON CLICKED! User tapped the floating icon!");
         android.util.Log.d("FloatingOverlay", "🎯 ==========================================");
         android.util.Log.d("FloatingOverlay", "🎯 FLOATING ICON CLICK DETECTED");
-        android.util.Log.d("FloatingOverlay", "🎯 Now sending broadcast to trigger overlay expansion...");
+        android.util.Log.d("FloatingOverlay", "🎯 Now showing native expanded overlay...");
         android.util.Log.d("FloatingOverlay", "🎯 ==========================================");
         
-        // Send both local and system broadcast to ensure one works
+        // Show native expanded overlay instead of sending broadcast
+        showExpandedOverlay();
+    }
+    
+    private void showExpandedOverlay() {
         try {
-            // System broadcast
-            Intent systemIntent = new Intent("FLOATING_OVERLAY_CLICKED");
-            systemIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            sendBroadcast(systemIntent);
-            android.util.Log.d("FloatingOverlay", "✅ System broadcast sent successfully");
+            android.util.Log.d("FloatingOverlay", "🚀 SHOWING NATIVE EXPANDED OVERLAY");
             
-            // Also try sending with package name for better targeting
-            Intent packageIntent = new Intent("FLOATING_OVERLAY_CLICKED");
-            packageIntent.setPackage(getPackageName());
-            sendBroadcast(packageIntent);
-            android.util.Log.d("FloatingOverlay", "✅ Package-targeted broadcast sent successfully");
+            if (isExpanded) {
+                android.util.Log.d("FloatingOverlay", "⚠️ Expanded overlay already visible");
+                return;
+            }
             
-            // Add a delay and try one more broadcast
-            new android.os.Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Intent retryIntent = new Intent("FLOATING_OVERLAY_CLICKED");
-                        sendBroadcast(retryIntent);
-                        android.util.Log.d("FloatingOverlay", "✅ Retry broadcast sent after delay");
-                    } catch (Exception e) {
-                        android.util.Log.e("FloatingOverlay", "❌ Retry broadcast failed: " + e.getMessage());
-                    }
-                }
-            }, 100);
+            // Create expanded overlay if not created yet
+            if (expandedView == null) {
+                createExpandedOverlay();
+            }
+            
+            // Hide the small floating icon
+            if (floatingView != null) {
+                floatingView.setVisibility(View.GONE);
+                android.util.Log.d("FloatingOverlay", "✅ Hidden small floating icon");
+            }
+            
+            // Show the expanded overlay
+            windowManager.addView(expandedView, expandedParams);
+            isExpanded = true;
+            
+            android.util.Log.d("FloatingOverlay", "✅ NATIVE EXPANDED OVERLAY SHOWN SUCCESSFULLY!");
+            android.util.Log.d("FloatingOverlay", "✅ Overlay should now be visible over dialer!");
             
         } catch (Exception e) {
-            android.util.Log.e("FloatingOverlay", "❌ Error sending broadcasts: " + e.getMessage());
+            android.util.Log.e("FloatingOverlay", "❌ Error showing expanded overlay: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void hideExpandedOverlay() {
+        try {
+            android.util.Log.d("FloatingOverlay", "🔄 HIDING NATIVE EXPANDED OVERLAY");
+            
+            if (!isExpanded || expandedView == null) {
+                android.util.Log.d("FloatingOverlay", "⚠️ Expanded overlay not visible");
+                return;
+            }
+            
+            // Remove expanded overlay from window manager
+            windowManager.removeView(expandedView);
+            isExpanded = false;
+            
+            // Show the small floating icon again
+            if (floatingView != null) {
+                floatingView.setVisibility(View.VISIBLE);
+                android.util.Log.d("FloatingOverlay", "✅ Restored small floating icon");
+            }
+            
+            android.util.Log.d("FloatingOverlay", "✅ NATIVE EXPANDED OVERLAY HIDDEN SUCCESSFULLY!");
+            
+        } catch (Exception e) {
+            android.util.Log.e("FloatingOverlay", "❌ Error hiding expanded overlay: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     public void updateOverlayData(String phoneNumber, String leadName) {
+        // Store current call data
+        this.currentPhoneNumber = phoneNumber;
+        this.currentLeadName = leadName;
+        
+        // Update small floating icon
         if (leadNameView != null) {
             leadNameView.setText(leadName != null ? leadName : "Unknown");
         }
+        
+        android.util.Log.d("FloatingOverlay", "✅ Updated overlay data - Phone: " + phoneNumber + ", Lead: " + leadName);
     }
 
     @Override
@@ -238,9 +426,26 @@ public class FloatingOverlayService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        
+        // Clean up floating icon
         if (floatingView != null && windowManager != null) {
-            windowManager.removeView(floatingView);
+            try {
+                windowManager.removeView(floatingView);
+            } catch (Exception e) {
+                // View already removed
+            }
         }
+        
+        // Clean up expanded overlay
+        if (expandedView != null && windowManager != null && isExpanded) {
+            try {
+                windowManager.removeView(expandedView);
+            } catch (Exception e) {
+                // View already removed
+            }
+        }
+        
+        android.util.Log.d("FloatingOverlay", "✅ FloatingOverlayService destroyed and cleaned up");
     }
 
     @Nullable
