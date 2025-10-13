@@ -29,9 +29,16 @@ public class MainApplication extends Application implements ReactApplication {
       // SQLite package should be auto-linked by React Native
       
       // Add FloatingOverlay package
-      Log.d("FloatingOverlay", "Adding FloatingOverlayPackage to packages");
-      packages.add(new FloatingOverlayPackage());
-      Log.d("FloatingOverlay", "FloatingOverlayPackage added successfully");
+      Log.d("FloatingOverlay", "🚀 MAIN_APPLICATION: Adding FloatingOverlayPackage to packages");
+      try {
+        FloatingOverlayPackage overlayPackage = new FloatingOverlayPackage();
+        packages.add(overlayPackage);
+        Log.d("FloatingOverlay", "✅ MAIN_APPLICATION: FloatingOverlayPackage added successfully");
+        Log.d("FloatingOverlay", "✅ MAIN_APPLICATION: Total packages: " + packages.size());
+      } catch (Exception e) {
+        Log.e("FloatingOverlay", "❌ MAIN_APPLICATION: Error adding FloatingOverlayPackage: " + e.getMessage());
+        e.printStackTrace();
+      }
       
       return packages;
     }

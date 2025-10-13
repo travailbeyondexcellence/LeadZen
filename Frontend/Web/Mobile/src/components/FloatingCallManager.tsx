@@ -44,19 +44,32 @@ export const FloatingCallManager: React.FC<FloatingCallManagerProps> = ({
   // Handle showing call overlay from CallDetectionService
   const handleShowCallOverlay = async (callData: CallData) => {
     try {
-      console.log('[FLOATING_MANAGER] 🎯 SHOWING call overlay:', callData);
-      console.log('[FLOATING_MANAGER] 📱 Setting states: iconVisible=true, overlayVisible=true, expanded=false');
+      console.log('[FLOATING_MANAGER] 🎯 SHOWING EXPANDED CALL OVERLAY');
+      console.log('[FLOATING_MANAGER] ========================================');
+      console.log('[FLOATING_MANAGER] Call data received:', callData);
+      console.log('[FLOATING_MANAGER] Phone number:', callData?.phoneNumber);
+      console.log('[FLOATING_MANAGER] Call type:', callData?.callType);
+      console.log('[FLOATING_MANAGER] Match result:', callData?.matchResult);
       
+      // Set call data first
       setCurrentCallData(callData);
-      setIsIconVisible(true);
-      setIsOverlayVisible(true);
-      setIsOverlayExpanded(false); // Start with icon only
       
-      console.log('[FLOATING_MANAGER] ✅ State updated - Icon should appear now!');
+      // Show EXPANDED overlay immediately (since this is called when native overlay is clicked)
+      console.log('[FLOATING_MANAGER] 📱 Setting states: iconVisible=false, overlayVisible=true, expanded=true');
+      setIsIconVisible(false);        // Hide icon since we're going straight to expanded
+      setIsOverlayVisible(true);      // Show overlay
+      setIsOverlayExpanded(true);     // Start with EXPANDED overlay
+      
+      console.log('[FLOATING_MANAGER] ✅ State updated - EXPANDED overlay should appear now!');
+      console.log('[FLOATING_MANAGER] States set:');
+      console.log('[FLOATING_MANAGER] - isIconVisible:', false);
+      console.log('[FLOATING_MANAGER] - isOverlayVisible:', true);
+      console.log('[FLOATING_MANAGER] - isOverlayExpanded:', true);
+      console.log('[FLOATING_MANAGER] ========================================');
       
       return true;
     } catch (error) {
-      console.error('[FLOATING_MANAGER] Error showing call overlay:', error);
+      console.error('[FLOATING_MANAGER] ❌ Error showing call overlay:', error);
       return false;
     }
   };

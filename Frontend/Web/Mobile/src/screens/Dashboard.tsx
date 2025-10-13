@@ -93,6 +93,16 @@ const Dashboard: React.FC = () => {
     }, 5000);
   };
 
+  const testFloatingOverlay = async () => {
+    console.log('🧪 Testing floating overlay expansion...');
+    try {
+      const result = await CallDetectionService.testExpandOverlay();
+      console.log('🧪 Floating overlay test result:', result);
+    } catch (error) {
+      console.error('🧪 Floating overlay test failed:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
@@ -258,6 +268,14 @@ const Dashboard: React.FC = () => {
               >
                 <Text style={styles.actionIcon}>🧪</Text>
                 <Text style={styles.actionText}>Test Call Overlay</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.floatingTestButton]}
+                onPress={testFloatingOverlay}
+              >
+                <Text style={styles.actionIcon}>🎯</Text>
+                <Text style={styles.actionText}>Test Floating Expand</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -544,6 +562,10 @@ const styles = StyleSheet.create({
   testButton: {
     backgroundColor: '#FF6B35',
     borderColor: '#FF6B35',
+  },
+  floatingTestButton: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
   },
   dialerTestButton: {
     backgroundColor: '#007AFF',

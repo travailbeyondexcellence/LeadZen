@@ -81,6 +81,7 @@ public class FloatingOverlayService extends Service {
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 layoutType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | 
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | 
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
         );
@@ -135,12 +136,13 @@ public class FloatingOverlayService extends Service {
                         
                         android.util.Log.d("FloatingOverlay", "Touch duration: " + touchDuration + "ms, Move distance: " + moveDistance + "px");
                         
-                        // Consider it a click if: short duration AND minimal movement
-                        if (touchDuration < 500 && moveDistance < 30) {
-                            android.util.Log.d("FloatingOverlay", "Click detected! Triggering click handler...");
+                        // More lenient click detection: longer duration OR more movement allowed
+                        if (touchDuration < 1000 && moveDistance < 50) {
+                            android.util.Log.d("FloatingOverlay", "🎯 CLICK DETECTED! Triggering click handler...");
+                            android.util.Log.d("FloatingOverlay", "📊 Click stats - Duration: " + touchDuration + "ms, Distance: " + moveDistance + "px");
                             handleOverlayClick();
                         } else {
-                            android.util.Log.d("FloatingOverlay", "Not a click - duration too long or moved too much");
+                            android.util.Log.d("FloatingOverlay", "❌ Not a click - duration: " + touchDuration + "ms, distance: " + moveDistance + "px");
                         }
                         return true;
                 }
@@ -164,10 +166,26 @@ public class FloatingOverlayService extends Service {
     }
 
     private void handleOverlayClick() {
-        android.util.Log.d("FloatingOverlay", "Native overlay clicked! Sending broadcast...");
-        Intent intent = new Intent("FLOATING_OVERLAY_CLICKED");
-        sendBroadcast(intent);
-        android.util.Log.d("FloatingOverlay", "Broadcast sent successfully");
+        android.util.Log.d("FloatingOverlay", "🚀 NATIVE OVERLAY CLICKED! Sending broadcast...");
+        
+        // Send both local and system broadcast to ensure one works
+        try {
+            // System broadcast
+            Intent systemIntent = new Intent("FLOATING_OVERLAY_CLICKED");
+            systemIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            sendBroadcast(systemIntent);
+            android.util.Log.d("FloatingOverlay", "✅ System broadcast sent successfully");
+            
+            // Also try sending with package name for better targeting
+            Intent packageIntent = new Intent("FLOATING_OVERLAY_CLICKED");
+            packageIntent.setPackage(getPackageName());
+            sendBroadcast(packageIntent);
+            android.util.Log.d("FloatingOverlay", "✅ Package-targeted broadcast sent successfully");
+            
+        } catch (Exception e) {
+            android.util.Log.e("FloatingOverlay", "❌ Error sending broadcasts: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void updateOverlayData(String phoneNumber, String leadName) {

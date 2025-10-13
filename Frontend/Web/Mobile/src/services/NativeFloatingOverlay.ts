@@ -9,6 +9,13 @@ interface FloatingOverlayModule {
 
 const { FloatingOverlayModule, SimpleFloatingModule } = NativeModules;
 
+// Debug module availability
+console.log('[NATIVE_OVERLAY] 🔍 Module availability check:');
+console.log('[NATIVE_OVERLAY] - NativeModules object:', Object.keys(NativeModules));
+console.log('[NATIVE_OVERLAY] - FloatingOverlayModule:', FloatingOverlayModule);
+console.log('[NATIVE_OVERLAY] - SimpleFloatingModule:', SimpleFloatingModule);
+console.log('[NATIVE_OVERLAY] - Available modules:', Object.keys(NativeModules).filter(key => key.includes('Float')));
+
 class NativeFloatingOverlayService {
   private eventEmitter: NativeEventEmitter;
   private overlayClickListener: EmitterSubscription | null = null;
@@ -96,12 +103,27 @@ class NativeFloatingOverlayService {
    */
   async testBroadcast(): Promise<boolean> {
     try {
-      console.log('[NATIVE_OVERLAY] Testing broadcast communication...');
+      console.log('[NATIVE_OVERLAY] 🧪 Testing broadcast communication...');
       const result = await FloatingOverlayModule.testBroadcast();
       console.log('[NATIVE_OVERLAY] ✅ Test broadcast successful:', result);
       return true;
     } catch (error) {
       console.error('[NATIVE_OVERLAY] ❌ Test broadcast failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Manual test - simulate overlay click for debugging
+   */
+  async testOverlayClick(): Promise<boolean> {
+    try {
+      console.log('[NATIVE_OVERLAY] 🧪 Manually triggering overlay click test...');
+      await this.testBroadcast();
+      console.log('[NATIVE_OVERLAY] ✅ Manual overlay click test completed');
+      return true;
+    } catch (error) {
+      console.error('[NATIVE_OVERLAY] ❌ Manual overlay click test failed:', error);
       return false;
     }
   }

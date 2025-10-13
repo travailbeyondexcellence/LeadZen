@@ -319,7 +319,21 @@ export const FloatingCallOverlay: React.FC<FloatingCallOverlayProps> = ({
   const leadInfo = getLeadInfo();
   const callTypeInfo = getCallTypeInfo();
 
-  if (!isVisible || !isExpanded) return null;
+  // Debug visibility logic
+  console.log('[FLOATING_OVERLAY] 🔍 Render check:', {
+    isVisible,
+    isExpanded,
+    shouldRender: isVisible && isExpanded,
+    phoneNumber,
+    leadData: !!leadData
+  });
+
+  if (!isVisible || !isExpanded) {
+    console.log('[FLOATING_OVERLAY] ❌ Not rendering - isVisible:', isVisible, 'isExpanded:', isExpanded);
+    return null;
+  }
+
+  console.log('[FLOATING_OVERLAY] ✅ Rendering expanded overlay');
 
   return (
     <Animated.View

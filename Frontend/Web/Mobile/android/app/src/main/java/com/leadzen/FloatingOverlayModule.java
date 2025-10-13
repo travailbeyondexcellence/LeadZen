@@ -22,8 +22,16 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
     public FloatingOverlayModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
-        Log.d("FloatingOverlay", "FloatingOverlayModule constructor called");
-        setupBroadcastReceiver();
+        Log.d("FloatingOverlay", "🚀 FLOATINGOVERLAYMODULE CONSTRUCTOR CALLED!");
+        Log.d("FloatingOverlay", "🚀 React context: " + (reactContext != null ? "OK" : "NULL"));
+        
+        try {
+            setupBroadcastReceiver();
+            Log.d("FloatingOverlay", "✅ FloatingOverlayModule initialization complete");
+        } catch (Exception e) {
+            Log.e("FloatingOverlay", "❌ ERROR in constructor: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @NonNull
@@ -35,22 +43,40 @@ public class FloatingOverlayModule extends ReactContextBaseJavaModule {
 
     private void setupBroadcastReceiver() {
         try {
+            Log.d("FloatingOverlay", "🔧 Setting up broadcast receiver...");
             overlayReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    Log.d("FloatingOverlay", "Broadcast received: " + intent.getAction());
+                    Log.d("FloatingOverlay", "🎯 BROADCAST RECEIVED! Action: " + intent.getAction());
+                    Log.d("FloatingOverlay", "📻 Context: " + context.getClass().getSimpleName());
+                    Log.d("FloatingOverlay", "📻 Intent details: " + intent.toString());
+                    Log.d("FloatingOverlay", "📻 Intent package: " + intent.getPackage());
+                    Log.d("FloatingOverlay", "📻 React context available: " + (reactContext != null));
+                    Log.d("FloatingOverlay", "📻 React context active: " + (reactContext != null && reactContext.hasActiveCatalystInstance()));
+                    
                     if ("FLOATING_OVERLAY_CLICKED".equals(intent.getAction())) {
-                        Log.d("FloatingOverlay", "Overlay click broadcast received! Sending to React Native...");
-                        sendEvent("FloatingOverlayClicked", null);
+                        Log.d("FloatingOverlay", "🚀 OVERLAY CLICK BROADCAST RECEIVED! Sending to React Native...");
+                        try {
+                            sendEvent("FloatingOverlayClicked", null);
+                            Log.d("FloatingOverlay", "✅ Event sent to React Native: FloatingOverlayClicked");
+                        } catch (Exception e) {
+                            Log.e("FloatingOverlay", "❌ Error sending event to React Native: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Log.d("FloatingOverlay", "❌ Unknown broadcast action: " + intent.getAction());
                     }
                 }
             };
 
             IntentFilter filter = new IntentFilter("FLOATING_OVERLAY_CLICKED");
+            filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
             reactContext.registerReceiver(overlayReceiver, filter);
-            Log.d("FloatingOverlay", "Broadcast receiver setup successfully");
+            Log.d("FloatingOverlay", "✅ Broadcast receiver registered successfully for action: FLOATING_OVERLAY_CLICKED");
+            Log.d("FloatingOverlay", "✅ Filter priority set to HIGH for better reception");
         } catch (Exception e) {
-            Log.e("FloatingOverlay", "Error setting up broadcast receiver: " + e.getMessage());
+            Log.e("FloatingOverlay", "❌ Error setting up broadcast receiver: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

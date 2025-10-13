@@ -298,6 +298,34 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleTestBroadcast = async () => {
+    try {
+      console.log('[SETTINGS] 🧪 Testing broadcast communication...');
+      
+      if (!NativeFloatingOverlay.isAvailable()) {
+        Alert.alert('Error', 'Native floating overlay module is not available.');
+        return;
+      }
+      
+      const result = await CallDetectionService.testNativeOverlayClick();
+      
+      if (result) {
+        Alert.alert(
+          'Broadcast Test Success!',
+          'Broadcast communication is working! Check the logs for:\n\n✅ Manual test broadcast triggered\n✅ Test broadcast sent successfully\n✅ Native overlay clicked!\n\nThis means the issue is with touch detection, not communication.'
+        );
+      } else {
+        Alert.alert(
+          'Broadcast Test Failed',
+          'The broadcast mechanism is not working. Check the logs for error details.'
+        );
+      }
+    } catch (error) {
+      console.error('[SETTINGS] 🧪 Error testing broadcast:', error);
+      Alert.alert('Error', 'Failed to test broadcast: ' + error.message);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary.base} />
@@ -503,6 +531,14 @@ const Settings: React.FC = () => {
             'android',
             handleTestNativeOverlay,
             Colors.accent.amber
+          )}
+
+          {renderActionRow(
+            'Test Broadcast Communication',
+            'Test if click events can reach React Native',
+            'broadcast',
+            handleTestBroadcast,
+            Colors.accent.purple
           )}
         </View>
 

@@ -21,25 +21,40 @@ class CallDetectionService {
   setupNativeOverlayListener() {
     // Listen for native overlay clicks
     this.overlayClickCleanup = NativeFloatingOverlay.onOverlayClick(() => {
-      console.log('[CALL_DETECTION] 👆 Native overlay clicked - expanding React Native overlay');
+      console.log('[CALL_DETECTION] 🎯 NATIVE OVERLAY CLICKED! Expanding React Native overlay...');
+      console.log('[CALL_DETECTION] =====================================================');
+      console.log('[CALL_DETECTION] Event triggered by native overlay click');
+      console.log('[CALL_DETECTION] floatingCallManager available:', !!this.floatingCallManager);
+      console.log('[CALL_DETECTION] lastCallPhoneNumber:', this.lastCallPhoneNumber);
+      console.log('[CALL_DETECTION] currentCall:', this.currentCall);
+      console.log('[CALL_DETECTION] lastMatchResult:', this.lastMatchResult);
       
       // Show the React Native overlay when native overlay is clicked
       if (this.floatingCallManager && this.lastCallPhoneNumber) {
-        console.log('[CALL_DETECTION] 🚀 Triggering React Native overlay expansion');
-        console.log('[CALL_DETECTION] Phone:', this.lastCallPhoneNumber);
-        console.log('[CALL_DETECTION] Match result:', this.lastMatchResult);
+        console.log('[CALL_DETECTION] ✅ All requirements met - showing React Native overlay');
         
-        // Show the React Native overlay
-        this.showFloatingCallOverlay(
-          this.lastCallPhoneNumber,
-          this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming',
-          this.lastMatchResult || null
-        );
+        try {
+          // Show the React Native overlay
+          const callType = this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming';
+          console.log('[CALL_DETECTION] Call type determined:', callType);
+          
+          this.showFloatingCallOverlay(
+            this.lastCallPhoneNumber,
+            callType,
+            this.lastMatchResult || null
+          );
+          
+          console.log('[CALL_DETECTION] 🚀 React Native overlay show request sent successfully');
+        } catch (error) {
+          console.error('[CALL_DETECTION] ❌ Error showing React Native overlay:', error);
+        }
       } else {
-        console.log('[CALL_DETECTION] ⚠️ Cannot expand overlay - missing manager or phone number');
-        console.log('[CALL_DETECTION] floatingCallManager:', !!this.floatingCallManager);
-        console.log('[CALL_DETECTION] lastCallPhoneNumber:', this.lastCallPhoneNumber);
+        console.log('[CALL_DETECTION] ❌ Cannot expand overlay - requirements not met:');
+        console.log('[CALL_DETECTION] - floatingCallManager:', !!this.floatingCallManager);
+        console.log('[CALL_DETECTION] - lastCallPhoneNumber:', this.lastCallPhoneNumber);
+        console.log('[CALL_DETECTION] - currentCall:', this.currentCall);
       }
+      console.log('[CALL_DETECTION] =====================================================');
     });
   }
 
@@ -106,8 +121,17 @@ class CallDetectionService {
     console.log('📞 Call Event Detected:', {
       event,
       phoneNumber,
+      phoneNumberLength: phoneNumber ? phoneNumber.length : 0,
+      phoneNumberType: typeof phoneNumber,
       timestamp: new Date().toISOString()
     });
+
+    console.log('[CALL_DETECTION] 🔍 Event details:');
+    console.log('[CALL_DETECTION] - Event type:', event);
+    console.log('[CALL_DETECTION] - Phone number raw:', JSON.stringify(phoneNumber));
+    console.log('[CALL_DETECTION] - Phone number exists:', !!phoneNumber);
+    console.log('[CALL_DETECTION] - Phone number length:', phoneNumber ? phoneNumber.length : 0);
+    console.log('[CALL_DETECTION] - Previous stored number:', this.lastCallPhoneNumber);
 
     // Store current call info
     this.currentCall = {
@@ -119,7 +143,10 @@ class CallDetectionService {
     // Store phone number for use in subsequent events (Offhook, Disconnected)
     if (phoneNumber && phoneNumber.trim()) {
       this.lastCallPhoneNumber = phoneNumber;
-      console.log('[FLOATING_CALL] Stored phone number for call:', phoneNumber);
+      console.log('[FLOATING_CALL] ✅ Stored phone number for call:', phoneNumber);
+    } else {
+      console.log('[FLOATING_CALL] ⚠️ No phone number provided in this event');
+      console.log('[FLOATING_CALL] ⚠️ Using previously stored number:', this.lastCallPhoneNumber);
     }
 
     switch (event) {
@@ -173,6 +200,10 @@ class CallDetectionService {
       } else {
         console.log('[FLOATING_CALL] No phone number provided, showing unknown contact');
       }
+      
+      // Store match result for later use
+      this.lastMatchResult = matchResult;
+      console.log('[FLOATING_CALL] 📱 Stored match result for later use:', this.lastMatchResult);
       
       // Show NATIVE overlay over dialer
       if (NativeFloatingOverlay.isAvailable()) {
@@ -422,6 +453,46 @@ class CallDetectionService {
   setFloatingCallManager(manager) {
     console.log('[FLOATING_CALL] Setting floating call manager');
     this.floatingCallManager = manager;
+  }
+
+  // Manual test method for debugging
+  async testExpandOverlay() {
+    console.log('[CALL_DETECTION] 🧪 MANUAL TEST: Triggering overlay expansion...');
+    
+    if (!this.floatingCallManager) {
+      console.log('[CALL_DETECTION] ❌ No floating call manager available');
+      return false;
+    }
+
+    if (!this.lastCallPhoneNumber) {
+      console.log('[CALL_DETECTION] ❌ No phone number available, using test number');
+      this.lastCallPhoneNumber = "7777095511";
+    }
+
+    try {
+      // Simulate the overlay click
+      const callType = this.currentCall?.event === 'Outgoing' ? 'outgoing' : 'incoming';
+      console.log('[CALL_DETECTION] 🧪 Using phone:', this.lastCallPhoneNumber);
+      console.log('[CALL_DETECTION] 🧪 Call type:', callType);
+      console.log('[CALL_DETECTION] 🧪 Match result:', this.lastMatchResult);
+      
+      await this.showFloatingCallOverlay(
+        this.lastCallPhoneNumber,
+        callType,
+        this.lastMatchResult || {
+          phoneNumber: this.lastCallPhoneNumber,
+          hasMatch: false,
+          matchedLeads: [],
+          matchConfidence: 'none'
+        }
+      );
+      
+      console.log('[CALL_DETECTION] ✅ Manual test completed');
+      return true;
+    } catch (error) {
+      console.error('[CALL_DETECTION] ❌ Manual test failed:', error);
+      return false;
+    }
   }
   
   // Calculate call duration
