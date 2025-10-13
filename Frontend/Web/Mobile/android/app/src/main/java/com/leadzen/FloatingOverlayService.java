@@ -171,101 +171,178 @@ public class FloatingOverlayService extends Service {
     }
 
     private void createExpandedOverlay() {
-        android.util.Log.d("FloatingOverlay", "Creating expanded overlay...");
+        android.util.Log.d("FloatingOverlay", "Creating enhanced expanded overlay...");
         
-        // Create main expanded container
-        LinearLayout expandedContainer = new LinearLayout(this);
-        expandedContainer.setOrientation(LinearLayout.VERTICAL);
-        expandedContainer.setPadding(24, 24, 24, 24);
-        expandedContainer.setClickable(true);
-        expandedContainer.setFocusable(true);
+        // Main container with proper styling
+        LinearLayout mainContainer = new LinearLayout(this);
+        mainContainer.setOrientation(LinearLayout.VERTICAL);
+        mainContainer.setClickable(true);
+        mainContainer.setFocusable(true);
         
-        // Create background for expanded overlay
-        GradientDrawable expandedBackground = new GradientDrawable();
-        expandedBackground.setShape(GradientDrawable.RECTANGLE);
-        expandedBackground.setColor(Color.parseColor("#F0FFFFFF")); // Semi-transparent white
-        expandedBackground.setCornerRadius(16);
-        expandedBackground.setStroke(2, Color.parseColor("#14B8A6"));
-        expandedContainer.setBackground(expandedBackground);
+        // Create beautiful background with shadow effect
+        GradientDrawable mainBackground = new GradientDrawable();
+        mainBackground.setShape(GradientDrawable.RECTANGLE);
+        mainBackground.setColor(Color.parseColor("#FFFFFF")); // Pure white background
+        mainBackground.setCornerRadius(dpToPx(16)); // 16dp corner radius
+        mainContainer.setBackground(mainBackground);
         
-        // Header section
-        LinearLayout headerSection = new LinearLayout(this);
-        headerSection.setOrientation(LinearLayout.HORIZONTAL);
-        headerSection.setPadding(0, 0, 0, 16);
+        // Add shadow effect by setting elevation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mainContainer.setElevation(dpToPx(12));
+        }
         
-        // Phone icon in header
-        TextView phoneIconHeader = new TextView(this);
-        phoneIconHeader.setText("📞");
-        phoneIconHeader.setTextSize(24);
-        phoneIconHeader.setPadding(0, 0, 12, 0);
+        // Set minimum width for better appearance
+        mainContainer.setMinimumWidth(dpToPx(320));
         
-        // Call info text
-        TextView callInfoText = new TextView(this);
-        callInfoText.setText("Incoming Call");
-        callInfoText.setTextColor(Color.parseColor("#1F2937"));
-        callInfoText.setTextSize(18);
-        callInfoText.setTypeface(null, android.graphics.Typeface.BOLD);
+        // Header section with gradient background
+        LinearLayout headerContainer = new LinearLayout(this);
+        headerContainer.setOrientation(LinearLayout.HORIZONTAL);
+        headerContainer.setGravity(Gravity.CENTER_VERTICAL);
+        headerContainer.setPadding(dpToPx(20), dpToPx(16), dpToPx(20), dpToPx(16));
         
-        // Close button
+        // Header background with light primary color
+        GradientDrawable headerBg = new GradientDrawable();
+        headerBg.setShape(GradientDrawable.RECTANGLE);
+        headerBg.setColor(Color.parseColor("#F0F9FF")); // Light blue background
+        headerBg.setCornerRadii(new float[]{dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16), 0, 0, 0, 0});
+        headerContainer.setBackground(headerBg);
+        
+        // Call type indicator with avatar style
+        LinearLayout avatarContainer = new LinearLayout(this);
+        avatarContainer.setOrientation(LinearLayout.HORIZONTAL);
+        avatarContainer.setGravity(Gravity.CENTER);
+        avatarContainer.setPadding(dpToPx(12), dpToPx(12), dpToPx(12), dpToPx(12));
+        
+        GradientDrawable avatarBg = new GradientDrawable();
+        avatarBg.setShape(GradientDrawable.OVAL);
+        avatarBg.setColor(Color.parseColor("#14B8A6")); // Teal color
+        avatarContainer.setBackground(avatarBg);
+        
+        TextView callIcon = new TextView(this);
+        callIcon.setText("📞");
+        callIcon.setTextSize(20);
+        avatarContainer.addView(callIcon);
+        
+        // Call info section
+        LinearLayout callInfoContainer = new LinearLayout(this);
+        callInfoContainer.setOrientation(LinearLayout.VERTICAL);
+        callInfoContainer.setPadding(dpToPx(16), 0, 0, 0);
+        LinearLayout.LayoutParams callInfoParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+        callInfoContainer.setLayoutParams(callInfoParams);
+        
+        TextView callTypeLabel = new TextView(this);
+        callTypeLabel.setText("Incoming Call");
+        callTypeLabel.setTextColor(Color.parseColor("#14B8A6"));
+        callTypeLabel.setTextSize(14);
+        callTypeLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+        
+        TextView timestampLabel = new TextView(this);
+        timestampLabel.setText("Just now");
+        timestampLabel.setTextColor(Color.parseColor("#6B7280"));
+        timestampLabel.setTextSize(12);
+        
+        callInfoContainer.addView(callTypeLabel);
+        callInfoContainer.addView(timestampLabel);
+        
+        // Close button with proper styling
         TextView closeButton = new TextView(this);
         closeButton.setText("✕");
-        closeButton.setTextColor(Color.parseColor("#EF4444"));
-        closeButton.setTextSize(20);
-        closeButton.setPadding(16, 8, 8, 8);
+        closeButton.setTextColor(Color.parseColor("#6B7280"));
+        closeButton.setTextSize(18);
+        closeButton.setPadding(dpToPx(12), dpToPx(12), dpToPx(12), dpToPx(12));
         closeButton.setClickable(true);
+        
+        // Close button background
+        GradientDrawable closeBg = new GradientDrawable();
+        closeBg.setShape(GradientDrawable.OVAL);
+        closeBg.setColor(Color.parseColor("#F3F4F6"));
+        closeButton.setBackground(closeBg);
         closeButton.setOnClickListener(v -> hideExpandedOverlay());
         
-        // Add to header
-        headerSection.addView(phoneIconHeader);
-        headerSection.addView(callInfoText);
+        headerContainer.addView(avatarContainer);
+        headerContainer.addView(callInfoContainer);
+        headerContainer.addView(closeButton);
         
-        // Contact info section
+        // Content section with proper spacing
+        LinearLayout contentContainer = new LinearLayout(this);
+        contentContainer.setOrientation(LinearLayout.VERTICAL);
+        contentContainer.setPadding(dpToPx(20), dpToPx(20), dpToPx(20), dpToPx(16));
+        
+        // Contact information section
         LinearLayout contactSection = new LinearLayout(this);
         contactSection.setOrientation(LinearLayout.VERTICAL);
-        contactSection.setPadding(0, 0, 0, 16);
+        contactSection.setPadding(0, 0, 0, dpToPx(16));
         
-        // Phone number display
+        TextView phoneNumberLabel = new TextView(this);
+        phoneNumberLabel.setText("Phone Number");
+        phoneNumberLabel.setTextColor(Color.parseColor("#6B7280"));
+        phoneNumberLabel.setTextSize(12);
+        phoneNumberLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+        phoneNumberLabel.setPadding(0, 0, 0, dpToPx(4));
+        
         TextView phoneNumberDisplay = new TextView(this);
         phoneNumberDisplay.setText(currentPhoneNumber != null ? currentPhoneNumber : "Unknown Number");
-        phoneNumberDisplay.setTextColor(Color.parseColor("#374151"));
+        phoneNumberDisplay.setTextColor(Color.parseColor("#111827"));
         phoneNumberDisplay.setTextSize(16);
         phoneNumberDisplay.setTypeface(null, android.graphics.Typeface.BOLD);
+        phoneNumberDisplay.setPadding(0, 0, 0, dpToPx(12));
         
-        // Lead name display
+        TextView leadNameLabel = new TextView(this);
+        leadNameLabel.setText("Contact");
+        leadNameLabel.setTextColor(Color.parseColor("#6B7280"));
+        leadNameLabel.setTextSize(12);
+        leadNameLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+        leadNameLabel.setPadding(0, 0, 0, dpToPx(4));
+        
         TextView leadNameDisplay = new TextView(this);
         leadNameDisplay.setText(currentLeadName != null ? currentLeadName : "Unknown Contact");
-        leadNameDisplay.setTextColor(Color.parseColor("#6B7280"));
+        leadNameDisplay.setTextColor(Color.parseColor("#374151"));
         leadNameDisplay.setTextSize(14);
         
+        contactSection.addView(phoneNumberLabel);
         contactSection.addView(phoneNumberDisplay);
+        contactSection.addView(leadNameLabel);
         contactSection.addView(leadNameDisplay);
         
-        // Quick actions section
+        // Divider
+        View divider = new View(this);
+        divider.setBackgroundColor(Color.parseColor("#E5E7EB"));
+        LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(1)
+        );
+        dividerParams.setMargins(0, dpToPx(8), 0, dpToPx(16));
+        divider.setLayoutParams(dividerParams);
+        
+        // Quick actions with modern button design
         LinearLayout actionsSection = new LinearLayout(this);
         actionsSection.setOrientation(LinearLayout.HORIZONTAL);
-        actionsSection.setPadding(0, 8, 0, 0);
+        actionsSection.setGravity(Gravity.CENTER);
         
-        // Notes button
-        TextView notesButton = createActionButton("📝 Notes", "#3B82F6");
-        // Lead details button  
-        TextView detailsButton = createActionButton("👤 Details", "#10B981");
-        // Minimize button
-        TextView minimizeButton = createActionButton("⬇️ Minimize", "#6B7280");
+        // Create modern action buttons
+        TextView notesButton = createModernActionButton("📝", "Notes", "#3B82F6");
+        TextView detailsButton = createModernActionButton("👤", "Details", "#10B981");
+        TextView minimizeButton = createModernActionButton("⬇️", "Minimize", "#6B7280");
         minimizeButton.setOnClickListener(v -> hideExpandedOverlay());
         
-        actionsSection.addView(notesButton);
-        actionsSection.addView(detailsButton);
-        actionsSection.addView(minimizeButton);
+        // Add buttons with proper spacing
+        LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f);
+        buttonParams.setMargins(dpToPx(4), 0, dpToPx(4), 0);
         
-        // Assemble the expanded overlay
-        expandedContainer.addView(headerSection);
-        expandedContainer.addView(closeButton);
-        expandedContainer.addView(contactSection);
-        expandedContainer.addView(actionsSection);
+        actionsSection.addView(notesButton, buttonParams);
+        actionsSection.addView(detailsButton, buttonParams);
+        actionsSection.addView(minimizeButton, buttonParams);
         
-        expandedView = expandedContainer;
+        // Assemble all sections
+        contentContainer.addView(contactSection);
+        contentContainer.addView(divider);
+        contentContainer.addView(actionsSection);
         
-        // Set up window parameters for expanded overlay
+        mainContainer.addView(headerContainer);
+        mainContainer.addView(contentContainer);
+        
+        expandedView = mainContainer;
+        
+        // Set up window parameters
         int layoutType;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             layoutType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -285,35 +362,83 @@ public class FloatingOverlayService extends Service {
 
         expandedParams.gravity = Gravity.CENTER;
         expandedParams.x = 0;
-        expandedParams.y = -100;
+        expandedParams.y = -dpToPx(50);
         
-        android.util.Log.d("FloatingOverlay", "Expanded overlay created successfully");
+        android.util.Log.d("FloatingOverlay", "Enhanced expanded overlay created successfully");
     }
     
-    private TextView createActionButton(String text, String colorHex) {
-        TextView button = new TextView(this);
-        button.setText(text);
-        button.setTextColor(Color.WHITE);
-        button.setTextSize(12);
-        button.setPadding(16, 8, 16, 8);
-        button.setClickable(true);
+    private TextView createModernActionButton(String icon, String label, String colorHex) {
+        LinearLayout buttonContainer = new LinearLayout(this);
+        buttonContainer.setOrientation(LinearLayout.VERTICAL);
+        buttonContainer.setGravity(Gravity.CENTER);
+        buttonContainer.setPadding(dpToPx(12), dpToPx(12), dpToPx(12), dpToPx(12));
+        buttonContainer.setClickable(true);
         
-        // Create button background
+        // Modern button background with rounded corners
         GradientDrawable buttonBg = new GradientDrawable();
         buttonBg.setShape(GradientDrawable.RECTANGLE);
-        buttonBg.setColor(Color.parseColor(colorHex));
-        buttonBg.setCornerRadius(8);
-        button.setBackground(buttonBg);
+        buttonBg.setColor(Color.parseColor(colorHex + "15")); // 15% opacity background
+        buttonBg.setCornerRadius(dpToPx(12));
+        buttonBg.setStroke(dpToPx(1), Color.parseColor(colorHex + "30")); // 30% opacity border
+        buttonContainer.setBackground(buttonBg);
         
-        // Add margin
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        layoutParams.setMargins(0, 0, 8, 0);
-        button.setLayoutParams(layoutParams);
+        // Icon container
+        LinearLayout iconContainer = new LinearLayout(this);
+        iconContainer.setGravity(Gravity.CENTER);
+        iconContainer.setPadding(dpToPx(8), dpToPx(8), dpToPx(8), dpToPx(8));
         
-        return button;
+        GradientDrawable iconBg = new GradientDrawable();
+        iconBg.setShape(GradientDrawable.OVAL);
+        iconBg.setColor(Color.parseColor(colorHex));
+        iconContainer.setBackground(iconBg);
+        
+        TextView iconText = new TextView(this);
+        iconText.setText(icon);
+        iconText.setTextSize(16);
+        iconContainer.addView(iconText);
+        
+        // Label text
+        TextView labelText = new TextView(this);
+        labelText.setText(label);
+        labelText.setTextColor(Color.parseColor(colorHex));
+        labelText.setTextSize(11);
+        labelText.setTypeface(null, android.graphics.Typeface.BOLD);
+        labelText.setGravity(Gravity.CENTER);
+        labelText.setPadding(0, dpToPx(6), 0, 0);
+        
+        buttonContainer.addView(iconContainer);
+        buttonContainer.addView(labelText);
+        
+        // Create wrapper TextView to return (keeping interface consistent)
+        TextView wrapper = new TextView(this);
+        wrapper.setClickable(true);
+        
+        // Since we can't return LinearLayout as TextView, we'll create a compound drawable effect
+        // For now, return a simplified modern button
+        TextView modernButton = new TextView(this);
+        modernButton.setText(icon + "\n" + label);
+        modernButton.setTextColor(Color.parseColor(colorHex));
+        modernButton.setTextSize(11);
+        modernButton.setTypeface(null, android.graphics.Typeface.BOLD);
+        modernButton.setGravity(Gravity.CENTER);
+        modernButton.setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12));
+        modernButton.setClickable(true);
+        
+        // Modern button styling
+        GradientDrawable modernBg = new GradientDrawable();
+        modernBg.setShape(GradientDrawable.RECTANGLE);
+        modernBg.setColor(Color.parseColor(colorHex + "10")); // Light background
+        modernBg.setCornerRadius(dpToPx(12));
+        modernBg.setStroke(dpToPx(2), Color.parseColor(colorHex + "40"));
+        modernButton.setBackground(modernBg);
+        
+        return modernButton;
+    }
+    
+    // Utility method to convert dp to pixels
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 
     private void handleOverlayClick() {
