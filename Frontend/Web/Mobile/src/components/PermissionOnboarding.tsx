@@ -149,8 +149,12 @@ const PermissionOnboarding: React.FC<PermissionOnboardingProps> = ({ onComplete 
   };
 
   const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
+    // Only capture touches that are likely swipes, not button presses
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      // Only capture if it's a significant horizontal movement (likely a swipe)
+      return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 50;
+    },
     onPanResponderRelease: (evt, gestureState) => {
       const { dx } = gestureState;
       const swipeThreshold = 50;
