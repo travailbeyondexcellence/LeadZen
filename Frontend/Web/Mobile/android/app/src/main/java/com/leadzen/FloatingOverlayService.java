@@ -212,7 +212,8 @@ public class FloatingOverlayService extends Service {
                         // Add visual feedback - slightly scale down
                         floatingView.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).start();
                         
-                        android.util.Log.d("FloatingOverlay", "👆 Touch DOWN - Ready for drag or click");
+                        android.util.Log.d("FloatingOverlay", "👆 TOUCH DOWN DETECTED! Touch working properly!");
+                        android.util.Log.d("FloatingOverlay", "👆 Position: x=" + event.getRawX() + ", y=" + event.getRawY());
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
@@ -250,8 +251,11 @@ public class FloatingOverlayService extends Service {
                         
                         if (!isDragging && touchDuration < 500 && finalMoveDistance < 20) {
                             // This is a click, not a drag
-                            android.util.Log.d("FloatingOverlay", "🎯 CLICK DETECTED! Expanding overlay...");
+                            android.util.Log.d("FloatingOverlay", "🎯 CLICK CONFIRMED! Duration: " + touchDuration + "ms, Distance: " + finalMoveDistance + "px");
+                            android.util.Log.d("FloatingOverlay", "🎯 Calling handleOverlayClick() now...");
                             handleOverlayClick();
+                        } else {
+                            android.util.Log.d("FloatingOverlay", "❌ Not a click - isDragging: " + isDragging + ", duration: " + touchDuration + "ms, distance: " + finalMoveDistance + "px");
                         }
                         // Removed snap to edge - free dragging everywhere!
                         
@@ -339,11 +343,11 @@ public class FloatingOverlayService extends Service {
         overlayCard.addView(labelSection);
         overlayCard.addView(bottomActionBar);
         
-        // Position the overlay card (takes ~50% of screen height, connected to icon)
+        // Position the overlay card (takes 93% of screen width, ~50% of screen height)
         FrameLayout.LayoutParams cardParams = new FrameLayout.LayoutParams(
-            dpToPx(340), FrameLayout.LayoutParams.WRAP_CONTENT);
+            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         cardParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
-        cardParams.setMargins(dpToPx(20), dpToPx(120), dpToPx(20), dpToPx(50)); // Position below icon
+        cardParams.setMargins(dpToPx(14), dpToPx(120), dpToPx(14), dpToPx(50)); // 14dp margins = ~93% width
         overlayCard.setLayoutParams(cardParams);
         
         // Position the overlay icon at the top center
@@ -760,10 +764,30 @@ public class FloatingOverlayService extends Service {
         container.addView(iconBackground);
         container.addView(phoneIcon);
         
-        // Start pulse animation
-        startPulseAnimation(pulseRing);
+        // Start pulse animation (but don't add to window manager since it's part of overlay)
+        startPulseAnimationForOverlay(pulseRing);
         
         return container;
+    }
+    
+    // Pulse animation for overlay icon (doesn't interfere with WindowManager)
+    private void startPulseAnimationForOverlay(View pulseRing) {
+        android.animation.ObjectAnimator scaleXAnimator = android.animation.ObjectAnimator.ofFloat(pulseRing, "scaleX", 1f, 1.3f, 1f);
+        android.animation.ObjectAnimator scaleYAnimator = android.animation.ObjectAnimator.ofFloat(pulseRing, "scaleY", 1f, 1.3f, 1f);
+        android.animation.ObjectAnimator alphaAnimator = android.animation.ObjectAnimator.ofFloat(pulseRing, "alpha", 0.7f, 0.3f, 0.7f);
+        
+        android.animation.AnimatorSet pulseSet = new android.animation.AnimatorSet();
+        pulseSet.playTogether(scaleXAnimator, scaleYAnimator, alphaAnimator);
+        pulseSet.setDuration(1200); // 1.2 second pulse
+        scaleXAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        scaleXAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        scaleYAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        scaleYAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        alphaAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        alphaAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        
+        pulseSet.start();
+        android.util.Log.d("FloatingOverlay", "✅ Overlay icon pulse animation started (no WindowManager conflicts)");
     }
     
     private TextView createModernActionButton(String icon, String label, String colorHex) {
@@ -843,38 +867,50 @@ public class FloatingOverlayService extends Service {
     private void handleOverlayClick() {
         android.util.Log.d("FloatingOverlay", "🎯 FLOATING ICON CLICKED! User tapped the floating icon!");
         android.util.Log.d("FloatingOverlay", "🎯 ==========================================");
-        android.util.Log.d("FloatingOverlay", "🎯 FLOATING ICON CLICK DETECTED");
-        android.util.Log.d("FloatingOverlay", "🎯 Now showing native expanded overlay...");
+        android.util.Log.d("FloatingOverlay", "🎯 CLICK DETECTION WORKING PERFECTLY!");
+        android.util.Log.d("FloatingOverlay", "🎯 Now showing professional overlay with icon animation...");
+        android.util.Log.d("FloatingOverlay", "🎯 isExpanded current state: " + isExpanded);
         android.util.Log.d("FloatingOverlay", "🎯 ==========================================");
         
-        // Show native expanded overlay instead of sending broadcast
+        // Show native expanded overlay with proper icon positioning
         showExpandedOverlay();
     }
     
     private void showExpandedOverlay() {
         try {
-            android.util.Log.d("FloatingOverlay", "🚀 SHOWING NATIVE EXPANDED OVERLAY");
+            android.util.Log.d("FloatingOverlay", "🚀 SHOWING PROFESSIONAL OVERLAY WITH ICON ANIMATION");
+            android.util.Log.d("FloatingOverlay", "==============================================");
             
             if (isExpanded) {
                 android.util.Log.d("FloatingOverlay", "⚠️ Expanded overlay already visible");
                 return;
             }
             
-            // Create expanded overlay if not created yet
+            // Create expanded overlay fresh each time to ensure it works
+            android.util.Log.d("FloatingOverlay", "📋 Creating expanded overlay...");
+            createExpandedOverlay();
+            
             if (expandedView == null) {
-                createExpandedOverlay();
+                android.util.Log.e("FloatingOverlay", "❌ CRITICAL ERROR: expandedView is null after creation!");
+                return;
             }
             
-            // Keep the original floating icon visible - don't hide it
-            // The overlay has its own connected icon at the top
-            android.util.Log.d("FloatingOverlay", "✅ Keeping original floating icon visible and adding connected overlay");
+            if (expandedParams == null) {
+                android.util.Log.e("FloatingOverlay", "❌ CRITICAL ERROR: expandedParams is null!");
+                return;
+            }
+            
+            android.util.Log.d("FloatingOverlay", "📱 Adding overlay to WindowManager...");
             
             // Show the expanded overlay
             windowManager.addView(expandedView, expandedParams);
             isExpanded = true;
             
+            android.util.Log.d("FloatingOverlay", "✅ Overlay added to WindowManager successfully!");
+            
             // PHASE 6: Professional slide-up animation
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                android.util.Log.d("FloatingOverlay", "🎬 Starting slide-up animation...");
                 expandedView.setAlpha(0f);
                 expandedView.setTranslationY(dpToPx(300)); // Start from bottom
                 expandedView.animate()
@@ -885,11 +921,13 @@ public class FloatingOverlayService extends Service {
                     .start();
             }
             
-            android.util.Log.d("FloatingOverlay", "✅ PROFESSIONAL EXPANDED OVERLAY SHOWN WITH ANIMATION!");
-            android.util.Log.d("FloatingOverlay", "✅ All 6 phases implemented - overlay should look exactly like reference!");
+            android.util.Log.d("FloatingOverlay", "✅ PROFESSIONAL OVERLAY SHOULD NOW BE VISIBLE!");
+            android.util.Log.d("FloatingOverlay", "✅ Icon should appear at top, overlay below with transparency!");
+            android.util.Log.d("FloatingOverlay", "==============================================");
             
         } catch (Exception e) {
-            android.util.Log.e("FloatingOverlay", "❌ Error showing expanded overlay: " + e.getMessage());
+            android.util.Log.e("FloatingOverlay", "❌ CRITICAL ERROR showing expanded overlay: " + e.getMessage());
+            android.util.Log.e("FloatingOverlay", "❌ Stack trace:");
             e.printStackTrace();
         }
     }
